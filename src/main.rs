@@ -1,7 +1,20 @@
 #![allow(unused)]
 
-fn main() {
-    println!("Hello, world!");
+use anyhow::Result;
+use std::path::{Path, PathBuf};
+
+const SAMPLE_RATE_KHZ: u32 = 32_000;
+const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
+
+fn saw_osc() -> Oscillator {
+    Oscillator {
+        amplitude: i16::MAX,
+        period: A440_SAMPLES,
+        phase: 0,
+        pulse_width: A440_SAMPLES / 2,
+        rise_time: 0,
+        squareness: 0,
+    }
 }
 
 // 16-bit, 32 khz
@@ -71,5 +84,52 @@ impl Oscillator {
             unreachable!()
         }       
     }
+}
+
+
+fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
+    use plotters::prelude::*;
+
+    let filepath = outdir.join(file_stem).with_extension("png");
+
+    let root = BitMapBackend::new(&filepath, (1280, 720)).into_drawing_area();
+
+    root.fill(&WHITE)?;
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption("Waveform", ("sans-serif", 50).into_font())
+        .margin(50)
+        .build_cartesian_2d(0..buf.len(), (i16::min_value() as f64)..(i16::max_value() as f64))?;
+
+    chart.configure_mesh()
+        .draw()?;
+
+    chart.draw_series(
+        LineSeries::new(
+            (0..).zip(buf.iter().map(|v| *v as f64)),
+            RED.mix(0.5).stroke_width(4),
+        )
+    )?;
+
+    Ok(())
+}
+
+fn fill_buf(buf: &mut [i16], osc: Oscillator) {
+    for i in 0..buf.len() {
+        let sample = osc.get_sample(i as u32);
+        buf[i] = sample;
+    }
+}
+
+fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
+    let mut buf = vec![0_i16; A440_SAMPLES as usize];
+    fill_buf(&mut buf, osc);
+    write_image(&buf, &PathBuf::from("out"), name)
+}
+
+fn main() -> Result<()> {
+    write_test_osc("saw", saw_osc())?;
+
+    Ok(())
 }
 
