@@ -3,8 +3,8 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 
-const SAMPLE_RATE_KHZ: u32 = 32_000;
-const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
+const SAMPLE_RATE_KHZ: i32 = 32_000;
+const A440_SAMPLES: i32 = SAMPLE_RATE_KHZ / 440;
 
 fn saw_osc() -> Oscillator {
     Oscillator {
@@ -53,11 +53,11 @@ fn funky_square_osc() -> Oscillator {
 // 16-bit, 32 khz
 struct Oscillator {
     amplitude: i16,
-    period: u32,
+    period: i32,
     phase: i32,
-    rise_time: u32, // 0 for sawtooth, period / 2 for triangle
+    rise_time: i32, // 0 for sawtooth, period / 2 for triangle
     squareness: i16, // 0 for saw/tri, amplitude for square
-    pulse_width: u32,
+    pulse_width: i32,
 }
 
 // rise_time = 0 = sawtooth
@@ -79,6 +79,11 @@ struct Oscillator {
 
 impl Oscillator {
     fn get_sample(&self, offset: u32) -> i16 {
+        assert!(self.period >= 0);
+        assert!(self.phase >= 0);
+        assert!(self.rise_time >= 0);
+        assert!(self.pulse_width >= 0);
+        
         assert!(self.rise_time <= self.period / 2);
         if self.amplitude > 0 {
             assert!(self.squareness <= self.amplitude);
@@ -87,6 +92,7 @@ impl Oscillator {
             todo!();
         }
 
+        let offset: i32 = offset.try_into().expect("overflow");
         let osc_offset = offset % self.period;
         let half_period = self.period / 2;
         let half_rise_time = self.rise_time / 2;
@@ -98,35 +104,29 @@ impl Oscillator {
         let fall_time = self.period - self.rise_time;
         let half_fall_time = fall_time / 2;
 
-        let half_period_i32: i32 = half_period.try_into().expect("overflow");
         let amplitude_i32: i32 = self.amplitude.into();
-        let rise_time_i32: i32 = self.rise_time.try_into().expect("overflow");
-        let half_rise_time_i32: i32 = half_rise_time.try_into().expect("overflow");
-        let osc_offset_i32: i32 = osc_offset.try_into().expect("overflow");
-        let fall_time_i32: i32 = fall_time.try_into().expect("overflow");
-        let half_fall_time_i32: i32 = half_fall_time.try_into().expect("overflow");
         let squareness_i32: i32 = self.squareness.into();
 
         if in_initial_rise {
             // delta = amplitude / half_rise_time
             // sample = delta * osc_offset
-            let sample = amplitude_i32.saturating_mul(osc_offset_i32) / half_rise_time_i32;
+            let sample = amplitude_i32.saturating_mul(osc_offset) / half_rise_time;
             clamp_i32_to_i16(sample)
         } else if in_first_half_fall {
-            let working_offset = osc_offset_i32 - half_rise_time_i32;
+            let working_offset = osc_offset - half_rise_time;
             // let delta = (amplitude_i32 - squareness_i32) / half_fall_time;
             let sample = amplitude_i32
-                - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
+                - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time;
             clamp_i32_to_i16(sample)
         } else if in_second_half_fall {
-            let working_offset = osc_offset_i32 - half_period_i32;
+            let working_offset = osc_offset - half_period;
             let starting_amplitude = -squareness_i32;
             let sample = starting_amplitude
-                - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
+                - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time;
             clamp_i32_to_i16(sample)
         } else if in_final_rise {
-            let working_offset = osc_offset_i32 - half_rise_time_i32 - fall_time_i32;
-            let sample = amplitude_i32.saturating_mul(working_offset) / half_rise_time_i32 - amplitude_i32;
+            let working_offset = osc_offset - half_rise_time - fall_time;
+            let sample = amplitude_i32.saturating_mul(working_offset) / half_rise_time - amplitude_i32;
             clamp_i32_to_i16(sample)
         } else {
             unreachable!()
