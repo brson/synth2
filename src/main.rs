@@ -111,46 +111,39 @@ impl Oscillator {
             // delta = amplitude / half_rise_time
             // sample = delta * osc_offset
             let sample = amplitude_i32.saturating_mul(osc_offset_i32) / half_rise_time_i32;
-            sample.try_into().expect("overflow")
-        } else if in_fall {
-            if false && self.squareness == 0 {
-                let working_offset = osc_offset_i32 - half_rise_time_i32;
-                // delta = amplitude / half_fall_time
-                // sample = amplitude - delta * working_offset
-                let sample = amplitude_i32 - amplitude_i32.saturating_mul(working_offset) / half_fall_time_i32;
-                sample.try_into().expect("overflow")
-            } else {
-                if in_first_half_fall {
-                    let working_offset = osc_offset_i32 - half_rise_time_i32;
-                    // let delta = (amplitude_i32 - squareness_i32) / half_fall_time;
-                    let sample = amplitude_i32 - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
-                    sample.try_into().expect("overflow")
-                } else if in_second_half_fall {
-                    let working_offset = osc_offset_i32 - half_period_i32;
-                    let starting_amplitude = -squareness_i32;
-                    let sample = starting_amplitude - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
-                    // fixme use better math to avoid this hack
-                    let sample = if sample < i16::MIN as i32 {
-                        i16::MIN as i32
-                    } else {
-                        sample
-                    };
-                    sample.try_into().expect("overflow")
-                } else {
-                    unreachable!()
-                }
-            }
+            clamp_i32_to_i16(sample)
+        } else if in_first_half_fall {
+            let working_offset = osc_offset_i32 - half_rise_time_i32;
+            // let delta = (amplitude_i32 - squareness_i32) / half_fall_time;
+            let sample = amplitude_i32
+                - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
+            clamp_i32_to_i16(sample)
+        } else if in_second_half_fall {
+            let working_offset = osc_offset_i32 - half_period_i32;
+            let starting_amplitude = -squareness_i32;
+            let sample = starting_amplitude
+                - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
+            clamp_i32_to_i16(sample)
         } else if in_final_rise {
             let working_offset = osc_offset_i32 - half_rise_time_i32 - fall_time_i32;
-            
             let sample = amplitude_i32.saturating_mul(working_offset) / half_rise_time_i32 - amplitude_i32;
-            sample.try_into().expect("overflow")
+            clamp_i32_to_i16(sample)
         } else {
             unreachable!()
         }       
     }
 }
 
+// FIXME: use more precise math to avoid the need for this
+fn clamp_i32_to_i16(v: i32) -> i16 {
+    v.try_into().unwrap_or_else(|_| {
+        if v > 0 {
+            i16::MAX
+        } else {
+            i16::MIN
+        }
+    })
+}
 
 fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
     use plotters::prelude::*;
