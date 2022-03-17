@@ -146,10 +146,10 @@ fn clamp_i32_to_i16(v: i32) -> i16 {
 }
 
 struct Adsr {
-    attack: u32,
-    decay: u32,
-    sustain: u32,
-    release: u32,
+    attack: i32,
+    decay: i32,
+    sustain: i32,
+    release: i32,
 }
 
 impl Adsr {
