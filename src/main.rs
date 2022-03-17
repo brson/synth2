@@ -44,8 +44,8 @@ fn funky_square_osc() -> Oscillator {
         amplitude: i16::MAX,
         period: A440_SAMPLES,
         phase: 0,
-        rise_time: A440_SAMPLES / 4,
-        squareness: i16::MAX / 2,
+        rise_time: A440_SAMPLES / 8,
+        squareness: i16::MAX - i16::MAX / 4,
         pulse_width: A440_SAMPLES / 2,
     }
 }
@@ -129,7 +129,7 @@ impl Oscillator {
                 } else if in_second_half_fall {
                     let working_offset = osc_offset_i32 - half_period_i32;
                     let starting_amplitude = -squareness_i32;
-                    let sample = starting_amplitude + (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_period_i32;
+                    let sample = starting_amplitude - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_period_i32;
                     sample.try_into().expect("overflow")
                 } else {
                     unreachable!()
@@ -192,7 +192,8 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
 fn main() -> Result<()> {
     //write_test_osc("saw", saw_osc())?;
     //write_test_osc("triangle", triangle_osc())?;
-    write_test_osc("square", square_osc())?;
+    //write_test_osc("square", square_osc())?;
+    write_test_osc("funky-square", funky_square_osc())?;
 
     Ok(())
 }
