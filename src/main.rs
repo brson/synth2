@@ -153,8 +153,21 @@ struct Adsr {
 }
 
 impl Adsr {
-    fn apply(&self, offset: u32, sample: u32) {
+    fn apply(&self, offset: u32, sample: i16) -> i16 {
         todo!()
+    }
+}
+
+struct AdsrOscillator {
+    osc: Oscillator,
+    adsr: Adsr,
+}
+
+impl AdsrOscillator {
+    fn get_sample(&self, offset: u32) -> i16 {
+        let sample = self.osc.get_sample(offset);
+        let sample = self.adsr.apply(offset, sample);
+        sample
     }
 }
 
