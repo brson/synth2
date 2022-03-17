@@ -11,9 +11,20 @@ fn saw_osc() -> Oscillator {
         amplitude: i16::MAX,
         period: A440_SAMPLES,
         phase: 0,
-        pulse_width: A440_SAMPLES / 2,
         rise_time: 0,
         squareness: 0,
+        pulse_width: A440_SAMPLES / 2,
+    }
+}
+
+fn triangle_osc() -> Oscillator {
+    Oscillator {
+        amplitude: i16::MAX,
+        period: A440_SAMPLES,
+        phase: 0,
+        rise_time: A440_SAMPLES / 2,
+        squareness: 0,
+        pulse_width: A440_SAMPLES / 2,
     }
 }
 
@@ -22,9 +33,9 @@ struct Oscillator {
     amplitude: i16,
     period: u32,
     phase: u32,
-    pulse_width: u32,
     rise_time: u32, // 0 for sawtooth, period / 2 for triangle
     squareness: i16, // 0 for saw/tri, amplitude for square
+    pulse_width: u32,
 }
 
 // rise_time = 0 = sawtooth
@@ -129,6 +140,7 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
 
 fn main() -> Result<()> {
     write_test_osc("saw", saw_osc())?;
+    write_test_osc("triangle", triangle_osc())?;
 
     Ok(())
 }
