@@ -28,6 +28,28 @@ fn triangle_osc() -> Oscillator {
     }
 }
 
+fn square_osc() -> Oscillator {
+    Oscillator {
+        amplitude: i16::MAX,
+        period: A440_SAMPLES,
+        phase: 0,
+        rise_time: 0,
+        squareness: i16::MAX,
+        pulse_width: A440_SAMPLES / 2,
+    }
+}
+
+fn funky_square_osc() -> Oscillator {
+    Oscillator {
+        amplitude: i16::MAX,
+        period: A440_SAMPLES,
+        phase: 0,
+        rise_time: A440_SAMPLES / 4,
+        squareness: i16::MAX / 2,
+        pulse_width: A440_SAMPLES / 2,
+    }
+}
+
 // 16-bit, 32 khz
 struct Oscillator {
     amplitude: i16,
@@ -58,6 +80,12 @@ struct Oscillator {
 impl Oscillator {
     fn get_sample(&self, offset: u32) -> i16 {
         assert!(self.rise_time <= self.period / 2);
+        if self.amplitude > 0 {
+            assert!(self.squareness <= self.amplitude);
+            assert!(self.squareness >= 0);
+        } else {
+            todo!();
+        }
 
         let osc_offset = offset % self.period;
         let half_period = self.period / 2;
@@ -65,15 +93,20 @@ impl Oscillator {
         let in_initial_rise = osc_offset < half_rise_time;
         let in_final_rise = osc_offset > self.period - half_rise_time;
         let in_fall = !in_initial_rise && !in_final_rise;
+        let in_first_half_fall = in_fall && osc_offset < half_period;
+        let in_second_half_fall = in_fall && !in_first_half_fall;
         let fall_time = self.period - self.rise_time;
         let half_fall_time = fall_time / 2;
 
+        // FIXME: just make fields of Oscillator i32
+        let half_period_i32: i32 = half_period.try_into().expect("overflow");
         let amplitude_i32: i32 = self.amplitude.into();
         let rise_time_i32: i32 = self.rise_time.try_into().expect("overflow");
         let half_rise_time_i32: i32 = half_rise_time.try_into().expect("overflow");
         let osc_offset_i32: i32 = osc_offset.try_into().expect("overflow");
         let fall_time_i32: i32 = fall_time.try_into().expect("overflow");
         let half_fall_time_i32: i32 = half_fall_time.try_into().expect("overflow");
+        let squareness_i32: i32 = self.squareness.into();
 
         if in_initial_rise {
             // delta = amplitude / half_rise_time
@@ -81,11 +114,25 @@ impl Oscillator {
             let sample = amplitude_i32.saturating_mul(osc_offset_i32) / half_rise_time_i32;
             sample.try_into().expect("overflow")
         } else if in_fall {
-            let working_offset = osc_offset_i32 - half_rise_time_i32;
-            // delta = amplitude / half_fall_time
-            // sample = amplitude - delta * working_offset
-            let sample = amplitude_i32 - amplitude_i32.saturating_mul(working_offset) / half_fall_time_i32;
-            sample.try_into().expect("overflow")
+            if self.squareness == 0 {
+                let working_offset = osc_offset_i32 - half_rise_time_i32;
+                // delta = amplitude / half_fall_time
+                // sample = amplitude - delta * working_offset
+                let sample = amplitude_i32 - amplitude_i32.saturating_mul(working_offset) / half_fall_time_i32;
+                sample.try_into().expect("overflow")
+            } else {
+                if in_first_half_fall {
+                    let working_offset = osc_offset_i32 - half_rise_time_i32;
+                    let amplitude_end = squareness_i32;
+                    // let delta = amplitude_i32 - squareness_i32;
+                    todo!()
+                } else if in_second_half_fall {
+                    let working_offset = osc_offset_i32 - half_period_i32;
+                    todo!()
+                } else {
+                    unreachable!()
+                }
+            }
         } else if in_final_rise {
             let working_offset = osc_offset_i32 - half_rise_time_i32 - fall_time_i32;
             
