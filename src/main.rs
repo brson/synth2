@@ -145,6 +145,19 @@ fn clamp_i32_to_i16(v: i32) -> i16 {
     })
 }
 
+struct Adsr {
+    attack: u32,
+    decay: u32,
+    sustain: u32,
+    release: u32,
+}
+
+impl Adsr {
+    fn apply(&self, offset: u32, sample: u32) {
+        todo!()
+    }
+}
+
 fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
     use plotters::prelude::*;
 
