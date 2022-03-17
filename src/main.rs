@@ -123,12 +123,14 @@ impl Oscillator {
             } else {
                 if in_first_half_fall {
                     let working_offset = osc_offset_i32 - half_rise_time_i32;
-                    let amplitude_end = squareness_i32;
-                    // let delta = amplitude_i32 - squareness_i32;
-                    todo!()
+                    // let delta = (amplitude_i32 - squareness_i32) / half_fall_time;
+                    let sample = amplitude_i32 - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
+                    sample.try_into().expect("overflow")
                 } else if in_second_half_fall {
                     let working_offset = osc_offset_i32 - half_period_i32;
-                    todo!()
+                    let starting_amplitude = -squareness_i32;
+                    let sample = starting_amplitude + (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_period_i32;
+                    sample.try_into().expect("overflow")
                 } else {
                     unreachable!()
                 }
@@ -156,7 +158,9 @@ fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
 
     let mut chart = ChartBuilder::on(&root)
         .caption("Waveform", ("sans-serif", 50).into_font())
-        .margin(50)
+        .margin(50_f64)
+        .set_label_area_size(LabelAreaPosition::Left, 100_f64)
+        .set_label_area_size(LabelAreaPosition::Bottom, 100_f64)
         .build_cartesian_2d(0..buf.len(), (i16::min_value() as f64)..(i16::max_value() as f64))?;
 
     chart.configure_mesh()
@@ -165,7 +169,7 @@ fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
     chart.draw_series(
         LineSeries::new(
             (0..).zip(buf.iter().map(|v| *v as f64)),
-            RED.mix(0.5).stroke_width(4),
+            RED.mix(1.0).stroke_width(4),
         )
     )?;
 
@@ -186,8 +190,9 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    write_test_osc("saw", saw_osc())?;
-    write_test_osc("triangle", triangle_osc())?;
+    //write_test_osc("saw", saw_osc())?;
+    //write_test_osc("triangle", triangle_osc())?;
+    write_test_osc("square", square_osc())?;
 
     Ok(())
 }
