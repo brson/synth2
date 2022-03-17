@@ -54,7 +54,7 @@ fn funky_square_osc() -> Oscillator {
 struct Oscillator {
     amplitude: i16,
     period: u32,
-    phase: u32,
+    phase: i32,
     rise_time: u32, // 0 for sawtooth, period / 2 for triangle
     squareness: i16, // 0 for saw/tri, amplitude for square
     pulse_width: u32,
@@ -98,7 +98,6 @@ impl Oscillator {
         let fall_time = self.period - self.rise_time;
         let half_fall_time = fall_time / 2;
 
-        // FIXME: just make fields of Oscillator i32
         let half_period_i32: i32 = half_period.try_into().expect("overflow");
         let amplitude_i32: i32 = self.amplitude.into();
         let rise_time_i32: i32 = self.rise_time.try_into().expect("overflow");
@@ -114,7 +113,7 @@ impl Oscillator {
             let sample = amplitude_i32.saturating_mul(osc_offset_i32) / half_rise_time_i32;
             sample.try_into().expect("overflow")
         } else if in_fall {
-            if self.squareness == 0 {
+            if false && self.squareness == 0 {
                 let working_offset = osc_offset_i32 - half_rise_time_i32;
                 // delta = amplitude / half_fall_time
                 // sample = amplitude - delta * working_offset
@@ -129,7 +128,13 @@ impl Oscillator {
                 } else if in_second_half_fall {
                     let working_offset = osc_offset_i32 - half_period_i32;
                     let starting_amplitude = -squareness_i32;
-                    let sample = starting_amplitude - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_period_i32;
+                    let sample = starting_amplitude - (amplitude_i32 - squareness_i32).saturating_mul(working_offset) / half_fall_time_i32;
+                    // fixme use better math to avoid this hack
+                    let sample = if sample < i16::MIN as i32 {
+                        i16::MIN as i32
+                    } else {
+                        sample
+                    };
                     sample.try_into().expect("overflow")
                 } else {
                     unreachable!()
@@ -190,9 +195,9 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    //write_test_osc("saw", saw_osc())?;
-    //write_test_osc("triangle", triangle_osc())?;
-    //write_test_osc("square", square_osc())?;
+    write_test_osc("saw", saw_osc())?;
+    write_test_osc("triangle", triangle_osc())?;
+    write_test_osc("square", square_osc())?;
     write_test_osc("funky-square", funky_square_osc())?;
 
     Ok(())
