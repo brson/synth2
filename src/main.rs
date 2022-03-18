@@ -153,19 +153,15 @@ struct Adsr {
 }
 
 impl Adsr {
-    fn apply(&self, offset: u32, sample: i16) -> i16 {
+    fn apply(&self, offset: u32, release_offset: Option<u32>, sample: i16) -> i16 {
         assert!(self.attack >= 0);
         assert!(self.decay >= 0);
         assert!(self.sustain >= 0);
         assert!(self.release >= 0);
 
         let offset: i32 = offset.try_into().expect("overflow");
-        let not_max = self.attack.saturating_add(self.decay)
-            .saturating_add(substain)
-            .saturating_add(release);
-        assert!(not_max != i32::MAX);
-            
-        todo!()
+
+        todo!()        
     }
 }
 
@@ -175,9 +171,9 @@ struct AdsrOscillator {
 }
 
 impl AdsrOscillator {
-    fn get_sample(&self, offset: u32) -> i16 {
+    fn get_sample(&self, offset: u32, release_offset: Option<u32>) -> i16 {
         let sample = self.osc.get_sample(offset);
-        let sample = self.adsr.apply(offset, sample);
+        let sample = self.adsr.apply(offset, release_offset, sample);
         sample
     }
 }
