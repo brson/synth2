@@ -198,22 +198,20 @@ impl Adsr {
     }
 }
 
-fn line_y_value(y_rise: i32, x_run: i32, x_offset: i32) -> i32 {
-    // delta = rise / run
-    // y_value = delta * x_offset
-    x_offset.saturating_mul(y_rise) / x_run
+fn line_y_value(y_rise: i32, x_run: i32, x_value: i32) -> i32 {
+    // slope = rise / run
+    // y_value = slope * x_offset
+    x_value.saturating_mul(y_rise) / x_run
 }
 
 fn line_y_value_with_y_offset(
     y_rise: i32,
     x_run: i32,
-    x_offset: i32,
+    x_value: i32,
     y_offset: i32
 ) -> i32
 {
-    // delta = rise / run
-    // y_value = delta * x_offset
-    let value = line_y_value(y_rise, x_run, x_offset);
+    let value = line_y_value(y_rise, x_run, x_value);
     value.saturating_add(y_offset)
 }
 
