@@ -189,9 +189,14 @@ impl Adsr {
             let sample = line_y_value_with_y_offset(rise, run, working_offset, y_start);
             clamp_i32_to_i16(sample)
         } else if in_sustain {
-            todo!()
+            self.sustain
         } else if in_release {
-            todo!()
+            let working_offset = offset - release_offset;
+            let y_start = i32::from(self.sustain);
+            let rise = i32::from(-self.sustain);
+            let run = self.release;
+            let sample = line_y_value_with_y_offset(rise, run, working_offset, y_start);
+            clamp_i32_to_i16(sample)
         } else {
             0
         }
