@@ -175,9 +175,18 @@ impl Adsr {
         let in_sustain = !in_attack && !in_decay && offset < release_offset;
         let in_release = !in_attack && !in_decay && !in_sustain && offset < release_end_offset;
 
+        let sample_i32: i32 = sample.into();
+
         if in_attack {
-            todo!()
+            let working_offset = offset;
+            //let delta = 1 / self.attack;
+            //let scale = delta * working_offset;
+            //let sample = sample * scale;
+            let sample = sample_i32 * working_offset / self.attack;
+            clamp_i32_to_i16(sample)
         } else if in_decay {
+            let working_offset = offset - decay_offset;
+            //let sustain_scale = 
             todo!()
         } else if in_sustain {
             todo!()
