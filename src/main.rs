@@ -166,12 +166,26 @@ impl Adsr {
         } else {
             release_offset
         };
+        let decay_offset = self.attack;
+        let sustain_offset = self.attack + self.decay;
+        let release_end_offset = release_offset.saturating_add(self.release);
 
-        let in_attack = offset < self.attack;
-        let in_decay = !in_attack && offset < self.attack + self.decay;
+        let in_attack = offset < decay_offset;
+        let in_decay = !in_attack && offset < sustain_offset;
+        let in_sustain = !in_attack && !in_decay && offset < release_offset;
+        let in_release = !in_attack && !in_decay && !in_sustain && offset < release_end_offset;
 
-        todo!()
-        
+        if in_attack {
+            todo!()
+        } else if in_decay {
+            todo!()
+        } else if in_sustain {
+            todo!()
+        } else if in_release {
+            todo!()
+        } else {
+            0
+        }
     }
 }
 
