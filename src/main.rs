@@ -160,8 +160,18 @@ impl Adsr {
         assert!(self.release >= 0);
 
         let offset: i32 = offset.try_into().expect("overflow");
+        let release_offset: i32 = release_offset.unwrap_or(i32::MAX as u32).try_into().expect("overflow");
+        let release_offset = if release_offset < self.attack + self.decay {
+            self.attack + self.decay
+        } else {
+            release_offset
+        };
 
-        todo!()        
+        let in_attack = offset < self.attack;
+        let in_decay = !in_attack && offset < self.attack + self.decay;
+
+        todo!()
+        
     }
 }
 
