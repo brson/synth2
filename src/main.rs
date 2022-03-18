@@ -148,12 +148,12 @@ fn clamp_i32_to_i16(v: i32) -> i16 {
 struct Adsr {
     attack: i32,
     decay: i32,
-    sustain: i32,
+    sustain: i16, // i16::MAX = full scale
     release: i32,
 }
 
 impl Adsr {
-    fn apply(&self, offset: u32, release_offset: Option<u32>, sample: i16) -> i16 {
+    fn get_sample(&self, offset: u32, release_offset: Option<u32>) -> i16 {
         assert!(self.attack >= 0);
         assert!(self.decay >= 0);
         assert!(self.sustain >= 0);
@@ -175,18 +175,9 @@ impl Adsr {
         let in_sustain = !in_attack && !in_decay && offset < release_offset;
         let in_release = !in_attack && !in_decay && !in_sustain && offset < release_end_offset;
 
-        let sample_i32: i32 = sample.into();
-
         if in_attack {
-            let working_offset = offset;
-            //let delta = 1 / self.attack;
-            //let scale = delta * working_offset;
-            //let sample = sample * scale;
-            let sample = sample_i32 * working_offset / self.attack;
-            clamp_i32_to_i16(sample)
+            todo!()
         } else if in_decay {
-            let working_offset = offset - decay_offset;
-            //let sustain_scale = 
             todo!()
         } else if in_sustain {
             todo!()
@@ -195,19 +186,6 @@ impl Adsr {
         } else {
             0
         }
-    }
-}
-
-struct AdsrOscillator {
-    osc: Oscillator,
-    adsr: Adsr,
-}
-
-impl AdsrOscillator {
-    fn get_sample(&self, offset: u32, release_offset: Option<u32>) -> i16 {
-        let sample = self.osc.get_sample(offset);
-        let sample = self.adsr.apply(offset, release_offset, sample);
-        sample
     }
 }
 
