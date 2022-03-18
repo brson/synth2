@@ -176,9 +176,18 @@ impl Adsr {
         let in_release = !in_attack && !in_decay && !in_sustain && offset < release_end_offset;
 
         if in_attack {
-            todo!()
+            let working_offset = offset;
+            let rise = i16::MAX.into();
+            let run = self.attack;
+            let sample = line_y_value(rise, run, working_offset);
+            clamp_i32_to_i16(sample)
         } else if in_decay {
-            todo!()
+            let working_offset = offset - decay_offset;
+            let y_start = i16::MAX.into();
+            let rise = i32::from(self.sustain) - i32::from(i16::MAX);
+            let run = self.decay;
+            let sample = line_y_value_with_y_offset(rise, run, working_offset, y_start);
+            clamp_i32_to_i16(sample)
         } else if in_sustain {
             todo!()
         } else if in_release {
@@ -187,6 +196,25 @@ impl Adsr {
             0
         }
     }
+}
+
+fn line_y_value(y_rise: i32, x_run: i32, x_offset: i32) -> i32 {
+    // delta = rise / run
+    // y_value = delta * x_offset
+    x_offset.saturating_mul(y_rise) / x_run
+}
+
+fn line_y_value_with_y_offset(
+    y_rise: i32,
+    x_run: i32,
+    x_offset: i32,
+    y_offset: i32
+) -> i32
+{
+    // delta = rise / run
+    // y_value = delta * x_offset
+    let value = line_y_value(y_rise, x_run, x_offset);
+    value.saturating_add(y_offset)
 }
 
 fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
