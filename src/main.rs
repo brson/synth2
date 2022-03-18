@@ -249,7 +249,7 @@ fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
     Ok(())
 }
 
-fn fill_buf(buf: &mut [i16], osc: Oscillator) {
+fn fill_buf_osc(buf: &mut [i16], osc: Oscillator) {
     for i in 0..buf.len() {
         let sample = osc.get_sample(i as u32);
         buf[i] = sample;
@@ -258,15 +258,35 @@ fn fill_buf(buf: &mut [i16], osc: Oscillator) {
 
 fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
     let mut buf = vec![0_i16; A440_SAMPLES as usize];
-    fill_buf(&mut buf, osc);
+    fill_buf_osc(&mut buf, osc);
     write_image(&buf, &PathBuf::from("out"), name)
 }
 
+fn fill_buf_adsr(buf: &mut [i16], adsr: Adsr, release_offset: u32) {
+    for i in 0..buf.len() {
+        let sample = adsr.get_sample(i as u32, Some(release_offset));
+        buf[i] = sample;
+    }
+}
+
+fn write_test_adsr() -> Result<()> {
+    let mut buf = vec![0_i16; SAMPLE_RATE_KHZ as usize];
+    let adsr = Adsr {
+        attack: SAMPLE_RATE_KHZ / 4,
+        decay: SAMPLE_RATE_KHZ / 4,
+        sustain: i16::MAX / 2,
+        release: SAMPLE_RATE_KHZ / 4,
+    };
+    fill_buf_adsr(&mut buf, adsr, (SAMPLE_RATE_KHZ / 4 * 3) as u32);
+    write_image(&buf, &PathBuf::from("out"), "adsr")
+}
+
 fn main() -> Result<()> {
-    write_test_osc("saw", saw_osc())?;
-    write_test_osc("triangle", triangle_osc())?;
-    write_test_osc("square", square_osc())?;
-    write_test_osc("funky-square", funky_square_osc())?;
+    //write_test_osc("saw", saw_osc())?;
+    //write_test_osc("triangle", triangle_osc())?;
+    //write_test_osc("square", square_osc())?;
+    //write_test_osc("funky-square", funky_square_osc())?;
+    write_test_adsr()?;
 
     Ok(())
 }
