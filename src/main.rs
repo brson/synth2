@@ -220,6 +220,30 @@ fn line_y_value_with_y_offset(
     value.saturating_add(y_offset)
 }
 
+struct Voice {
+    osc: Oscillator,
+    adsr: Adsr,
+}
+
+impl Voice {
+    fn get_sample(&self, offset: u32, release_offset: Option<u32>) -> i16 {
+        let osc_sample = self.osc.get_sample(offset);
+        let adsr_sample = self.adsr.get_sample(offset, release_offset);
+        modulate_amplitude(osc_sample, adsr_sample)
+    }
+}
+
+fn modulate_amplitude(sample: i16, adsr_sample: i16) -> i16 {
+    assert!(adsr_sample >= 0);
+    let sample = i32::from(sample);
+    let adsr_sample = i32::from(adsr_sample);
+    let i16_max = i32::from(i16::MAX);
+    //let fraction = adsr_sample / i16_max;
+    //let sample = sample * fraction;
+    let sample = sample.saturating_mul(adsr_sample) / i16_max;
+    clamp_i32_to_i16(sample)
+}
+
 fn write_image(buf: &[i16], outdir: &Path, file_stem: &str) -> Result<()> {
     use plotters::prelude::*;
 
@@ -281,12 +305,35 @@ fn write_test_adsr() -> Result<()> {
     write_image(&buf, &PathBuf::from("out"), "adsr")
 }
 
+fn fill_buf_voice(buf: &mut [i16], voice: Voice, release_offset: u32) {
+    for i in 0..buf.len() {
+        let sample = voice.get_sample(i as u32, Some(release_offset));
+        buf[i] = sample;
+    }
+}
+
+fn write_test_voice() -> Result<()> {
+    let samples = A440_SAMPLES * 16 as i32;
+    let mut buf = vec![0_i16; samples as usize];
+    let osc = square_osc();
+    let adsr = Adsr {
+        attack: samples / 4,
+        decay: samples / 4,
+        sustain: i16::MAX / 2,
+        release: samples / 4,
+    };
+    let voice = Voice { osc, adsr };
+    fill_buf_voice(&mut buf, voice, (samples / 4 * 3) as u32);
+    write_image(&buf, &PathBuf::from("out"), "voice")
+}
+
 fn main() -> Result<()> {
     //write_test_osc("saw", saw_osc())?;
     //write_test_osc("triangle", triangle_osc())?;
     //write_test_osc("square", square_osc())?;
     //write_test_osc("funky-square", funky_square_osc())?;
-    write_test_adsr()?;
+    //write_test_adsr()?;
+    write_test_voice()?;
 
     Ok(())
 }
