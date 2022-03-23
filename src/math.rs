@@ -4,6 +4,8 @@ use std::cmp::{Ord, PartialOrd, Eq, PartialEq, Ordering};
 use std::fmt::Debug;
 
 /// Positive i32 (signed natural)
+#[derive(Copy, Clone)]
+#[derive(Eq, PartialEq, Ord, PartialOrd)]
 pub struct Snat32(i32);
 
 impl Snat32 {
@@ -32,26 +34,6 @@ impl Div for Snat32 {
 
     fn div(self, other: Snat32) -> Snat32 {
         Snat32(self.0 / other.0)
-    }
-}
-
-impl PartialEq for Snat32 {
-    fn eq(&self, other: &Snat32) -> bool {
-        self.0.eq(&other.0)
-    }
-}
-
-impl Eq for Snat32 { }
-
-impl PartialOrd for Snat32 {
-    fn partial_cmp(&self, other: &Snat32) -> Option<Ordering> {
-        self.0.partial_cmp(&other.0)
-    }
-}
-
-impl Ord for Snat32 {
-    fn cmp(&self, other: &Snat32) -> Ordering {
-        self.0.cmp(&other.0)
     }
 }
 

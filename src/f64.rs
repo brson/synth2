@@ -35,7 +35,7 @@ struct Oscillator {
 
 impl Oscillator {
     fn sample(&self, offset: Snat32) -> One64 {
-        //assert!(self.rise_time <= self.period / Snat32::assert_from(2));
+        assert!(self.rise_time <= self.period / Snat32::assert_from(2));
         todo!()
     }
 }
