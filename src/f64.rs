@@ -62,6 +62,7 @@ impl Oscillator {
             let in_fall = !in_initial_rise && !in_final_rise;
             let in_first_half_fall = in_fall && osc_offset < half_period;
             let in_second_half_fall = in_fall && !in_first_half_fall;
+
             if in_initial_rise {
                 OscillatorStage::InitialRise
             } else if in_first_half_fall {
@@ -115,6 +116,77 @@ impl Oscillator {
                     rise, run, x_offset, y_start
                 );
                 One64::assert_from(sample)
+            }
+        }
+    }
+}
+
+struct Adsr {
+    attack: Snat32,
+    decay: Snat32,
+    sustain: Zone64,
+    release: Snat32,
+}
+
+enum AdsrStage {
+    Attack,
+    Decay,
+    Sustain,
+    Release,
+    End,
+}
+
+impl Adsr {
+    fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> Zone64 {
+        let attack: f64 = self.attack.into();
+        let decay: f64 = self.decay.into();
+        let sustain: f64 = self.sustain.into();
+        let release: f64 = self.release.into();
+
+        let offset: f64 = offset.into();
+        let decay_offset = attack;
+        let sustain_offset = attack + decay;
+        let release_offset = f64::from(
+            release_offset
+                .map(i32::from)
+                .unwrap_or(i32::MAX)
+        ).max(sustain_offset);
+        let end_offset = release_offset + release;
+
+        let stage = {
+            let in_attack = offset < decay_offset;
+            let in_decay = !in_attack && offset < sustain_offset;
+            let in_sustain = !in_attack && !in_decay && offset < release_offset;
+            let in_release = !in_attack && !in_decay && !in_sustain && offset < end_offset;
+
+            if in_attack {
+                AdsrStage::Attack
+            } else if in_decay {
+                AdsrStage::Decay
+            } else if in_sustain {
+                AdsrStage::Sustain
+            } else if in_release {
+                AdsrStage::Release
+            } else {
+                AdsrStage::End
+            }
+        };
+
+        match stage {
+            AdsrStage::Attack => {
+                todo!()
+            }
+            AdsrStage::Decay => {
+                todo!()
+            }
+            AdsrStage::Sustain => {
+                todo!()
+            }
+            AdsrStage::Release => {
+                todo!()
+            }
+            AdsrStage::End => {
+                Zone64::assert_from(0.0)
             }
         }
     }
