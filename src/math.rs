@@ -54,7 +54,6 @@ impl Ord for Snat32 {
     }
 }
 
-
 /// F64 between zero and one
 pub struct Zone64(f64);
 
