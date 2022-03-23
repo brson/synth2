@@ -174,16 +174,37 @@ impl Adsr {
 
         match stage {
             AdsrStage::Attack => {
-                todo!()
+                let rise = 1.0;
+                let run = attack;
+                let x_offset = offset;
+                let y_start = 0.0;
+                let sample = line_y_value_with_y_offset(
+                    rise, run, x_offset, y_start
+                );
+                Zone64::assert_from(sample)
             }
             AdsrStage::Decay => {
-                todo!()
+                let rise = sustain - 1.0;
+                let run = decay;
+                let x_offset = offset - decay_offset;
+                let y_start = 1.0;
+                let sample = line_y_value_with_y_offset(
+                    rise, run, x_offset, y_start
+                );
+                Zone64::assert_from(sample)
             }
             AdsrStage::Sustain => {
-                todo!()
+                Zone64::assert_from(sustain)
             }
             AdsrStage::Release => {
-                todo!()
+                let rise = -sustain;
+                let run = release;
+                let x_offset = offset - release_offset;
+                let y_start = sustain;
+                let sample = line_y_value_with_y_offset(
+                    rise, run, x_offset, y_start
+                );
+                Zone64::assert_from(sample)
             }
             AdsrStage::End => {
                 Zone64::assert_from(0.0)
