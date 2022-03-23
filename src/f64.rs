@@ -48,6 +48,7 @@ impl Oscillator {
         let offset: f64 = offset.into();
         let period: f64 = self.period.into();
         let rise_time: f64 = self.rise_time.into();
+        let squareness: f64 = self.squareness.into();
 
         let osc_offset = offset % period;
         let half_period = period / 2.0;
@@ -73,8 +74,34 @@ impl Oscillator {
                 unreachable!()
             }
         };
-        
 
-        todo!()
+        match stage {
+            OscillatorStage::InitialRise => {
+                let rise = 1.0;
+                let run = half_rise_time;
+                let x_offset = osc_offset;
+                let y_start = 0.0;
+                let sample = line_y_value_with_y_offset(
+                    rise, run, x_offset, y_start
+                );
+                One64::assert_from(sample)
+            }
+            OscillatorStage::InitialFall => {
+                let rise = (1.0 - squareness);
+                let run = half_fall_time;
+                let x_offset = osc_offset - half_rise_time;
+                let y_start = 1.0;
+                let sample = line_y_value_with_y_offset(
+                    rise, run, x_offset, y_start
+                );
+                One64::assert_from(sample)
+            }
+            OscillatorStage::FinalFall => {
+                todo!()
+            }
+            OscillatorStage::FinalRise => {
+                todo!()
+            }
+        }
     }
 }

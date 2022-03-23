@@ -44,6 +44,7 @@ impl Div for Snat32 {
 }
 
 /// F64 between zero and one
+#[derive(Copy, Clone)]
 pub struct Zone64(f64);
 
 impl Zone64 {
