@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
-use crate::math::{Snat32, Zone64, One64};
+use crate::math::{Snat32, Zone64, One64, AssertFrom};
 
 fn line_y_value(
     y_rise: f64,
@@ -35,7 +35,7 @@ struct Oscillator {
 
 impl Oscillator {
     fn sample(&self, offset: Snat32) -> One64 {
-        assert!(self.rise_time <= self.period / Snat32::from(2));
+        //assert!(self.rise_time <= self.period / Snat32::assert_from(2));
         todo!()
     }
 }

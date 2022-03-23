@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::ops::Div;
 use std::cmp::{Ord, PartialOrd, Eq, PartialEq, Ordering};
+use std::fmt::Debug;
 
 /// Positive i32 (signed natural)
 pub struct Snat32(i32);
@@ -99,5 +100,18 @@ impl TryFrom<f64> for One64 {
         } else {
             Err(anyhow::anyhow!("float out of [-1, 1] range"))
         }
+    }
+}
+
+pub trait AssertFrom<From>: Sized {
+    fn assert_from(value: From) -> Self;
+}
+
+impl<T, From> AssertFrom<From> for T
+where T: TryFrom<From>,
+      <T as TryFrom<From>>::Error: Debug
+{
+    fn assert_from(value: From) -> Self {
+        Self::try_from(value).expect("try from")
     }
 }
