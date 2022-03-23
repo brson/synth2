@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 mod i16;
+mod f64;
 
 use anyhow::Result;
 
