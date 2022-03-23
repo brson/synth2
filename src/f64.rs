@@ -33,9 +33,48 @@ struct Oscillator {
     pulse_width: Snat32,
 }
 
+enum OscillatorStage {
+    InitialRise,
+    InitialFall,
+    FinalFall,
+    FinalRise,
+}
+   
+
 impl Oscillator {
     fn sample(&self, offset: Snat32) -> One64 {
         assert!(self.rise_time <= self.period / Snat32::assert_from(2));
+
+        let offset: f64 = offset.into();
+        let period: f64 = self.period.into();
+        let rise_time: f64 = self.rise_time.into();
+
+        let osc_offset = offset % period;
+        let half_period = period / 2.0;
+        let half_rise_time = rise_time / 2.0;
+        let fall_time = period - rise_time;
+        let half_fall_time = fall_time / 2.0;
+
+        let stage = {
+            let in_initial_rise = osc_offset < half_rise_time;
+            let in_final_rise = osc_offset > period - half_rise_time;
+            let in_fall = !in_initial_rise && !in_final_rise;
+            let in_first_half_fall = in_fall && osc_offset < half_period;
+            let in_second_half_fall = in_fall && !in_first_half_fall;
+            if in_initial_rise {
+                OscillatorStage::InitialRise
+            } else if in_first_half_fall {
+                OscillatorStage::InitialFall
+            } else if in_second_half_fall {
+                OscillatorStage::FinalFall
+            } else if in_final_rise {
+                OscillatorStage::FinalRise
+            } else {
+                unreachable!()
+            }
+        };
+        
+
         todo!()
     }
 }

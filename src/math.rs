@@ -17,6 +17,12 @@ impl From<Snat32> for i32 {
     }
 }
 
+impl From<Snat32> for f64 {
+    fn from(other: Snat32) -> f64 {
+        other.0.into()
+    }
+}
+
 impl TryFrom<i32> for Snat32 {
     type Error = anyhow::Error;
 
