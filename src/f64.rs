@@ -39,7 +39,6 @@ enum OscillatorStage {
     FinalFall,
     FinalRise,
 }
-   
 
 impl Oscillator {
     fn sample(&self, offset: Snat32) -> One64 {
