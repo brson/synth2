@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
-use crate::math::{Snat32, Zone64, One64, AssertFrom};
+use crate::math::{Snat32, ZOne64, One64, AssertFrom, ZPos64};
 
 fn line_y_value(
     y_rise: f64,
@@ -29,7 +29,7 @@ struct Oscillator {
     period: Snat32,
     phase: i32,
     rise_time: Snat32, // 0 for sawtooth, period / 2 for triangle
-    squareness: Zone64, // 0 for saw/tri, 1 for square
+    squareness: ZOne64, // 0 for saw/tri, 1 for square
     pulse_width: Snat32,
 }
 
@@ -123,7 +123,7 @@ impl Oscillator {
 struct Adsr {
     attack: Snat32,
     decay: Snat32,
-    sustain: Zone64,
+    sustain: ZOne64,
     release: Snat32,
 }
 
@@ -136,7 +136,7 @@ enum AdsrStage {
 }
 
 impl Adsr {
-    fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> Zone64 {
+    fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> ZOne64 {
         let attack: f64 = self.attack.into();
         let decay: f64 = self.decay.into();
         let sustain: f64 = self.sustain.into();
@@ -180,7 +180,7 @@ impl Adsr {
                 let sample = line_y_value_with_y_offset(
                     rise, run, x_offset, y_start
                 );
-                Zone64::assert_from(sample)
+                ZOne64::assert_from(sample)
             }
             AdsrStage::Decay => {
                 let rise = sustain - 1.0;
@@ -190,10 +190,10 @@ impl Adsr {
                 let sample = line_y_value_with_y_offset(
                     rise, run, x_offset, y_start
                 );
-                Zone64::assert_from(sample)
+                ZOne64::assert_from(sample)
             }
             AdsrStage::Sustain => {
-                Zone64::assert_from(sustain)
+                ZOne64::assert_from(sustain)
             }
             AdsrStage::Release => {
                 let rise = -sustain;
@@ -203,11 +203,35 @@ impl Adsr {
                 let sample = line_y_value_with_y_offset(
                     rise, run, x_offset, y_start
                 );
-                Zone64::assert_from(sample)
+                ZOne64::assert_from(sample)
             }
             AdsrStage::End => {
-                Zone64::assert_from(0.0)
+                ZOne64::assert_from(0.0)
             }
         }
+    }
+}
+
+// https://www.musicdsp.org/en/latest/Filters/237-one-pole-filter-lp-and-hp.html
+struct LowPassFilter {
+    a0: f64,
+    b1: f64,
+    last: f64,
+}
+
+impl LowPassFilter {
+    fn new(freq: ZPos64, sample_rate: Snat32) -> LowPassFilter {
+        let x = (-2.0 * std::f64::consts::PI * f64::from(freq) / f64::from(sample_rate)).exp();
+        LowPassFilter {
+            a0: 1.0 - x,
+            b1: -x,
+            last: 0.0,
+        }
+    }
+
+    fn process(&mut self, input: f64) -> f64 {
+        let out = self.a0 * input - self.b1 * self.last;
+        self.last = out;
+        out
     }
 }
