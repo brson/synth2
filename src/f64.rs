@@ -93,7 +93,7 @@ impl Oscillator {
 
         let stage = {
             let in_initial_rise = osc_offset < half_rise_time;
-            let in_final_rise = osc_offset > period - half_rise_time;
+            let in_final_rise = osc_offset >= period - half_rise_time;
             let in_fall = !in_initial_rise && !in_final_rise;
             let in_first_half_fall = in_fall && osc_offset < half_period;
             let in_second_half_fall = in_fall && !in_first_half_fall;
