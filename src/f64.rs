@@ -365,12 +365,34 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
     write_image_ch(&buf, &PathBuf::from("out"), name)
 }
 
+fn fill_buf_adsr(buf: &mut [f64], adsr: Adsr, release_offset: i32) {
+    for i in 0..buf.len() {
+        let sample = adsr.sample(
+            Snat32::assert_from(i as i32),
+            Some(Snat32::assert_from(release_offset))
+        );
+        buf[i] = sample.into();
+    }
+}
+
+fn write_test_adsr() -> Result<()> {
+    let mut buf = vec![0_f64; 125];
+    let adsr = Adsr {
+        attack: Snat32::assert_from(25),
+        decay: Snat32::assert_from(25),
+        sustain: ZOne64::assert_from(0.5),
+        release: Snat32::assert_from(25),
+    };
+    fill_buf_adsr(&mut buf, adsr, 75);
+    write_image_ch(&buf, &PathBuf::from("out"), "f64-adsr")
+}
+
 pub fn run() -> Result<()> {
     write_test_osc("f16-saw", saw_osc())?;
     write_test_osc("f16-triangle", triangle_osc())?;
     write_test_osc("f16-square", square_osc())?;
     write_test_osc("f16-funky-square", funky_square_osc())?;
-    //write_test_adsr()?;
+    write_test_adsr()?;
     //write_test_voice()?;
 
     Ok(())
