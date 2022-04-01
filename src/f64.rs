@@ -249,6 +249,7 @@ impl Adsr {
 }
 
 // https://www.musicdsp.org/en/latest/Filters/237-one-pole-filter-lp-and-hp.html
+#[derive(Debug)]
 struct LowPassFilter {
     a0: f64,
     b1: f64,
@@ -270,6 +271,17 @@ impl LowPassFilter {
         self.last = out;
         out
     }
+}
+
+
+struct Synth {
+    osc: Oscillator,
+    lpf: LowPassFilter,
+    adsr: Adsr,
+    gain: f64,
+}
+
+impl Synth {
 }
 
 
@@ -387,13 +399,27 @@ fn write_test_adsr() -> Result<()> {
     write_image_ch(&buf, &PathBuf::from("out"), "f64-adsr")
 }
 
+fn write_test_lpf() -> Result<()> {
+    let osc = triangle_osc();
+    let mut buf = vec![0_f64; A440_SAMPLES as usize * 4];
+    fill_buf_osc(&mut buf, osc);
+    let mut lpf = LowPassFilter::new(
+        ZPos64::assert_from(440.0 * 2.0),
+        Snat32::assert_from(SAMPLE_RATE_KHZ),
+    );
+    for i in 0..buf.len() {
+        buf[i] = lpf.process(buf[i]);
+    }
+    write_image_ch(&buf, &PathBuf::from("out"), "f64-lpf")
+}
+
 pub fn run() -> Result<()> {
     write_test_osc("f16-saw", saw_osc())?;
     write_test_osc("f16-triangle", triangle_osc())?;
     write_test_osc("f16-square", square_osc())?;
     write_test_osc("f16-funky-square", funky_square_osc())?;
     write_test_adsr()?;
-    //write_test_voice()?;
+    write_test_lpf()?;
 
     Ok(())
 }
