@@ -8,6 +8,7 @@ use anyhow::Result;
 
 fn main() -> Result<()> {
     i16::run()?;
+    f64::run()?;
 
     Ok(())
 }

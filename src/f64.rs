@@ -235,3 +235,59 @@ impl LowPassFilter {
         out
     }
 }
+
+
+
+fn write_image(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
+    use plotters::prelude::*;
+
+    let filepath = outdir.join(file_stem).with_extension("png");
+
+    let root = BitMapBackend::new(&filepath, (1280, 720)).into_drawing_area();
+
+    root.fill(&WHITE)?;
+
+    let mut chart = ChartBuilder::on(&root)
+        .caption("Waveform", ("sans-serif", 50).into_font())
+        .margin(50_f64)
+        .set_label_area_size(LabelAreaPosition::Left, 100_f64)
+        .set_label_area_size(LabelAreaPosition::Bottom, 100_f64)
+        .build_cartesian_2d(0..buf.len(), (-1_f64)..(1_f64))?;
+
+    chart.configure_mesh()
+        .draw()?;
+
+    chart.draw_series(
+        LineSeries::new(
+            (0..).zip(buf.iter().copied()),
+            RED.mix(1.0).stroke_width(4),
+        )
+    )?;
+
+    Ok(())
+}
+
+fn fill_buf_osc(buf: &mut [f64], osc: Oscillator) {
+    for i in 0..buf.len() {
+        let sample = osc.sample(Snat32::assert_from(i as i32));
+        buf[i] = sample.into();
+    }
+}
+
+fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
+    let mut buf = vec![0_f64; A440_SAMPLES as usize];
+    fill_buf_osc(&mut buf, osc);
+    write_image(&buf, &PathBuf::from("out"), name)
+}
+
+pub fn run() -> Result<()> {
+    //write_test_osc("f16-saw", saw_osc())?;
+    //write_test_osc("f16-triangle", triangle_osc())?;
+    //write_test_osc("f16-square", square_osc())?;
+    //write_test_osc("f16-funky-square", funky_square_osc())?;
+    //write_test_adsr()?;
+    //write_test_voice()?;
+
+    Ok(())
+}
+
