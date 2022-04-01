@@ -29,7 +29,6 @@ fn saw_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,
-        rise_time: Snat32::assert_from(0),
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
@@ -39,7 +38,6 @@ fn triangle_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,
-        rise_time: Snat32::assert_from(A440_SAMPLES / 2),
         triangleness: ZOne64::assert_from(1_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
@@ -49,7 +47,6 @@ fn square_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,
-        rise_time: Snat32::assert_from(0),
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
     }
@@ -59,7 +56,6 @@ fn funky_square_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,
-        rise_time: Snat32::assert_from(A440_SAMPLES / 8),
         triangleness: ZOne64::assert_from(1_f64 / 4_f64),
         squareness: ZOne64::assert_from(1_f64 / 4_f64),
     }
@@ -68,7 +64,6 @@ fn funky_square_osc() -> Oscillator {
 struct Oscillator {
     period: Snat32,
     phase: i32,
-    rise_time: Snat32, // 0 for sawtooth, period / 2 for triangle
     triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     squareness: ZOne64, // 0 for saw/tri, 1 for square
     //pulse_width: Snat32,
@@ -83,11 +78,8 @@ enum OscillatorStage {
 
 impl Oscillator {
     fn sample(&self, offset: Snat32) -> One64 {
-        assert!(self.rise_time <= self.period / Snat32::assert_from(2));
-
         let offset: f64 = offset.into();
         let period: f64 = self.period.into();
-        let rise_time: f64 = self.rise_time.into();
         let triangleness: f64 = self.triangleness.into();
         let squareness: f64 = self.squareness.into();
 
