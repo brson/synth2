@@ -25,12 +25,48 @@ fn line_y_value_with_y_offset(
 const SAMPLE_RATE_KHZ: i32 = 32_000;
 const A440_SAMPLES: i32 = SAMPLE_RATE_KHZ / 440;
 
+fn saw_osc() -> Oscillator {
+    Oscillator {
+        period: Snat32::assert_from(A440_SAMPLES),
+        phase: 0,
+        rise_time: Snat32::assert_from(0),
+        squareness: ZOne64::assert_from(0_f64),
+    }
+}
+
+fn triangle_osc() -> Oscillator {
+    Oscillator {
+        period: Snat32::assert_from(A440_SAMPLES),
+        phase: 0,
+        rise_time: Snat32::assert_from(A440_SAMPLES / 2),
+        squareness: ZOne64::assert_from(0_f64),
+    }
+}
+
+fn square_osc() -> Oscillator {
+    Oscillator {
+        period: Snat32::assert_from(A440_SAMPLES),
+        phase: 0,
+        rise_time: Snat32::assert_from(0),
+        squareness: ZOne64::assert_from(1_f64),
+    }
+}
+
+fn funky_square_osc() -> Oscillator {
+    Oscillator {
+        period: Snat32::assert_from(A440_SAMPLES),
+        phase: 0,
+        rise_time: Snat32::assert_from(A440_SAMPLES / 8),
+        squareness: ZOne64::assert_from(1_f64 / 4_f64),
+    }
+}
+
 struct Oscillator {
     period: Snat32,
     phase: i32,
     rise_time: Snat32, // 0 for sawtooth, period / 2 for triangle
     squareness: ZOne64, // 0 for saw/tri, 1 for square
-    pulse_width: Snat32,
+    //pulse_width: Snat32,
 }
 
 enum OscillatorStage {
@@ -281,10 +317,10 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
 }
 
 pub fn run() -> Result<()> {
-    //write_test_osc("f16-saw", saw_osc())?;
-    //write_test_osc("f16-triangle", triangle_osc())?;
-    //write_test_osc("f16-square", square_osc())?;
-    //write_test_osc("f16-funky-square", funky_square_osc())?;
+    write_test_osc("f16-saw", saw_osc())?;
+    write_test_osc("f16-triangle", triangle_osc())?;
+    write_test_osc("f16-square", square_osc())?;
+    write_test_osc("f16-funky-square", funky_square_osc())?;
     //write_test_adsr()?;
     //write_test_voice()?;
 
