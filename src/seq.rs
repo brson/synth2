@@ -11,8 +11,8 @@ struct Clip {
 }
 
 struct Note {
-    start_sample: Snat32;
-    sample_length: Snat32;
+    start_sample: Snat32,
+    sample_length: Snat32,
 }
 
 struct Synth {
