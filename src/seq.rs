@@ -1,13 +1,18 @@
 use crate::f64::*;
-
-const MAX_CLIPS: usize = 32;
+use crate::math::*;
 
 struct Channel {
     synth: Synth,
-    clips: [Option<Clip>; MAX_CLIPS],
+    clips: Vec<Option<Clip>>,
 }
 
 struct Clip {
+    notes: Vec<Note>,
+}
+
+struct Note {
+    start_sample: Snat32;
+    sample_length: Snat32;
 }
 
 struct Synth {
