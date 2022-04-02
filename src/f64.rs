@@ -61,11 +61,11 @@ fn funky_square_osc() -> Oscillator {
     }
 }
 
-struct Oscillator {
-    period: Snat32,
-    phase: i32,
-    triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
-    squareness: ZOne64, // 0 for saw/tri, 1 for square
+pub struct Oscillator {
+    pub period: Snat32,
+    pub phase: i32,
+    pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
+    pub squareness: ZOne64, // 0 for saw/tri, 1 for square
     //pulse_width: Snat32,
 }
 
@@ -77,7 +77,7 @@ enum OscillatorStage {
 }
 
 impl Oscillator {
-    fn sample(&self, offset: Snat32) -> One64 {
+    pub fn sample(&self, offset: Snat32) -> One64 {
         let offset: f64 = offset.into();
         let period: f64 = self.period.into();
         let triangleness: f64 = self.triangleness.into();
@@ -156,11 +156,11 @@ impl Oscillator {
     }
 }
 
-struct Adsr {
-    attack: Snat32,
-    decay: Snat32,
-    sustain: ZOne64,
-    release: Snat32,
+pub struct Adsr {
+    pub attack: Snat32,
+    pub decay: Snat32,
+    pub sustain: ZOne64,
+    pub release: Snat32,
 }
 
 enum AdsrStage {
@@ -172,7 +172,7 @@ enum AdsrStage {
 }
 
 impl Adsr {
-    fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> ZOne64 {
+    pub fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> ZOne64 {
         let attack: f64 = self.attack.into();
         let decay: f64 = self.decay.into();
         let sustain: f64 = self.sustain.into();
@@ -250,14 +250,14 @@ impl Adsr {
 
 // https://www.musicdsp.org/en/latest/Filters/237-one-pole-filter-lp-and-hp.html
 #[derive(Debug)]
-struct LowPassFilter {
+pub struct LowPassFilter {
     a0: f64,
     b1: f64,
     last: f64,
 }
 
 impl LowPassFilter {
-    fn new(freq: ZPos64, sample_rate: Snat32) -> LowPassFilter {
+    pub fn new(freq: ZPos64, sample_rate: Snat32) -> LowPassFilter {
         let x = (-2.0 * std::f64::consts::PI * f64::from(freq) / f64::from(sample_rate)).exp();
         LowPassFilter {
             a0: 1.0 - x,
@@ -266,7 +266,7 @@ impl LowPassFilter {
         }
     }
 
-    fn process(&mut self, input: f64) -> f64 {
+    pub fn process(&mut self, input: f64) -> f64 {
         let out = self.a0 * input - self.b1 * self.last;
         self.last = out;
         out
@@ -274,15 +274,6 @@ impl LowPassFilter {
 }
 
 
-struct Synth {
-    osc: Oscillator,
-    lpf: LowPassFilter,
-    adsr: Adsr,
-    gain: f64,
-}
-
-impl Synth {
-}
 
 
 
