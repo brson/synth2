@@ -1,7 +1,12 @@
 use crate::f64::*;
 use crate::math::*;
 
+struct Set {
+    channels: Vec<Channel>,
+}
+
 struct Channel {
+    name: String,
     synth: Synth,
     clips: Vec<Option<Clip>>,
 }
