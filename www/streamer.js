@@ -1,6 +1,6 @@
 const sampleRate = 32_000; // khz
 const channels = 1;
-const bufferLength = Math.floor(sampleRate / 440) * 10;
+const bufferLength = Math.floor(sampleRate / 440) * 20;
 
 const audioContext = new window.AudioContext({
     latencyHint: "interactive",
@@ -35,8 +35,8 @@ document.addEventListener("keyup", event => {
     }
 });
 
-function playBuffer(source, nextBuffer) {
-    source.start();
+function playBuffer(source, playTime, nextBuffer) {
+    source.start(playTime);
 
     let nextSource = audioContext.createBufferSource();
     nextSource.buffer = nextBuffer;
@@ -46,7 +46,10 @@ function playBuffer(source, nextBuffer) {
         if (status == "stopped") {
             return;
         }
-        playBuffer(nextSource, source.buffer);
+
+        let nextPlayTime = playTime + bufferLength / sampleRate;
+        
+        playBuffer(nextSource, nextPlayTime, source.buffer);
     });
 }
 
@@ -55,7 +58,9 @@ function startPlayback(thisBuffer, nextBuffer) {
     source.buffer = thisBuffer;
     source.connect(audioContext.destination);
 
-    playBuffer(source, nextBuffer);
+    let playTime = audioContext.currentTime;
+
+    playBuffer(source, playTime, nextBuffer);
 }
 
 //startPlayback(buffer1, buffer2);
