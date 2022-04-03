@@ -1,5 +1,5 @@
 use std::sync::mpsc::{self, Sender, Receiver};
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use std::thread::{self, JoinHandle};
 
 pub fn run() -> Result <()> {
@@ -50,8 +50,34 @@ struct Threads {
 }
 
 impl Threads {
-    fn join(&self) -> Result<()> {
-        todo!()
+    fn join(self) -> Result<()> {
+        let controller_res = self.controller.join();
+        let input_res = self.input.join();
+        let sequencer_res = self.sequencer.join();
+        let audio_server_res = self.audio_server.join();
+
+        let mut errors = false;
+        
+        for res in [controller_res,
+                    input_res,
+                    sequencer_res,
+                    audio_server_res]
+        {
+            match res {
+                Err(e) => std::panic::resume_unwind(e),
+                Ok(Err(e)) => {
+                    log::error!("{}", e);
+                    errors = true;
+                }
+                Ok(Ok(_)) => (/* pass */),
+            }
+        }
+
+        if errors {
+            Err(anyhow!("some threads failed"))
+        } else {
+            Ok(())
+        }
     }
 }
 
