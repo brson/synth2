@@ -104,29 +104,79 @@ struct AudioServerContext {
 }
 
 enum ControllerMsg {
+    Input(ControllerInputMsg),
+    Sequencer(ControllerSequencerMsg),
+    AudioServer(ControllerAudioServerMsg),
+}
+
+enum ControllerInputMsg {
+    Exit,
+}
+
+enum ControllerSequencerMsg {
+}
+
+enum ControllerAudioServerMsg {
 }
 
 enum InputMsg {
+    Exit,
 }
 
 enum SequencerMsg {
+    Exit,
 }
 
 enum AudioServerMsg {
+    Exit,
 }
 
 fn run_controller(ctx: ControllerContext) -> Result<()> {
-    todo!()
+
+    loop {
+        match ctx.rx.recv()? {
+            ControllerMsg::Input(ControllerInputMsg::Exit) => {
+                ctx.tx_input.send(InputMsg::Exit)?;
+                ctx.tx_sequencer.send(SequencerMsg::Exit)?;
+                ctx.tx_audio_server.send(AudioServerMsg::Exit)?;
+                break;
+            }
+            _ => todo!()
+        }
+    }
+
+    Ok(())
 }
 
 fn run_input(ctx: InputContext) -> Result<()> {
-    todo!()
+
+    loop {
+        match ctx.rx.recv()? {
+            InputMsg::Exit => break,
+        }
+    }
+
+    Ok(())
 }
 
 fn run_sequencer(ctx: SequencerContext) -> Result<()> {
-    todo!()
+
+    loop {
+        match ctx.rx.recv()? {
+            SequencerMsg::Exit => break,
+        }
+    }
+
+    Ok(())
 }
 
 fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
-    todo!()
+
+    loop {
+        match ctx.rx.recv()? {
+            AudioServerMsg::Exit => break,
+        }
+    }
+
+    Ok(())
 }
