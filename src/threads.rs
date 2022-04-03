@@ -118,6 +118,7 @@ enum ControllerSequencerMsg {
 }
 
 enum ControllerAudioServerMsg {
+    BufferPlayed(Vec<f64>),
 }
 
 enum InputMsg {
@@ -131,6 +132,7 @@ enum SequencerMsg {
 
 enum AudioServerMsg {
     Exit,
+    PlayBuffer(Vec<f64>),
 }
 
 fn run_controller(ctx: ControllerContext) -> Result<()> {
@@ -142,6 +144,7 @@ fn run_controller(ctx: ControllerContext) -> Result<()> {
         vec![0_f64; BUFFER_SIZE],
     ];
 
+    ctx.tx_sequencer.send(SequencerMsg::FillBuffer(buffers.pop().expect("buf")))?;
     ctx.tx_sequencer.send(SequencerMsg::FillBuffer(buffers.pop().expect("buf")))?;
     
     loop {
@@ -157,9 +160,13 @@ fn run_controller(ctx: ControllerContext) -> Result<()> {
             ControllerMsg::Sequencer(
                 ControllerSequencerMsg::BufferFilled(buffer)
             ) => {
-                todo!()
+                ctx.tx_audio_server.send(AudioServerMsg::PlayBuffer(buffer))?;
             }
-            _ => todo!()
+            ControllerMsg::AudioServer(
+                ControllerAudioServerMsg::BufferPlayed(buffer)
+            ) => {
+                ctx.tx_sequencer.send(SequencerMsg::FillBuffer(buffer))?;
+            }
         }
     }
 
@@ -196,6 +203,9 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
     loop {
         match ctx.rx.recv()? {
             AudioServerMsg::Exit => break,
+            AudioServerMsg::PlayBuffer(buffer) => {
+                todo!()
+            }
         }
     }
 
