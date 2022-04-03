@@ -4,6 +4,7 @@ mod i16;
 mod f64;
 mod math;
 mod seq;
+mod ui;
 
 use anyhow::Result;
 
