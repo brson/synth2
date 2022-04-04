@@ -213,7 +213,6 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
 
     let mut websocket = None;
 
-    // wait for websocket connection
     loop {
 
         if websocket.is_none() {
