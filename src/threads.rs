@@ -1,8 +1,11 @@
 use std::sync::mpsc::{self, Sender, Receiver, TryRecvError};
 use anyhow::{Result, anyhow};
 use std::thread::{self, JoinHandle};
+use std::io::Read;
 
 pub fn run() -> Result <()> {
+    println!("press 'e' to exit");
+
     let (tx_controller, rx_controller) = mpsc::channel::<ControllerMsg>();
     let (tx_input, rx_input) = mpsc::channel::<InputMsg>();
     let (tx_sequencer, rx_sequencer) = mpsc::channel::<SequencerMsg>();
@@ -174,11 +177,42 @@ fn run_controller(ctx: ControllerContext) -> Result<()> {
 }
 
 fn run_input(ctx: InputContext) -> Result<()> {
+    use termion::AsyncReader;
+    use termion::raw::IntoRawMode;
+
+    let raw_stdout = std::io::stdout().into_raw_mode()?;
+
+    let mut stdin = termion::async_stdin();
+    let mut readchar = || {
+        let mut buf = [0; 1];
+        let res = stdin.read(&mut buf).ok();
+        if res == Some(1) {
+            Some(buf[0])
+        } else {
+            None
+        }
+    };
 
     loop {
-        match ctx.rx.recv()? {
-            InputMsg::Exit => break,
+        let ch = readchar();
+        if ch == Some(b'e') {
+            ctx.tx_controller.send(
+                ControllerMsg::Input(ControllerInputMsg::Exit)
+            )?;
         }
+
+        match ctx.rx.try_recv() {
+            Ok(InputMsg::Exit) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => { },
+            Err(TryRecvError::Disconnected) => {
+                Err(TryRecvError::Disconnected)?;
+            }
+        }
+
+        #[allow(deprecated)]
+        thread::sleep_ms(5);
     }
 
     Ok(())
@@ -188,9 +222,11 @@ fn run_sequencer(ctx: SequencerContext) -> Result<()> {
 
     loop {
         match ctx.rx.recv()? {
-            SequencerMsg::Exit => break,
+            SequencerMsg::Exit => {
+                break;
+            }
             SequencerMsg::FillBuffer(mut buffer) => {
-                todo!()
+                //todo!()
             }
         }
     }
@@ -234,7 +270,9 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
         }
         
         match ctx.rx.try_recv() {
-            Ok(AudioServerMsg::Exit) => break,
+            Ok(AudioServerMsg::Exit) => {
+                break;
+            },
             Ok(AudioServerMsg::PlayBuffer(buffer)) => {
                 if let Some(websocket) = websocket.as_mut() {
                     let buffer32: Vec<f32> = buffer.iter().map(|f| *f as f32).collect();

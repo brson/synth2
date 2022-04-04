@@ -9,8 +9,10 @@ mod threads;
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    i16::run()?;
-    f64::run()?;
+    //i16::run()?;
+    //f64::run()?;
+
+    threads::run()?;
 
     Ok(())
 }
