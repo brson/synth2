@@ -206,82 +206,77 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
     use std::time::{Instant, Duration};
 
     const SAMPLE_RATE_KHZ: usize = 32_000;
+
     let mut last_buffer_instant = Instant::now();
     let mut last_buffer_duration = Duration::default();
-
     let mut queued_buffer = None;
 
-    'outer: loop {
-        let mut websocket = {
+    let mut websocket = None;
+
+    // wait for websocket connection
+    loop {
+
+        if websocket.is_none() {
+            
             let listener = TcpListener::bind("127.0.0.1:9110")?;
             listener.set_nonblocking(true)?;
             
-            // wait for websocket connection
-            loop {
-                match listener.accept() {
-                    Ok((socket, _addr)) => {
-                        let websocket = tungstenite::accept(socket)?;
-                        break websocket;
-                    }
-                    Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                        // pass
-                    }
-                    Err(e) => {
-                        Err(e)?;
-                    }
+            match listener.accept() {
+                Ok((socket, _addr)) => {
+                    websocket = Some(tungstenite::accept(socket)?);
                 }
-                
-                match ctx.rx.try_recv() {
-                    Ok(AudioServerMsg::Exit) => break 'outer,
-                    Ok(AudioServerMsg::PlayBuffer(buffer)) => {
-                        todo!()
-                    }
-                    Err(TryRecvError::Empty) => { },
-                    Err(TryRecvError::Disconnected) => {
-                        Err(TryRecvError::Disconnected)?;
-                    }
+                Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
+                    // pass
                 }
-
-                #[allow(deprecated)]
-                thread::sleep_ms(5);
+                Err(e) => {
+                    Err(e)?;
+                }
             }
-        };
+        }
         
-        loop {
-            match ctx.rx.recv()? {
-                AudioServerMsg::Exit => break 'outer,
-                AudioServerMsg::PlayBuffer(buffer) => {
+        match ctx.rx.try_recv() {
+            Ok(AudioServerMsg::Exit) => break,
+            Ok(AudioServerMsg::PlayBuffer(buffer)) => {
+                if let Some(websocket) = websocket.as_mut() {
                     let buffer32: Vec<f32> = buffer.iter().map(|f| *f as f32).collect();
                     let text = serde_json::to_string(&buffer32)?;
                     let msg = Message::Text(text);
+
                     let res = websocket.write_message(msg);
 
                     match res {
                         Ok(()) => (),
                         _ => todo!(),
                     }
+                }
 
-                    let buffer_instant = Instant::now();
-                    let buffer_duration_s = buffer.len() as f64 / SAMPLE_RATE_KHZ as f64;
-                    let buffer_duration_us = buffer_duration_s / 1000_000_f64;
-                    let buffer_duration_us = buffer_duration_us as u64;
-                    let buffer_duration = Duration::from_micros(buffer_duration_us);
+                let buffer_instant = Instant::now();
+                let buffer_duration_s = buffer.len() as f64 / SAMPLE_RATE_KHZ as f64;
+                let buffer_duration_us = buffer_duration_s / 1000_000_f64;
+                let buffer_duration_us = buffer_duration_us as u64;
+                let buffer_duration = Duration::from_micros(buffer_duration_us);
 
-                    match queued_buffer {
-                        None => {
-                            last_buffer_instant = buffer_instant;
-                            last_buffer_duration = buffer_duration;
-                            queued_buffer = Some(buffer);
-                        }
-                        Some(buffer) => {
-                            // 
-                            // todo delay then return buffer
-                            todo!()
-                        }
+                match queued_buffer {
+                    None => {
+                        last_buffer_instant = buffer_instant;
+                        last_buffer_duration = buffer_duration;
+                        queued_buffer = Some(buffer);
+                    }
+                    Some(buffer) => {
+                        // 
+                        // todo delay then return buffer
+                        todo!()
                     }
                 }
             }
+            Err(TryRecvError::Empty) => { },
+            Err(TryRecvError::Disconnected) => {
+                Err(TryRecvError::Disconnected)?;
+            }
         }
+
+        #[allow(deprecated)]
+        thread::sleep_ms(5);
     }
 
     Ok(())
