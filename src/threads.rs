@@ -1,4 +1,4 @@
-use std::sync::mpsc::{self, Sender, Receiver};
+use std::sync::mpsc::{self, Sender, Receiver, TryRecvError};
 use anyhow::{Result, anyhow};
 use std::thread::{self, JoinHandle};
 
@@ -200,11 +200,50 @@ fn run_sequencer(ctx: SequencerContext) -> Result<()> {
 
 fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
 
-    loop {
-        match ctx.rx.recv()? {
-            AudioServerMsg::Exit => break,
-            AudioServerMsg::PlayBuffer(buffer) => {
-                todo!()
+    use std::net::TcpListener;
+    use std::io;
+
+    'outer: loop {
+        let socket = {
+            let listener = TcpListener::bind("127.0.0.1:9110")?;
+            listener.set_nonblocking(true)?;
+            
+            // wait for websocket connection
+            loop {
+                match listener.accept() {
+                    Ok((socket, _addr)) => {
+                        break socket;
+                    }
+                    Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
+                        // pass
+                    }
+                    Err(e) => {
+                        Err(e)?;
+                    }
+                }
+                
+                match ctx.rx.try_recv() {
+                    Ok(AudioServerMsg::Exit) => break 'outer,
+                    Ok(AudioServerMsg::PlayBuffer(buffer)) => {
+                        todo!()
+                    }
+                    Err(TryRecvError::Empty) => { },
+                    Err(TryRecvError::Disconnected) => {
+                        Err(TryRecvError::Disconnected)?;
+                    }
+                }
+
+                #[allow(deprecated)]
+                thread::sleep_ms(5);
+            }
+        };
+        
+        loop {
+            match ctx.rx.recv()? {
+                AudioServerMsg::Exit => break 'outer,
+                AudioServerMsg::PlayBuffer(buffer) => {
+                    todo!()
+                }
             }
         }
     }
