@@ -251,7 +251,7 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
 
                 let buffer_instant = Instant::now();
                 let buffer_duration_s = buffer.len() as f64 / SAMPLE_RATE_KHZ as f64;
-                let buffer_duration_us = buffer_duration_s / 1000_000_f64;
+                let buffer_duration_us = buffer_duration_s * 1000_000_f64;
                 let buffer_duration_us = buffer_duration_us as u64;
                 let buffer_duration = Duration::from_micros(buffer_duration_us);
 
