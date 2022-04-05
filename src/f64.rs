@@ -25,7 +25,7 @@ fn line_y_value_with_y_offset(
 const SAMPLE_RATE_KHZ: i32 = 32_000;
 const A440_SAMPLES: i32 = SAMPLE_RATE_KHZ / 440;
 
-fn saw_osc() -> Oscillator {
+pub fn saw_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,
@@ -34,7 +34,7 @@ fn saw_osc() -> Oscillator {
     }
 }
 
-fn triangle_osc() -> Oscillator {
+pub fn triangle_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,
@@ -43,7 +43,7 @@ fn triangle_osc() -> Oscillator {
     }
 }
 
-fn square_osc() -> Oscillator {
+pub fn square_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,
@@ -52,7 +52,7 @@ fn square_osc() -> Oscillator {
     }
 }
 
-fn funky_square_osc() -> Oscillator {
+pub fn funky_square_osc() -> Oscillator {
     Oscillator {
         period: Snat32::assert_from(A440_SAMPLES),
         phase: 0,

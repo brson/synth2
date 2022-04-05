@@ -220,13 +220,27 @@ fn run_input(ctx: InputContext) -> Result<()> {
 
 fn run_sequencer(ctx: SequencerContext) -> Result<()> {
 
+    use crate::f64;
+    use crate::math::{Snat32, AssertFrom};
+
+    let mut offset = 0;
+    let osc = f64::square_osc();
+
     loop {
         match ctx.rx.recv()? {
             SequencerMsg::Exit => {
                 break;
             }
             SequencerMsg::FillBuffer(mut buffer) => {
-                //todo!()
+                for i in 0..buffer.len() {
+                    buffer[i] = osc.sample(Snat32::assert_from(offset)).into();
+                    offset += 1;
+                }
+                ctx.tx_controller.send(
+                    ControllerMsg::Sequencer(
+                        ControllerSequencerMsg::BufferFilled(buffer)
+                    )
+                )?;
             }
         }
     }
