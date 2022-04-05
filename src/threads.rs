@@ -253,6 +253,7 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
     use std::net::TcpListener;
     use std::io;
     use tungstenite::protocol::Message;
+    use tungstenite::error::Error as WsError;
     use std::time::{Instant, Duration};
     use std::collections::VecDeque;
 
@@ -289,17 +290,34 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
                 break;
             },
             Ok(AudioServerMsg::PlayBuffer(buffer)) => {
+                let mut drop_websocket = false;
                 if let Some(websocket) = websocket.as_mut() {
                     let buffer32: Vec<f32> = buffer.iter().map(|f| *f as f32).collect();
                     let text = serde_json::to_string(&buffer32)?;
                     let msg = Message::Text(text);
 
-                    let res = websocket.write_message(msg);
+                    loop {
+                        let res = websocket.write_message(msg.clone());
 
-                    match res {
-                        Ok(()) => (),
-                        _ => todo!(),
+                        match res {
+                            Err(WsError::Io(e)) if e.kind() == io::ErrorKind::WouldBlock => {
+                                log::info!("wouldblock - repeating");
+                                continue;
+                            }
+                            Ok(()) => {
+                                drop_websocket = false;
+                            }
+                            Err(e) => {
+                                log::error!("websocket.write_message: {}", e);
+                                drop_websocket = true;
+                            }
+                        }
+
+                        break;
                     }
+                }
+                if drop_websocket {
+                    websocket = None;
                 }
 
                 let buffer_instant = Instant::now();
