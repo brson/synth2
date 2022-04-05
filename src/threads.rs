@@ -254,13 +254,14 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
     use std::io;
     use tungstenite::protocol::Message;
     use std::time::{Instant, Duration};
+    use std::collections::VecDeque;
 
     const SAMPLE_RATE_KHZ: usize = 32_000;
 
-    let mut last_buffer_instant = Instant::now();
-    let mut last_buffer_duration = Duration::default();
-    let mut queued_buffer = None;
-
+    // A queue of buffers to return to the controller thread.
+    // By rate limiting when these are returned we feed audio to the websocket
+    // at a consistent rate.
+    let mut queued_buffers = VecDeque::new();
     let mut websocket = None;
 
     loop {
@@ -307,22 +308,31 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
                 let buffer_duration_us = buffer_duration_us as u64;
                 let buffer_duration = Duration::from_micros(buffer_duration_us);
 
-                match queued_buffer {
-                    None => {
-                        last_buffer_instant = buffer_instant;
-                        last_buffer_duration = buffer_duration;
-                        queued_buffer = Some(buffer);
-                    }
-                    Some(buffer) => {
-                        // 
-                        // todo delay then return buffer
-                        todo!()
-                    }
-                }
+                queued_buffers.push_back(
+                    (buffer, buffer_instant, buffer_duration)
+                );
             }
             Err(TryRecvError::Empty) => { },
             Err(TryRecvError::Disconnected) => {
                 Err(TryRecvError::Disconnected)?;
+            }
+        }
+
+        // See if it's time to release a buffer
+        if let Some((buffer, buffer_instant, buffer_duration)) = queued_buffers.pop_front() {
+            let now = Instant::now();
+            let duration_since = now.duration_since(buffer_instant);
+            let should_release = duration_since > buffer_duration;
+            if should_release {
+                ctx.tx_controller.send(
+                    ControllerMsg::AudioServer(
+                        ControllerAudioServerMsg::BufferPlayed(buffer)
+                    )
+                )?;
+            } else {
+                queued_buffers.push_front(
+                    (buffer, buffer_instant, buffer_duration)
+                );
             }
         }
 
