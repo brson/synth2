@@ -265,22 +265,33 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
     let mut queued_buffers = VecDeque::new();
     let mut websocket = None;
 
+    let listener = TcpListener::bind("127.0.0.1:9110")?;
+    listener.set_nonblocking(true)?;
+
     loop {
 
-        if websocket.is_none() {
-            
-            let listener = TcpListener::bind("127.0.0.1:9110")?;
-            listener.set_nonblocking(true)?;
-            
-            match listener.accept() {
-                Ok((socket, _addr)) => {
-                    websocket = Some(tungstenite::accept(socket)?);
+        match websocket.as_ref() {
+            None => {
+                match listener.accept() {
+                    Ok((socket, _addr)) => {
+                        websocket = Some(tungstenite::accept(socket)?);
+                    }
+                    Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
+                        // pass
+                    }
+                    Err(e) => {
+                        Err(e)?;
+                    }
                 }
-                Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                    // pass
-                }
-                Err(e) => {
-                    Err(e)?;
+            }
+            Some(websocketref) => {
+                if websocketref.can_write() {
+                    // Drop any incoming connections
+                    while listener.accept().is_ok() { }
+                } else {
+                    // Drop websocket and try to accept another
+                    websocket = None;
+                    continue;
                 }
             }
         }
@@ -310,13 +321,13 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
                             Err(e) => {
                                 log::error!("websocket.write_message: {}", e);
                                 drop_websocket = true;
-                                // fixme this buffer is just dropped
                             }
                         }
 
                         break;
                     }
                 }
+
                 if drop_websocket {
                     websocket = None;
                 }
