@@ -310,6 +310,7 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
                             Err(e) => {
                                 log::error!("websocket.write_message: {}", e);
                                 drop_websocket = true;
+                                // fixme this buffer is just dropped
                             }
                         }
 
