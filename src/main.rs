@@ -9,6 +9,8 @@ mod threads;
 use anyhow::Result;
 
 fn main() -> Result<()> {
+    env_logger::init();
+
     //i16::run()?;
     //f64::run()?;
 
