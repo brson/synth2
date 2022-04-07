@@ -7,19 +7,19 @@ const audioContext = new window.AudioContext({
     sampleRate: sampleRate,
 });
 
-var buffer1 = audioContext.createBuffer(channels, bufferLength, sampleRate);
-var buffer2 = audioContext.createBuffer(channels, bufferLength, sampleRate);
-var buffer3 = audioContext.createBuffer(channels, bufferLength, sampleRate);
-var buffer4 = audioContext.createBuffer(channels, bufferLength, sampleRate);
+let buffer1 = audioContext.createBuffer(channels, bufferLength, sampleRate);
+let buffer2 = audioContext.createBuffer(channels, bufferLength, sampleRate);
+let buffer3 = audioContext.createBuffer(channels, bufferLength, sampleRate);
+let buffer4 = audioContext.createBuffer(channels, bufferLength, sampleRate);
 
 for (buffer of [buffer1, buffer2, buffer3, buffer4]) {
-    var channel = buffer.getChannelData(0);
-    for (var i = 0; i < bufferLength; i++) {
-        var run = Math.floor(sampleRate / 440);
-        var offset = i % run;
-        var rise = -1;
-        var slope = rise / run;
-        var sample = offset * slope + 1;
+    let channel = buffer.getChannelData(0);
+    for (let i = 0; i < bufferLength; i++) {
+        let run = Math.floor(sampleRate / 440);
+        let offset = i % run;
+        let rise = -1;
+        let slope = rise / run;
+        let sample = offset * slope + 1;
         channel[i] = sample;
     }
 }
@@ -69,3 +69,22 @@ function startPlayback() {
     playBuffer(source1, playTime1, buffer3);
     playBuffer(source2, playTime2, buffer4);
 }
+
+
+
+const websocketUrl = "ws://127.0.0.1:9110";
+
+function connect() {
+    let ws = new WebSocket(websocketUrl);
+
+    ws.addEventListener("message", (event) => {
+        let data = event.data;
+        console.log(data);
+        ws.close();
+    })
+
+    window.addEventListener("unload", () => {
+    });
+}
+
+connect();

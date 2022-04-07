@@ -199,6 +199,8 @@ fn run_input(ctx: InputContext) -> Result<()> {
             ctx.tx_controller.send(
                 ControllerMsg::Input(ControllerInputMsg::Exit)
             )?;
+        } else if ch == Some(b'a') {
+            println!("\r");
         }
 
         match ctx.rx.try_recv() {
@@ -248,6 +250,8 @@ fn run_sequencer(ctx: SequencerContext) -> Result<()> {
     Ok(())
 }
 
+static WEBSOCKET_URL: &str = "127.0.0.1:9110";
+
 fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
 
     use std::net::TcpListener;
@@ -263,36 +267,26 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
     // By rate limiting when these are returned we feed audio to the websocket
     // at a consistent rate.
     let mut queued_buffers = VecDeque::new();
-    let mut websocket = None;
+    let mut websocket: Option<tungstenite::WebSocket<std::net::TcpStream>> = None;
 
-    let listener = TcpListener::bind("127.0.0.1:9110")?;
+    let listener = TcpListener::bind(WEBSOCKET_URL)?;
     listener.set_nonblocking(true)?;
 
     loop {
 
-        match websocket.as_ref() {
-            None => {
-                match listener.accept() {
-                    Ok((socket, _addr)) => {
-                        websocket = Some(tungstenite::accept(socket)?);
-                    }
-                    Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                        // pass
-                    }
-                    Err(e) => {
-                        Err(e)?;
-                    }
+        match listener.accept() {
+            Ok((socket, _addr)) => {
+                if let Some(websocket) = websocket.as_mut() {
+                    websocket.close(None);
                 }
+                println!("websocket connected\r");
+                websocket = Some(tungstenite::accept(socket)?);
             }
-            Some(websocketref) => {
-                if websocketref.can_write() {
-                    // Drop any incoming connections
-                    while listener.accept().is_ok() { }
-                } else {
-                    // Drop websocket and try to accept another
-                    websocket = None;
-                    continue;
-                }
+            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
+                // pass
+            }
+            Err(e) => {
+                Err(e)?;
             }
         }
         
@@ -312,14 +306,15 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
 
                         match res {
                             Err(WsError::Io(e)) if e.kind() == io::ErrorKind::WouldBlock => {
-                                log::info!("wouldblock - repeating");
+                                println!("wouldblock - repeating\r");
                                 continue;
                             }
                             Ok(()) => {
                                 drop_websocket = false;
                             }
                             Err(e) => {
-                                log::error!("websocket.write_message: {}", e);
+                                println!("eee");
+                                println!("websocket.write_message: {}\r", e);
                                 drop_websocket = true;
                             }
                         }
