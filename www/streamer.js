@@ -82,9 +82,6 @@ function connect() {
         console.log(data);
         ws.close();
     })
-
-    window.addEventListener("unload", () => {
-    });
 }
 
 connect();
