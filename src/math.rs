@@ -104,6 +104,27 @@ impl TryFrom<f64> for ZPos64 {
     }
 }
 
+/// Positive float
+pub struct Pos64(f64);
+
+impl From<Pos64> for f64 {
+    fn from(other: Pos64) -> f64 {
+        other.0
+    }
+}
+
+impl TryFrom<f64> for Pos64 {
+    type Error = anyhow::Error;
+
+    fn try_from(other: f64) -> Result<Pos64> {
+        if other > 0.0 {
+            Ok(Pos64(other))
+        } else {
+            Err(anyhow::anyhow!("float out of (0, inf] range"))
+        }
+    }
+}
+
 pub trait AssertFrom<From>: Sized {
     fn assert_from(value: From) -> Self;
 }

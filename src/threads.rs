@@ -222,6 +222,8 @@ fn run_input(ctx: InputContext) -> Result<()> {
 
 fn run_sequencer(ctx: SequencerContext) -> Result<()> {
 
+    let mut seq = crate::seq::Sequencer::new();
+    
     use crate::f64;
     use crate::math::*;
 
