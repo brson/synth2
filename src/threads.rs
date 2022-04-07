@@ -140,7 +140,7 @@ enum AudioServerMsg {
 
 fn run_controller(ctx: ControllerContext) -> Result<()> {
 
-    const BUFFER_SIZE: usize = 256 * 4 * 4;
+    const BUFFER_SIZE: usize = 256 * 4;
 
     let mut buffers = vec![
         vec![0_f64; BUFFER_SIZE],
