@@ -22,7 +22,7 @@ fn line_y_value_with_y_offset(
     y_value + y_offset
 }
 
-const SAMPLE_RATE_KHZ: i32 = 32_000;
+pub const SAMPLE_RATE_KHZ: i32 = 32_000;
 const A440_SAMPLES: i32 = SAMPLE_RATE_KHZ / 440;
 
 pub fn saw_osc() -> Oscillator {
