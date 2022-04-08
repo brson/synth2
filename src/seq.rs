@@ -77,7 +77,6 @@ impl Sequencer {
         let bps = f64::from(self.bps);
         let samples_per_beat = sample_rate / bps;
         let global_offset = f64::from(self.global_offset);
-        let global_offset = f64::from(global_offset);
         let beat_offset = global_offset % samples_per_beat;
         let beat_offset = beat_offset as i32;
         let beat_offset = Snat32::assert_from(beat_offset);
