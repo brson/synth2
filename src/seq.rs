@@ -43,7 +43,7 @@ impl Synth {
 
 pub struct Sequencer {
     global_offset: Snat32,
-    bps: Pos64,
+    bpm: Pos64,
     synth: Synth,
 }
 
@@ -67,14 +67,15 @@ impl Sequencer {
         
         Sequencer {
             global_offset: Snat32::assert_from(0),
-            bps: Pos64::assert_from(120.0),
+            bpm: Pos64::assert_from(120.0),
             synth,
         }
     }
 
     pub fn next_sample(&mut self) -> f64 {
         let sample_rate = f64::from(SAMPLE_RATE_KHZ);
-        let bps = f64::from(self.bps);
+        let bpm = f64::from(self.bpm);
+        let bps = bpm / 60.0;
         let samples_per_beat = sample_rate / bps;
         let global_offset = f64::from(self.global_offset);
         let beat_offset = global_offset % samples_per_beat;
