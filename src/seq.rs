@@ -35,8 +35,8 @@ impl Synth {
             offset,
             Some(Snat32::assert_from(100)),
         );
-        //let sample = sample * f64::from(adsr_sample);
-        //let sample = sample * f64::from(self.gain);
+        let sample = sample * f64::from(adsr_sample);
+        let sample = sample * f64::from(self.gain);
         sample
     }
 }
@@ -57,10 +57,10 @@ impl Sequencer {
                 Snat32::assert_from(SAMPLE_RATE_KHZ),
             ),
             adsr: Adsr {
-                attack: Snat32::assert_from(10),
-                decay: Snat32::assert_from(100),
+                attack: Snat32::assert_from(100),
+                decay: Snat32::assert_from(1000),
                 sustain: ZOne64::assert_from(0.1),
-                release: Snat32::assert_from(100),
+                release: Snat32::assert_from(1000),
             },
             gain: ZPos64::assert_from(1.0),
         };
@@ -84,7 +84,7 @@ impl Sequencer {
         let sample = self.synth.sample(beat_offset);
 
         let global_offset = i32::assert_from(self.global_offset);
-        let global_offest = global_offset.checked_add(1).expect("overflow");
+        let global_offset = global_offset.checked_add(1).expect("overflow");
         self.global_offset = Snat32::assert_from(global_offset);
 
         sample
