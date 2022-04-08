@@ -27,6 +27,20 @@ struct Synth {
     gain: ZPos64,
 }
 
+impl Synth {
+    fn sample(&mut self, offset: Snat32) -> f64 {
+        let sample = f64::from(self.osc.sample(offset));
+        let sample = self.lpf.process(sample);
+        let adsr_sample = self.adsr.sample(
+            offset,
+            Some(Snat32::assert_from(100)),
+        );
+        let sample = sample * f64::from(adsr_sample);
+        let sample = sample * f64::from(self.gain);
+        sample
+    }
+}
+
 pub struct Sequencer {
     global_offset: Snat32,
     bps: Pos64,
