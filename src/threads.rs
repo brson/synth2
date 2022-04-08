@@ -274,10 +274,14 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
 
     const SAMPLE_RATE_KHZ: usize = 32_000;
 
-    // A queue of buffers to return to the controller thread.
-    // By rate limiting when these are returned we feed audio to the websocket
-    // at a consistent rate.
-    let mut queued_buffers = VecDeque::new();
+    // A queue of buffers to return to the controller thread. By rate limiting
+    // when these are returned we feed audio to the websocket at a consistent
+    // rate.
+    type Buffer = Vec<f64>;
+    type ReceivedAt = Instant;
+    type ReleaseAfter = Duration;
+    let mut queued_buffers: VecDeque<(Buffer, ReceivedAt, ReleaseAfter)> = VecDeque::new();
+
     let mut websocket: Option<tungstenite::WebSocket<std::net::TcpStream>> = None;
 
     let listener = TcpListener::bind(WEBSOCKET_URL)?;
@@ -344,8 +348,22 @@ fn run_audio_server(ctx: AudioServerContext) -> Result<()> {
                 let buffer_duration_us = buffer_duration_us as u64;
                 let buffer_duration = Duration::from_micros(buffer_duration_us);
 
+                let mut duration_before_release = buffer_duration;
+
+                // Check if the controller sent this buffer before the time
+                // duration of the previous buffer, and delay the release of
+                // this buffer if so. This happens on the first frame when the
+                // controller immediately sends two bufers.
+                if let Some(&(_, prev_instant, prev_duration)) = queued_buffers.back() {
+                    let duration_since_last = buffer_instant - prev_instant;
+                    if (duration_since_last < prev_duration) {
+                        let duration_to_add = prev_duration - duration_since_last;
+                        duration_before_release = duration_before_release.saturating_add(duration_to_add);
+                    }
+                }
+
                 queued_buffers.push_back(
-                    (buffer, buffer_instant, buffer_duration)
+                    (buffer, buffer_instant, duration_before_release)
                 );
             }
             Err(TryRecvError::Empty) => { },

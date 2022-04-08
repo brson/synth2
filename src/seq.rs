@@ -33,7 +33,7 @@ impl Synth {
         let sample = self.lpf.process(sample);
         let adsr_sample = self.adsr.sample(
             offset,
-            Some(Snat32::assert_from(100)),
+            Some(Snat32::assert_from(2000)),
         );
         let sample = sample * f64::from(adsr_sample);
         let sample = sample * f64::from(self.gain);
