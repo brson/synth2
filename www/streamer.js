@@ -1,6 +1,6 @@
 const sampleRate = 32_000; // khz
 const channels = 1;
-const bufferLength = 256 * 4;
+const bufferSize = 256 * 4 * 4;
 
 const audioContext = new window.AudioContext({
     latencyHint: "interactive",
@@ -10,33 +10,21 @@ const audioContext = new window.AudioContext({
 
 let incomingBufferQueue = [];
 
-let buffer1 = audioContext.createBuffer(channels, bufferLength, sampleRate);
-let buffer2 = audioContext.createBuffer(channels, bufferLength, sampleRate);
-let buffer3 = audioContext.createBuffer(channels, bufferLength, sampleRate);
-let buffer4 = audioContext.createBuffer(channels, bufferLength, sampleRate);
-
-/*for (buffer of [buffer1, buffer2, buffer3, buffer4]) {
-    let channel = buffer.getChannelData(0);
-    for (let i = 0; i < bufferLength; i++) {
-        let run = Math.floor(sampleRate / 440);
-        let offset = i % run;
-        let rise = -1;
-        let slope = rise / run;
-        let sample = offset * slope + 1;
-        channel[i] = sample;
-    }
-}*/
+let buffer1 = audioContext.createBuffer(channels, bufferSize, sampleRate);
+let buffer2 = audioContext.createBuffer(channels, bufferSize, sampleRate);
+let buffer3 = audioContext.createBuffer(channels, bufferSize, sampleRate);
+let buffer4 = audioContext.createBuffer(channels, bufferSize, sampleRate);
 
 function fillBuffer(buffer) {
     let channel = buffer.getChannelData(0);
     let newData = incomingBufferQueue.shift();
     if (status == "stopped" || !newData) {
-        for (let i = 0; i < bufferLength; i++) {
+        for (let i = 0; i < bufferSize; i++) {
             channel[i] = 0;
         }
     } else {
-        console.assert(newData.length == bufferLength);
-        for (let i = 0; i < bufferLength; i++) {
+        console.assert(newData.length == bufferSize);
+        for (let i = 0; i < bufferSize; i++) {
             channel[i] = newData[i];
         }
     }
@@ -45,7 +33,7 @@ function fillBuffer(buffer) {
 let status = "running";
 
 document.addEventListener("keyup", event => {
-    if (event.code == "Space") {
+    if (event.code == "Space" || event.key == "e") {
         if (status == "running") {
             status = "stopped";
         } else {
@@ -61,7 +49,7 @@ function playBuffer(source, playTime, nextBuffer) {
     let nextSource = audioContext.createBufferSource();
     nextSource.buffer = nextBuffer;
     nextSource.connect(audioContext.destination);
-    let nextPlayTime = playTime + bufferLength / sampleRate * 2;
+    let nextPlayTime = playTime + bufferSize / sampleRate * 2;
 
     source.addEventListener("ended", () => {
         fillBuffer(source.buffer);
@@ -80,7 +68,7 @@ function startPlayback() {
     source2.connect(audioContext.destination);
 
     let playTime1 = audioContext.currentTime;
-    let playTime2 = playTime1 + bufferLength / sampleRate;
+    let playTime2 = playTime1 + bufferSize / sampleRate;
 
     fillBuffer(source1.buffer);
     fillBuffer(source2.buffer);
@@ -94,13 +82,16 @@ startPlayback();
 const websocketUrl = "ws://127.0.0.1:9110";
 
 function connect() {
-    let ws = new WebSocket(websocketUrl);
+    var ws = new WebSocket(websocketUrl);
 
     ws.addEventListener("message", (event) => {
         var data = JSON.parse(event.data);
-        console.log(data.length);
         incomingBufferQueue.push(data);
-    })
+    });
+
+    ws.addEventListener("close", () => {
+        connect();
+    });
 }
 
 connect();

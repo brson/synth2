@@ -3,6 +3,8 @@ use anyhow::{Result, anyhow};
 use std::thread::{self, JoinHandle};
 use std::io::Read;
 
+const BUFFER_SIZE: usize = 256 * 4 * 4;
+
 pub fn run() -> Result <()> {
     println!("press 'e' to exit");
 
@@ -139,8 +141,6 @@ enum AudioServerMsg {
 }
 
 fn run_controller(ctx: ControllerContext) -> Result<()> {
-
-    const BUFFER_SIZE: usize = 256 * 4;
 
     let mut buffers = vec![
         vec![0_f64; BUFFER_SIZE],
