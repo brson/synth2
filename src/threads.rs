@@ -241,10 +241,13 @@ fn run_sequencer(ctx: SequencerContext) -> Result<()> {
             }
             SequencerMsg::FillBuffer(mut buffer) => {
                 for i in 0..buffer.len() {
-                    let sample = osc.sample(Snat32::assert_from(offset)).into();
+                    /*let sample = osc.sample(Snat32::assert_from(offset)).into();
                     let sample = lpf.process(sample);
                     buffer[i] = sample;
-                    offset += 1;
+                    offset += 1;*/
+
+                    let sample = seq.next_sample();
+                    buffer[i] = sample;
                 }
                 ctx.tx_controller.send(
                     ControllerMsg::Sequencer(

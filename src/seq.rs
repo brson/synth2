@@ -30,13 +30,13 @@ struct Synth {
 impl Synth {
     fn sample(&mut self, offset: Snat32) -> f64 {
         let sample = f64::from(self.osc.sample(offset));
-        let sample = self.lpf.process(sample);
+        //let sample = self.lpf.process(sample);
         let adsr_sample = self.adsr.sample(
             offset,
             Some(Snat32::assert_from(100)),
         );
-        let sample = sample * f64::from(adsr_sample);
-        let sample = sample * f64::from(self.gain);
+        //let sample = sample * f64::from(adsr_sample);
+        //let sample = sample * f64::from(self.gain);
         sample
     }
 }
@@ -51,7 +51,7 @@ impl Sequencer {
     pub fn new() -> Sequencer {
 
         let synth = Synth {
-            osc: saw_osc(),
+            osc: square_osc(),
             lpf: LowPassFilter::new(
                 ZPos64::assert_from(440.0 * 1.5),
                 Snat32::assert_from(SAMPLE_RATE_KHZ),
@@ -82,6 +82,10 @@ impl Sequencer {
         let beat_offset = beat_offset as i32;
         let beat_offset = Snat32::assert_from(beat_offset);
         let sample = self.synth.sample(beat_offset);
+
+        let global_offset = i32::assert_from(self.global_offset);
+        self.global_offset = Snat32::assert_from(global_offset);
+
         sample
     }
 }
