@@ -73,6 +73,9 @@ impl Sequencer {
     }
 
     pub fn next_sample(&mut self) -> f64 {
+        let sample_rate = f64::from(SAMPLE_RATE_KHZ);
+        let bps = f64::from(self.bps);
+        let samples_per_beat = sample_rate / bps;
         todo!()
     }
 }

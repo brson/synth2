@@ -107,6 +107,7 @@ impl TryFrom<f64> for ZPos64 {
 }
 
 /// Positive float
+#[derive(Copy, Clone)]
 pub struct Pos64(f64);
 
 impl From<Pos64> for f64 {
