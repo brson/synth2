@@ -30,7 +30,7 @@ struct Synth {
 impl Synth {
     fn sample(&mut self, offset: Snat32) -> f64 {
         let sample = f64::from(self.osc.sample(offset));
-        //let sample = self.lpf.process(sample);
+        let sample = self.lpf.process(sample);
         let adsr_sample = self.adsr.sample(
             offset,
             Some(Snat32::assert_from(100)),
@@ -62,7 +62,7 @@ impl Sequencer {
                 sustain: ZOne64::assert_from(0.1),
                 release: Snat32::assert_from(100),
             },
-            gain: ZPos64::assert_from(0.0),
+            gain: ZPos64::assert_from(1.0),
         };
         
         Sequencer {
@@ -84,6 +84,7 @@ impl Sequencer {
         let sample = self.synth.sample(beat_offset);
 
         let global_offset = i32::assert_from(self.global_offset);
+        let global_offest = global_offset.checked_add(1).expect("overflow");
         self.global_offset = Snat32::assert_from(global_offset);
 
         sample
