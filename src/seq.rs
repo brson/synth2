@@ -21,9 +21,10 @@ struct Note {
 }
 
 struct Synth {
+    sample_rate: SampleRateKhz,
     osc: Oscillator,
     lpf: LowPassFilter,
-    adsr: Adsr,
+    adsr: AdsrMs,
     gain: ZPos64,
 }
 
@@ -31,6 +32,7 @@ impl Synth {
     fn sample(&mut self, offset: Snat32) -> f64 {
         let sample = f64::from(self.osc.sample(offset));
         let sample = self.lpf.process(sample);
+        let release_offset = Ms64::assert_from(100.0).as_samples(self.sample_rate);
         let adsr_sample = self.adsr.sample(
             offset,
             Some(Snat32::assert_from(2000)),
@@ -50,17 +52,20 @@ pub struct Sequencer {
 impl Sequencer {
     pub fn new() -> Sequencer {
 
+        let sample_rate = SampleRateKhz(Snat32::assert_from(SAMPLE_RATE_KHZ));
         let synth = Synth {
+            sample_rate,
             osc: square_osc(),
             lpf: LowPassFilter::new(
                 ZPos64::assert_from(440.0 * 1.5),
                 Snat32::assert_from(SAMPLE_RATE_KHZ),
             ),
-            adsr: Adsr {
-                attack: Snat32::assert_from(100),
-                decay: Snat32::assert_from(1000),
+            adsr: AdsrMs {
+                sample_rate,
+                attack: Ms64::assert_from(10.0),
+                decay: Ms64::assert_from(100.0),
                 sustain: ZOne64::assert_from(0.1),
-                release: Snat32::assert_from(1000),
+                release: Ms64::assert_from(100.0),
             },
             gain: ZPos64::assert_from(1.0),
         };
