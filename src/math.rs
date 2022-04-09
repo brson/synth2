@@ -141,7 +141,6 @@ impl TryFrom<f64> for Pos64 {
     }
 }
 
-
 /// Sample rate in khz
 #[derive(Copy, Clone)]
 pub struct SampleRateKhz(pub Snat32);
@@ -161,6 +160,21 @@ impl Ms64 {
         Snat32::assert_from(samples)
     }
 }    
+
+/// Positive frequency
+#[derive(Copy, Clone)]
+pub struct Hz(pub Pos64);
+
+impl Hz {
+    pub fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
+        let sample_rate = i32::from(sample_rate.0);
+        let sample_rate = f64::from(sample_rate);
+        let hz = f64::from(self.0);
+        let period: f64 = sample_rate / hz;
+        let period: i32 = period as i32;
+        Snat32::assert_from(period)
+    }
+}
 
 impl TryFrom<f64> for Ms64 {
     type Error = anyhow::Error;
