@@ -3,6 +3,19 @@ use std::ops::Div;
 use std::cmp::{Ord, PartialOrd, Eq, PartialEq, Ordering};
 use std::fmt::Debug;
 
+pub trait AssertFrom<From>: Sized {
+    fn assert_from(value: From) -> Self;
+}
+
+impl<T, From> AssertFrom<From> for T
+where T: TryFrom<From>,
+      <T as TryFrom<From>>::Error: Debug
+{
+    fn assert_from(value: From) -> Self {
+        Self::try_from(value).expect("try from")
+    }
+}
+
 /// Positive i32 (signed natural)
 #[derive(Copy, Clone)]
 #[derive(Eq, PartialEq, Ord, PartialOrd)]
@@ -128,15 +141,35 @@ impl TryFrom<f64> for Pos64 {
     }
 }
 
-pub trait AssertFrom<From>: Sized {
-    fn assert_from(value: From) -> Self;
-}
 
-impl<T, From> AssertFrom<From> for T
-where T: TryFrom<From>,
-      <T as TryFrom<From>>::Error: Debug
-{
-    fn assert_from(value: From) -> Self {
-        Self::try_from(value).expect("try from")
+/// Sample rate in khz
+#[derive(Copy, Clone)]
+pub struct SampleRateKhz(pub Snat32);
+
+/// Time in ms
+#[derive(Copy, Clone)]
+pub struct Ms64(f64);
+
+impl Ms64 {
+    /// Get the time as samples
+    fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
+        let sample_rate = i32::from(sample_rate.0);
+        let sample_rate = f64::from(sample_rate);
+        let seconds = self.0 / 1000.0;
+        let samples: f64 = sample_rate * seconds;
+        let samples: i32 = samples as i32;
+        Snat32::assert_from(samples)
+    }
+}    
+
+impl TryFrom<f64> for Ms64 {
+    type Error = anyhow::Error;
+
+    fn try_from(other: f64) -> Result<Ms64> {
+        if other >= 0.0 {
+            Ok(Ms64(other))
+        } else {
+            Err(anyhow::anyhow!("float out of [0, inf] range"))
+        }
     }
 }
