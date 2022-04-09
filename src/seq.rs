@@ -22,7 +22,7 @@ struct Note {
 
 struct Synth {
     sample_rate: SampleRateKhz,
-    osc: Oscillator,
+    osc: OscillatorHz,
     lpf: LowPassFilter,
     adsr: AdsrMs,
     gain: ZPos64,
@@ -55,7 +55,7 @@ impl Sequencer {
         let sample_rate = SampleRateKhz(Snat32::assert_from(SAMPLE_RATE_KHZ));
         let synth = Synth {
             sample_rate,
-            osc: square_osc(),
+            osc: square_osc_hz(Hz64::assert_from(440.0)),
             lpf: LowPassFilter::new(
                 ZPos64::assert_from(440.0 * 1.5),
                 Snat32::assert_from(SAMPLE_RATE_KHZ),

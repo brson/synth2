@@ -61,16 +61,26 @@ pub fn funky_square_osc() -> Oscillator {
     }
 }
 
-pub struct OscillatorMs {
+pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(Snat32::assert_from(SAMPLE_RATE_KHZ)),
+        freq,
+        phase: 0,
+        triangleness: ZOne64::assert_from(0_f64),
+        squareness: ZOne64::assert_from(1_f64),
+    }
+}
+
+pub struct OscillatorHz {
     pub sample_rate: SampleRateKhz,
-    pub freq: Hz,
+    pub freq: Hz64,
     pub phase: i32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
     //pulse_width: Snat32,
 }
 
-impl OscillatorMs {
+impl OscillatorHz {
     pub fn sample(&self, offset: Snat32) -> One64 {
         let period = self.freq.as_samples(self.sample_rate);
         let osc = Oscillator {

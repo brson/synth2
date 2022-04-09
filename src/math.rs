@@ -147,25 +147,34 @@ pub struct SampleRateKhz(pub Snat32);
 
 /// Time in ms
 #[derive(Copy, Clone)]
-pub struct Ms64(f64);
+pub struct Ms64(Pos64);
 
 impl Ms64 {
     /// Get the time as samples
     pub fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
         let sample_rate = i32::from(sample_rate.0);
         let sample_rate = f64::from(sample_rate);
-        let seconds = self.0 / 1000.0;
+        let ms = f64::from(self.0);
+        let seconds = ms / 1000.0;
         let samples: f64 = sample_rate * seconds;
         let samples: i32 = samples as i32;
         Snat32::assert_from(samples)
     }
 }    
 
+impl TryFrom<f64> for Ms64 {
+    type Error = anyhow::Error;
+
+    fn try_from(other: f64) -> Result<Ms64> {
+        Ok(Ms64(Pos64::try_from(other)?))
+    }
+}
+
 /// Positive frequency
 #[derive(Copy, Clone)]
-pub struct Hz(pub Pos64);
+pub struct Hz64(Pos64);
 
-impl Hz {
+impl Hz64 {
     pub fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
         let sample_rate = i32::from(sample_rate.0);
         let sample_rate = f64::from(sample_rate);
@@ -176,14 +185,11 @@ impl Hz {
     }
 }
 
-impl TryFrom<f64> for Ms64 {
+impl TryFrom<f64> for Hz64 {
     type Error = anyhow::Error;
 
-    fn try_from(other: f64) -> Result<Ms64> {
-        if other >= 0.0 {
-            Ok(Ms64(other))
-        } else {
-            Err(anyhow::anyhow!("float out of [0, inf] range"))
-        }
+    fn try_from(other: f64) -> Result<Hz64> {
+        Ok(Hz64(Pos64::try_from(other)?))
     }
 }
+
