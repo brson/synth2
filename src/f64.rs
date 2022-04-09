@@ -1,6 +1,6 @@
 use anyhow::{Result, anyhow};
 use std::path::{Path, PathBuf};
-use crate::math::{Snat32, ZOne64, One64, AssertFrom, ZPos64};
+use crate::math::*;
 
 fn line_y_value(
     y_rise: f64,
