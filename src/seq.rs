@@ -35,7 +35,7 @@ impl Synth {
         let release_offset = Ms64::assert_from(100.0).as_samples(self.sample_rate);
         let adsr_sample = self.adsr.sample(
             offset,
-            Some(Snat32::assert_from(2000)),
+            Some(Ms64::assert_from(50.0)),
         );
         let sample = sample * f64::from(adsr_sample);
         let sample = sample * f64::from(self.gain);
