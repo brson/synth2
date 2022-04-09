@@ -26,6 +26,8 @@ struct Synth {
     lpf: LowPassFilter,
     adsr: AdsrMs,
     gain: ZPos64,
+    //lpf_mod_adsr: AdsrMs,
+    //lpf_mod_amount_hz: f64,
 }
 
 impl Synth {
@@ -53,19 +55,20 @@ impl Sequencer {
     pub fn new() -> Sequencer {
 
         let sample_rate = SampleRateKhz(Snat32::assert_from(SAMPLE_RATE_KHZ));
+        let freq = 80.0;
         let synth = Synth {
             sample_rate,
-            osc: square_osc_hz(Hz64::assert_from(440.0)),
+            osc: square_osc_hz(Hz64::assert_from(freq)),
             lpf: LowPassFilter::new(
-                ZPos64::assert_from(440.0 * 1.5),
+                ZPos64::assert_from(freq * 1.5),
                 Snat32::assert_from(SAMPLE_RATE_KHZ),
             ),
             adsr: AdsrMs {
                 sample_rate,
-                attack: Ms64::assert_from(10.0),
-                decay: Ms64::assert_from(100.0),
+                attack: Ms64::assert_from(5.0),
+                decay: Ms64::assert_from(50.0),
                 sustain: ZOne64::assert_from(0.1),
-                release: Ms64::assert_from(100.0),
+                release: Ms64::assert_from(150.0),
             },
             gain: ZPos64::assert_from(1.0),
         };
