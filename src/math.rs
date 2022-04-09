@@ -152,7 +152,7 @@ pub struct Ms64(f64);
 
 impl Ms64 {
     /// Get the time as samples
-    fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
+    pub fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
         let sample_rate = i32::from(sample_rate.0);
         let sample_rate = f64::from(sample_rate);
         let seconds = self.0 / 1000.0;

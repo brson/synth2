@@ -156,6 +156,14 @@ impl Oscillator {
     }
 }
 
+pub struct AdsrMs {
+    pub sample_rate: SampleRateKhz,
+    pub attack: Ms64,
+    pub decay: Ms64,
+    pub sustain: ZOne64,
+    pub release: Ms64,
+}
+
 pub struct Adsr {
     pub attack: Snat32,
     pub decay: Snat32,
@@ -170,6 +178,19 @@ enum AdsrStage {
     Release,
     End,
 }
+
+impl AdsrMs {
+    pub fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> ZOne64 {
+        let sample_adsr = Adsr {
+            attack: self.attack.as_samples(self.sample_rate),
+            decay: self.decay.as_samples(self.sample_rate),
+            sustain: self.sustain,
+            release: self.release.as_samples(self.sample_rate),
+        };
+        sample_adsr.sample(offset, release_offset)
+    }
+}
+
 
 impl Adsr {
     pub fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> ZOne64 {
