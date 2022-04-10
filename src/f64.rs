@@ -305,6 +305,7 @@ impl Adsr {
 // https://www.musicdsp.org/en/latest/Filters/237-one-pole-filter-lp-and-hp.html
 #[derive(Debug)]
 pub struct LowPassFilter {
+    pub freq: ZPos64,
     a0: f64,
     b1: f64,
     last: f64,
@@ -314,6 +315,7 @@ impl LowPassFilter {
     pub fn new(freq: ZPos64, sample_rate: Snat32) -> LowPassFilter {
         let x = (-2.0 * std::f64::consts::PI * f64::from(freq) / f64::from(sample_rate)).exp();
         LowPassFilter {
+            freq,
             a0: 1.0 - x,
             b1: -x,
             last: 0.0,
