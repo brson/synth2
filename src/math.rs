@@ -19,6 +19,7 @@ where T: TryFrom<From>,
 /// Positive i32 (signed natural)
 #[derive(Copy, Clone)]
 #[derive(Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug)]
 pub struct Snat32(i32);
 
 impl From<Snat32> for i32 {
@@ -98,7 +99,8 @@ impl TryFrom<f64> for One64 {
 }
 
 /// Positive or zero float
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
+#[derive(Debug)]
 pub struct ZPos64(f64);
 
 impl From<ZPos64> for f64 {

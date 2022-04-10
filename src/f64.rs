@@ -306,6 +306,7 @@ impl Adsr {
 #[derive(Debug)]
 pub struct LowPassFilter {
     pub freq: ZPos64,
+    sample_rate: Snat32,
     a0: f64,
     b1: f64,
     last: f64,
@@ -316,6 +317,7 @@ impl LowPassFilter {
         let x = (-2.0 * std::f64::consts::PI * f64::from(freq) / f64::from(sample_rate)).exp();
         LowPassFilter {
             freq,
+            sample_rate,
             a0: 1.0 - x,
             b1: -x,
             last: 0.0,
@@ -327,10 +329,29 @@ impl LowPassFilter {
         self.last = out;
         out
     }
+
+    pub fn modulate(&mut self, freq: ZPos64) -> ModulatedLowPassFilter<'_> {
+        ModulatedLowPassFilter {
+            parent: self,
+            freq,
+        }
+    }
 }
 
+pub struct ModulatedLowPassFilter<'this> {
+    parent: &'this mut LowPassFilter,
+    freq: ZPos64,
+}
 
-
+impl<'this> ModulatedLowPassFilter<'this> {
+    pub fn process(&mut self, input: f64) -> f64 {
+        let mut child_lpf = LowPassFilter::new(self.freq, self.parent.sample_rate);
+        child_lpf.last = self.parent.last;
+        let sample = child_lpf.process(input);
+        self.parent.last = child_lpf.last;
+        sample
+    }
+}
 
 
 fn write_image(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
