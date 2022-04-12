@@ -149,7 +149,7 @@ pub struct SampleRateKhz(pub Snat32);
 
 /// Time in ms
 #[derive(Copy, Clone)]
-pub struct Ms64(Pos64);
+pub struct Ms64(ZPos64);
 
 impl Ms64 {
     /// Get the time as samples
@@ -168,7 +168,7 @@ impl TryFrom<f64> for Ms64 {
     type Error = anyhow::Error;
 
     fn try_from(other: f64) -> Result<Ms64> {
-        Ok(Ms64(Pos64::try_from(other)?))
+        Ok(Ms64(ZPos64::try_from(other)?))
     }
 }
 

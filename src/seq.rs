@@ -47,7 +47,7 @@ impl Synth {
 
         let sample = f64::from(self.osc.sample(offset));
         let sample = modulated_lpf.process(sample);
-        let release_offset = Ms64::assert_from(100.0).as_samples(self.sample_rate);
+        let release_offset = Ms64::assert_from(1000.0).as_samples(self.sample_rate);
         let adsr_sample = self.adsr.sample(offset, release);
 
         let sample = sample * f64::from(adsr_sample);
@@ -65,21 +65,22 @@ pub struct Sequencer {
 impl Sequencer {
     pub fn new() -> Sequencer {
 
+        let bpm = Pos64::assert_from(40.0);
         let sample_rate = SampleRateKhz(Snat32::assert_from(SAMPLE_RATE_KHZ));
         let freq = 80.0;
         let synth = Synth {
             sample_rate,
             osc: square_osc_hz(Hz64::assert_from(freq)),
             lpf: LowPassFilter::new(
-                ZPos64::assert_from(freq * 1.5),
+                ZPos64::assert_from(freq),
                 Snat32::assert_from(SAMPLE_RATE_KHZ),
             ),
             adsr: AdsrMs {
                 sample_rate,
                 attack: Ms64::assert_from(5.0),
-                decay: Ms64::assert_from(50.0),
+                decay: Ms64::assert_from(900.0),
                 sustain: ZOne64::assert_from(0.1),
-                release: Ms64::assert_from(150.0),
+                release: Ms64::assert_from(100.0),
             },
             gain: ZPos64::assert_from(1.0),
             lpf_mod_adsr: AdsrMs {
@@ -89,12 +90,12 @@ impl Sequencer {
                 sustain: ZOne64::assert_from(0.0),
                 release: Ms64::assert_from(0.0),
             },
-            lpf_mod_range_multiplier: 2.0,
+            lpf_mod_range_multiplier: 16.0,
         };
         
         Sequencer {
             global_offset: Snat32::assert_from(0),
-            bpm: Pos64::assert_from(120.0),
+            bpm,
             synth,
         }
     }
