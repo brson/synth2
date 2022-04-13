@@ -188,6 +188,40 @@ impl Oscillator {
     }
 }
 
+pub struct Noise {
+    pub seed: u32,
+}
+
+impl Noise {
+    pub fn sample(&self, offset: Snat32) -> One64 {
+        // Use a hash function to generate a pseudo-random rng seed
+        // based on the noise seed and the offset,
+        // then an rng to generate a sample with the correct distribution.
+        
+        //let mut hasher = blake3::Hasher::new();
+        //let seed_buf = &self.seed.to_le_bytes()[..];
+        //let offset_buf = &i32::from(offset).to_le_bytes()[..];
+        //hasher.update(seed_buf);
+        //hasher.update(offset_buf);
+        //let hash_bytes = hasher.finalize().as_bytes();
+        //let mut rand_buf = [0; 16];
+        //rand_buf.copy_from_slice(hash_bytes);
+        //let rand_u128 = u128::from_le_bytes(rand_buf);
+        //let mut rng = rand_pcg::Pcg64Mcg::new(rand_u64);
+
+        use std::hash::Hasher;
+        use rand::Rng;
+
+        let mut hasher = fxhash::FxHasher::default();
+        hasher.write_u32(self.seed);
+        hasher.write_u32(i32::from(offset) as u32);
+        let rand_u64 = hasher.finish();
+        let mut rng = rand_pcg::Pcg64Mcg::new(rand_u64.into());
+        let rand_f64: f64 = rng.gen_range(-1.0..=1.0);
+        One64::assert_from(rand_f64)
+    }
+}
+
 pub struct AdsrMs {
     pub sample_rate: SampleRateKhz,
     pub attack: Ms64,
