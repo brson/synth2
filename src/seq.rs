@@ -20,6 +20,17 @@ struct Note {
     sample_length: Snat32,
 }
 
+struct Synth2 {
+    sample_rate: SampleRateKhz,
+    osc: OscillatorHz,
+    lpf: LowPassFilter,
+    amp_adsr: AdsrMs,
+    gain: ZPos64,
+    mod_adsr: AdsrMs,
+    lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
+    osc_mod_freq_multiplier: f64, // 0 = no mod, 1 = 1 octave
+}
+
 struct Synth {
     sample_rate: SampleRateKhz,
     osc: OscillatorHz,
