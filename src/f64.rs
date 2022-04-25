@@ -57,6 +57,26 @@ fn funky_square_osc() -> AngleOscillator {
     }
 }
 
+pub fn saw_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(0_f64),
+        squareness: ZOne64::assert_from(0_f64),
+        sineness: ZOne64::assert_from(0_f64),
+    }
+}
+
+pub fn triangle_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(1_f64),
+        squareness: ZOne64::assert_from(0_f64),
+        sineness: ZOne64::assert_from(0_f64),
+    }
+}
+
 pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
     OscillatorHz {
         sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
@@ -64,6 +84,66 @@ pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
         sineness: ZOne64::assert_from(0_f64),
+    }
+}
+
+pub fn funky_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(0.25_f64),
+        squareness: ZOne64::assert_from(0.25_f64),
+        sineness: ZOne64::assert_from(0_f64),
+    }
+}
+
+pub fn sin_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(0_f64),
+        squareness: ZOne64::assert_from(0_f64),
+        sineness: ZOne64::assert_from(1_f64),
+    }
+}
+
+pub fn round_saw_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(0_f64),
+        squareness: ZOne64::assert_from(0_f64),
+        sineness: ZOne64::assert_from(0.5_f64),
+    }
+}
+
+pub fn round_triangle_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(1_f64),
+        squareness: ZOne64::assert_from(0_f64),
+        sineness: ZOne64::assert_from(0.5_f64),
+    }
+}
+
+pub fn round_square_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(0_f64),
+        squareness: ZOne64::assert_from(1_f64),
+        sineness: ZOne64::assert_from(0.5_f64),
+    }
+}
+
+pub fn round_funky_osc_hz(freq: Hz64) -> OscillatorHz {
+    OscillatorHz {
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
+        freq,
+        triangleness: ZOne64::assert_from(0.25_f64),
+        squareness: ZOne64::assert_from(0.25_f64),
+        sineness: ZOne64::assert_from(0.5_f64),
     }
 }
 
