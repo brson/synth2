@@ -16,44 +16,6 @@ where T: TryFrom<From>,
     }
 }
 
-/// Positive i32 (signed natural)
-#[derive(Copy, Clone)]
-#[derive(Eq, PartialEq, Ord, PartialOrd)]
-#[derive(Debug)]
-pub struct Snat32(i32);
-
-impl From<Snat32> for i32 {
-    fn from(other: Snat32) -> i32 {
-        other.0
-    }
-}
-
-impl From<Snat32> for f64 {
-    fn from(other: Snat32) -> f64 {
-        other.0.into()
-    }
-}
-
-impl TryFrom<i32> for Snat32 {
-    type Error = anyhow::Error;
-
-    fn try_from(other: i32) -> Result<Snat32> {
-        if other >= 0 {
-            Ok(Snat32(other))
-        } else {
-            Err(anyhow::anyhow!("negative value"))
-        }
-    }
-}
-
-impl Div for Snat32 {
-    type Output = Snat32;
-
-    fn div(self, other: Snat32) -> Snat32 {
-        Snat32(self.0 / other.0)
-    }
-}
-
 /// F64 between zero and one
 #[derive(Copy, Clone)]
 pub struct ZOne64(f64);
