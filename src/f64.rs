@@ -137,9 +137,29 @@ impl OscillatorHz {
         let sin_sample = f64::from(sin_osc.sample(offset));
 
         // Cross-fade between the angle_osc and sin_osc
-        let diff_range = sin_sample - angle_sample;
-        let angle_offset = diff_range * f64::from(self.sineness);
-        let sample = angle_sample + angle_offset;
+        let sample = {
+            let diff_range = sin_sample - angle_sample;
+            let angle_offset = diff_range * f64::from(self.sineness);
+            let sample = angle_sample + angle_offset;
+            sample
+        };
+
+        // Give it some curvature
+        let sample = {
+            let pow = 2;
+            let curved_sample = if sample > 0.0 {
+                sample.powi(pow)
+            } else {
+                -sample.powi(pow)
+            };
+
+            // Cross-fade
+            let curviness = 0.2;
+            let diff_range = curved_sample - sample;
+            let sample_offset = diff_range * curviness;
+            let sample = sample + sample_offset;
+            sample
+        };
 
         One64::assert_from(sample)
     }
