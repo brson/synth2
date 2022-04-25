@@ -42,7 +42,7 @@ struct Synth {
 }
 
 impl Synth {
-    fn sample(&mut self, offset: Snat32) -> f64 {
+    fn sample(&mut self, offset: u32) -> f64 {
         let release = Some(Ms64::assert_from(50.0));
 
         let mut modulated_lpf = {
@@ -118,8 +118,7 @@ impl Sequencer {
         let samples_per_beat = sample_rate / bps;
         let global_offset = f64::from(self.global_offset);
         let beat_offset = global_offset % samples_per_beat;
-        let beat_offset = beat_offset as i32;
-        let beat_offset = Snat32::assert_from(beat_offset);
+        let beat_offset = beat_offset as u32;
         let sample = self.synth.sample(beat_offset);
 
         let global_offset = i32::assert_from(self.global_offset);

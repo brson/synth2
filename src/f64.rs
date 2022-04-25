@@ -81,7 +81,7 @@ pub struct OscillatorHz {
 }
 
 impl OscillatorHz {
-    pub fn sample(&self, offset: Snat32) -> One64 {
+    pub fn sample(&self, offset: u32) -> One64 {
         let period = self.freq.as_samples(self.sample_rate);
         let osc = Oscillator {
             period,
@@ -109,7 +109,7 @@ enum OscillatorStage {
 }
 
 impl Oscillator {
-    pub fn sample(&self, offset: Snat32) -> One64 {
+    pub fn sample(&self, offset: u32) -> One64 {
         let offset: f64 = offset.into();
         let period: f64 = self.period.into();
         let triangleness: f64 = self.triangleness.into();
@@ -193,7 +193,7 @@ pub struct Noise {
 }
 
 impl Noise {
-    pub fn sample(&self, offset: Snat32) -> One64 {
+    pub fn sample(&self, offset: u32) -> One64 {
         // Use a hash function to generate a pseudo-random rng seed
         // based on the noise seed and the offset,
         // then an rng to generate a sample with the correct distribution.
@@ -214,7 +214,7 @@ impl Noise {
 
         let mut hasher = fxhash::FxHasher::default();
         hasher.write_u32(self.seed);
-        hasher.write_u32(i32::from(offset) as u32);
+        hasher.write_u32(offset);
         let rand_u64 = hasher.finish();
         let mut rng = rand_pcg::Pcg64Mcg::new(rand_u64.into());
         let rand_f64: f64 = rng.gen_range(-1.0..=1.0);
@@ -246,7 +246,7 @@ enum AdsrStage {
 }
 
 impl AdsrMs {
-    pub fn sample(&self, offset: Snat32, release_ms: Option<Ms64>) -> ZOne64 {
+    pub fn sample(&self, offset: u32, release_ms: Option<Ms64>) -> ZOne64 {
         let release_offset = release_ms.map(|ms| ms.as_samples(self.sample_rate));
         let sample_adsr = Adsr {
             attack: self.attack.as_samples(self.sample_rate),
@@ -260,7 +260,7 @@ impl AdsrMs {
 
 
 impl Adsr {
-    pub fn sample(&self, offset: Snat32, release_offset: Option<u32>) -> ZOne64 {
+    pub fn sample(&self, offset: u32, release_offset: Option<u32>) -> ZOne64 {
         let attack: f64 = self.attack.into();
         let decay: f64 = self.decay.into();
         let sustain: f64 = self.sustain.into();
@@ -468,7 +468,7 @@ fn write_image_ch(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
 
 fn fill_buf_osc(buf: &mut [f64], osc: Oscillator) {
     for i in 0..buf.len() {
-        let sample = osc.sample(Snat32::assert_from(i as i32));
+        let sample = osc.sample(i as u32);
         buf[i] = sample.into();
     }
 }
@@ -482,7 +482,7 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
 fn fill_buf_adsr(buf: &mut [f64], adsr: Adsr, release_offset: u32) {
     for i in 0..buf.len() {
         let sample = adsr.sample(
-            Snat32::assert_from(i as i32),
+            i as u32,
             Some(release_offset)
         );
         buf[i] = sample.into();
