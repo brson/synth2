@@ -25,7 +25,7 @@ fn line_y_value_with_y_offset(
 pub const SAMPLE_RATE_KHZ: u32 = 32_000;
 const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
 
-pub fn saw_osc() -> Oscillator {
+fn saw_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(0_f64),
@@ -33,7 +33,7 @@ pub fn saw_osc() -> Oscillator {
     }
 }
 
-pub fn triangle_osc() -> Oscillator {
+fn triangle_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(1_f64),
@@ -41,7 +41,7 @@ pub fn triangle_osc() -> Oscillator {
     }
 }
 
-pub fn square_osc() -> Oscillator {
+fn square_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(0_f64),
@@ -49,7 +49,7 @@ pub fn square_osc() -> Oscillator {
     }
 }
 
-pub fn funky_square_osc() -> Oscillator {
+fn funky_square_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(1_f64 / 4_f64),
@@ -85,7 +85,7 @@ impl OscillatorHz {
     }
 }
 
-pub struct Oscillator {
+struct Oscillator {
     pub period: u32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square

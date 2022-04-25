@@ -227,13 +227,6 @@ fn run_sequencer(ctx: SequencerContext) -> Result<()> {
     use crate::f64;
     use crate::math::*;
 
-    let mut offset = 0;
-    let osc = f64::square_osc();
-    let mut lpf = f64::LowPassFilter::new(
-        ZPos64::assert_from(440.0 * 1.5),
-        f64::SAMPLE_RATE_KHZ,
-    );
-
     loop {
         match ctx.rx.recv()? {
             SequencerMsg::Exit => {
@@ -241,11 +234,6 @@ fn run_sequencer(ctx: SequencerContext) -> Result<()> {
             }
             SequencerMsg::FillBuffer(mut buffer) => {
                 for i in 0..buffer.len() {
-                    /*let sample = osc.sample(Snat32::assert_from(offset)).into();
-                    let sample = lpf.process(sample);
-                    buffer[i] = sample;
-                    offset += 1;*/
-
                     let sample = seq.next_sample();
                     buffer[i] = sample;
                 }
