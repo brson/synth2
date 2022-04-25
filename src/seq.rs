@@ -77,14 +77,14 @@ impl Sequencer {
     pub fn new() -> Sequencer {
 
         let bpm = Pos64::assert_from(40.0);
-        let sample_rate = SampleRateKhz(SAMPLE_RATE_KHZ as u32);
+        let sample_rate = SampleRateKhz(SAMPLE_RATE_KHZ);
         let freq = 80.0;
         let synth = Synth {
             sample_rate,
             osc: square_osc_hz(Hz64::assert_from(freq)),
             lpf: LowPassFilter::new(
                 ZPos64::assert_from(freq),
-                Snat32::assert_from(SAMPLE_RATE_KHZ),
+                SAMPLE_RATE_KHZ,
             ),
             adsr: AdsrMs {
                 sample_rate,

@@ -231,7 +231,7 @@ fn run_sequencer(ctx: SequencerContext) -> Result<()> {
     let osc = f64::square_osc();
     let mut lpf = f64::LowPassFilter::new(
         ZPos64::assert_from(440.0 * 1.5),
-        Snat32::assert_from(f64::SAMPLE_RATE_KHZ),
+        f64::SAMPLE_RATE_KHZ,
     );
 
     loop {

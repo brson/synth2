@@ -22,12 +22,12 @@ fn line_y_value_with_y_offset(
     y_value + y_offset
 }
 
-pub const SAMPLE_RATE_KHZ: i32 = 32_000;
-const A440_SAMPLES: i32 = SAMPLE_RATE_KHZ / 440;
+pub const SAMPLE_RATE_KHZ: u32 = 32_000;
+const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
 
 pub fn saw_osc() -> Oscillator {
     Oscillator {
-        period: A440_SAMPLES as u32,
+        period: A440_SAMPLES,
         phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(0_f64),
@@ -36,7 +36,7 @@ pub fn saw_osc() -> Oscillator {
 
 pub fn triangle_osc() -> Oscillator {
     Oscillator {
-        period: A440_SAMPLES as u32,
+        period: A440_SAMPLES,
         phase: 0,
         triangleness: ZOne64::assert_from(1_f64),
         squareness: ZOne64::assert_from(0_f64),
@@ -45,7 +45,7 @@ pub fn triangle_osc() -> Oscillator {
 
 pub fn square_osc() -> Oscillator {
     Oscillator {
-        period: A440_SAMPLES as u32,
+        period: A440_SAMPLES,
         phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
@@ -54,7 +54,7 @@ pub fn square_osc() -> Oscillator {
 
 pub fn funky_square_osc() -> Oscillator {
     Oscillator {
-        period: A440_SAMPLES as u32,
+        period: A440_SAMPLES,
         phase: 0,
         triangleness: ZOne64::assert_from(1_f64 / 4_f64),
         squareness: ZOne64::assert_from(1_f64 / 4_f64),
@@ -63,7 +63,7 @@ pub fn funky_square_osc() -> Oscillator {
 
 pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
     OscillatorHz {
-        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ as u32),
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
         freq,
         phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
@@ -340,14 +340,14 @@ impl Adsr {
 #[derive(Debug)]
 pub struct LowPassFilter {
     pub freq: ZPos64,
-    sample_rate: Snat32,
+    sample_rate: u32,
     a0: f64,
     b1: f64,
     last: f64,
 }
 
 impl LowPassFilter {
-    pub fn new(freq: ZPos64, sample_rate: Snat32) -> LowPassFilter {
+    pub fn new(freq: ZPos64, sample_rate: u32) -> LowPassFilter {
         let x = (-2.0 * std::f64::consts::PI * f64::from(freq) / f64::from(sample_rate)).exp();
         LowPassFilter {
             freq,
@@ -507,7 +507,7 @@ fn write_test_lpf() -> Result<()> {
     fill_buf_osc(&mut buf, osc);
     let mut lpf = LowPassFilter::new(
         ZPos64::assert_from(440.0 * 2.0),
-        Snat32::assert_from(SAMPLE_RATE_KHZ),
+        SAMPLE_RATE_KHZ,
     );
     for i in 0..buf.len() {
         buf[i] = lpf.process(buf[i]);
