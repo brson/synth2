@@ -28,7 +28,6 @@ const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
 pub fn saw_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
-        phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
@@ -37,7 +36,6 @@ pub fn saw_osc() -> Oscillator {
 pub fn triangle_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
-        phase: 0,
         triangleness: ZOne64::assert_from(1_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
@@ -46,7 +44,6 @@ pub fn triangle_osc() -> Oscillator {
 pub fn square_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
-        phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
     }
@@ -55,7 +52,6 @@ pub fn square_osc() -> Oscillator {
 pub fn funky_square_osc() -> Oscillator {
     Oscillator {
         period: A440_SAMPLES,
-        phase: 0,
         triangleness: ZOne64::assert_from(1_f64 / 4_f64),
         squareness: ZOne64::assert_from(1_f64 / 4_f64),
     }
@@ -65,7 +61,6 @@ pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
     OscillatorHz {
         sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ),
         freq,
-        phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
     }
@@ -74,10 +69,8 @@ pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
 pub struct OscillatorHz {
     pub sample_rate: SampleRateKhz,
     pub freq: Hz64,
-    pub phase: i32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
-    //pulse_width: u32,
 }
 
 impl OscillatorHz {
@@ -85,7 +78,6 @@ impl OscillatorHz {
         let period = self.freq.as_samples(self.sample_rate);
         let osc = Oscillator {
             period,
-            phase: self.phase,
             triangleness: self.triangleness,
             squareness: self.squareness,
         };
@@ -95,10 +87,8 @@ impl OscillatorHz {
 
 pub struct Oscillator {
     pub period: u32,
-    pub phase: i32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
-    //pulse_width: u32,
 }
 
 enum OscillatorStage {
