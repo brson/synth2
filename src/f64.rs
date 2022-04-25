@@ -25,32 +25,32 @@ fn line_y_value_with_y_offset(
 pub const SAMPLE_RATE_KHZ: u32 = 32_000;
 const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
 
-fn saw_osc() -> TriSquareOscillator {
-    TriSquareOscillator {
+fn saw_osc() -> AngleOscillator {
+    AngleOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
 }
 
-fn triangle_osc() -> TriSquareOscillator {
-    TriSquareOscillator {
+fn triangle_osc() -> AngleOscillator {
+    AngleOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(1_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
 }
 
-fn square_osc() -> TriSquareOscillator {
-    TriSquareOscillator {
+fn square_osc() -> AngleOscillator {
+    AngleOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
     }
 }
 
-fn funky_square_osc() -> TriSquareOscillator {
-    TriSquareOscillator {
+fn funky_square_osc() -> AngleOscillator {
+    AngleOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(1_f64 / 4_f64),
         squareness: ZOne64::assert_from(1_f64 / 4_f64),
@@ -78,7 +78,7 @@ pub struct OscillatorHz {
 impl OscillatorHz {
     pub fn sample(&self, offset: u32) -> One64 {
         let period = self.freq.as_samples(self.sample_rate);
-        let angle_osc = TriSquareOscillator {
+        let angle_osc = AngleOscillator {
             period,
             triangleness: self.triangleness,
             squareness: self.squareness,
@@ -114,20 +114,20 @@ impl SinOscillator {
     }
 }
 
-struct TriSquareOscillator {
+struct AngleOscillator {
     pub period: u32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
 }
 
-enum TriSquareOscillatorStage {
+enum AngleOscillatorStage {
     InitialRise,
     InitialFall,
     FinalFall,
     FinalRise,
 }
 
-impl TriSquareOscillator {
+impl AngleOscillator {
     pub fn sample(&self, offset: u32) -> One64 {
         let offset: f64 = offset.into();
         let period: f64 = self.period.into();
@@ -150,20 +150,20 @@ impl TriSquareOscillator {
             let in_second_half_fall = in_fall && !in_first_half_fall;
 
             if in_initial_rise {
-                TriSquareOscillatorStage::InitialRise
+                AngleOscillatorStage::InitialRise
             } else if in_first_half_fall {
-                TriSquareOscillatorStage::InitialFall
+                AngleOscillatorStage::InitialFall
             } else if in_second_half_fall {
-                TriSquareOscillatorStage::FinalFall
+                AngleOscillatorStage::FinalFall
             } else if in_final_rise {
-                TriSquareOscillatorStage::FinalRise
+                AngleOscillatorStage::FinalRise
             } else {
                 unreachable!()
             }
         };
 
         match stage {
-            TriSquareOscillatorStage::InitialRise => {
+            AngleOscillatorStage::InitialRise => {
                 let rise = 1.0;
                 let run = half_rise_time;
                 let x_offset = osc_offset;
@@ -173,7 +173,7 @@ impl TriSquareOscillator {
                 );
                 One64::assert_from(sample)
             }
-            TriSquareOscillatorStage::InitialFall => {
+            AngleOscillatorStage::InitialFall => {
                 let rise = -(1.0 - squareness);
                 let run = half_fall_time;
                 let x_offset = osc_offset - half_rise_time;
@@ -183,7 +183,7 @@ impl TriSquareOscillator {
                 );
                 One64::assert_from(sample)
             }
-            TriSquareOscillatorStage::FinalFall => {
+            AngleOscillatorStage::FinalFall => {
                 let rise = -(1.0 - squareness);
                 let run = half_fall_time;
                 let x_offset = osc_offset - half_period;
@@ -193,7 +193,7 @@ impl TriSquareOscillator {
                 );
                 One64::assert_from(sample)
             }
-            TriSquareOscillatorStage::FinalRise => {
+            AngleOscillatorStage::FinalRise => {
                 let rise = 1.0;
                 let run = half_rise_time;
                 let x_offset = osc_offset - half_rise_time - fall_time;
@@ -485,14 +485,14 @@ fn write_image_ch(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
     Ok(())
 }
 
-fn fill_buf_osc(buf: &mut [f64], osc: TriSquareOscillator) {
+fn fill_buf_osc(buf: &mut [f64], osc: AngleOscillator) {
     for i in 0..buf.len() {
         let sample = osc.sample(i as u32);
         buf[i] = sample.into();
     }
 }
 
-fn write_test_osc(name: &str, osc: TriSquareOscillator) -> Result<()> {
+fn write_test_osc(name: &str, osc: AngleOscillator) -> Result<()> {
     let mut buf = vec![0_f64; A440_SAMPLES as usize];
     fill_buf_osc(&mut buf, osc);
     write_image_ch(&buf, &PathBuf::from("out"), name)
