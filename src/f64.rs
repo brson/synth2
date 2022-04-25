@@ -77,7 +77,7 @@ pub struct OscillatorHz {
     pub phase: i32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
-    //pulse_width: Snat32,
+    //pulse_width: u32,
 }
 
 impl OscillatorHz {
@@ -98,7 +98,7 @@ pub struct Oscillator {
     pub phase: i32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
-    //pulse_width: Snat32,
+    //pulse_width: u32,
 }
 
 enum OscillatorStage {

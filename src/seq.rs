@@ -16,8 +16,8 @@ struct Clip {
 }
 
 struct Note {
-    start_sample: Snat32,
-    sample_length: Snat32,
+    start_sample: u32,
+    sample_length: u32,
 }
 
 struct Synth2 {
@@ -68,7 +68,7 @@ impl Synth {
 }
 
 pub struct Sequencer {
-    global_offset: Snat32,
+    global_offset: u32,
     bpm: Pos64,
     synth: Synth,
 }
@@ -105,7 +105,7 @@ impl Sequencer {
         };
         
         Sequencer {
-            global_offset: Snat32::assert_from(0),
+            global_offset: 0,
             bpm,
             synth,
         }
@@ -121,9 +121,8 @@ impl Sequencer {
         let beat_offset = beat_offset as u32;
         let sample = self.synth.sample(beat_offset);
 
-        let global_offset = i32::assert_from(self.global_offset);
-        let global_offset = global_offset.checked_add(1).expect("overflow");
-        self.global_offset = Snat32::assert_from(global_offset);
+        let global_offset = self.global_offset.checked_add(1).expect("overflow");
+        self.global_offset = global_offset;
 
         sample
     }
