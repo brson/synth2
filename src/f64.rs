@@ -23,39 +23,6 @@ fn line_y_value_with_y_offset(
 }
 
 pub const SAMPLE_RATE_KHZ: u32 = 32_000;
-const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
-
-fn saw_osc() -> AngleOscillator {
-    AngleOscillator {
-        period: A440_SAMPLES,
-        triangleness: ZOne64::assert_from(0_f64),
-        squareness: ZOne64::assert_from(0_f64),
-    }
-}
-
-fn triangle_osc() -> AngleOscillator {
-    AngleOscillator {
-        period: A440_SAMPLES,
-        triangleness: ZOne64::assert_from(1_f64),
-        squareness: ZOne64::assert_from(0_f64),
-    }
-}
-
-fn square_osc() -> AngleOscillator {
-    AngleOscillator {
-        period: A440_SAMPLES,
-        triangleness: ZOne64::assert_from(0_f64),
-        squareness: ZOne64::assert_from(1_f64),
-    }
-}
-
-fn funky_square_osc() -> AngleOscillator {
-    AngleOscillator {
-        period: A440_SAMPLES,
-        triangleness: ZOne64::assert_from(1_f64 / 4_f64),
-        squareness: ZOne64::assert_from(1_f64 / 4_f64),
-    }
-}
 
 pub fn saw_osc_hz(freq: Hz64) -> OscillatorHz {
     OscillatorHz {
@@ -565,15 +532,16 @@ fn write_image_ch(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
     Ok(())
 }
 
-fn fill_buf_osc(buf: &mut [f64], osc: AngleOscillator) {
+fn fill_buf_osc(buf: &mut [f64], osc: OscillatorHz) {
     for i in 0..buf.len() {
         let sample = osc.sample(i as u32);
         buf[i] = sample.into();
     }
 }
 
-fn write_test_osc(name: &str, osc: AngleOscillator) -> Result<()> {
-    let mut buf = vec![0_f64; A440_SAMPLES as usize];
+fn write_test_osc(name: &str, osc: OscillatorHz) -> Result<()> {
+    let period = osc.freq.as_samples(osc.sample_rate);
+    let mut buf = vec![0_f64; period as usize];
     fill_buf_osc(&mut buf, osc);
     write_image_ch(&buf, &PathBuf::from("out"), name)
 }
@@ -601,8 +569,10 @@ fn write_test_adsr() -> Result<()> {
 }
 
 fn write_test_lpf() -> Result<()> {
-    let osc = triangle_osc();
-    let mut buf = vec![0_f64; A440_SAMPLES as usize * 4];
+    let freq = Hz64::assert_from(440.0);
+    let osc = triangle_osc_hz(freq);
+    let period = freq.as_samples(osc.sample_rate);
+    let mut buf = vec![0_f64; period as usize * 4];
     fill_buf_osc(&mut buf, osc);
     let mut lpf = LowPassFilter::new(
         ZPos64::assert_from(440.0 * 2.0),
@@ -615,10 +585,11 @@ fn write_test_lpf() -> Result<()> {
 }
 
 pub fn run() -> Result<()> {
-    write_test_osc("f16-saw", saw_osc())?;
-    write_test_osc("f16-triangle", triangle_osc())?;
-    write_test_osc("f16-square", square_osc())?;
-    write_test_osc("f16-funky-square", funky_square_osc())?;
+    let freq = Hz64::assert_from(440.0);
+    write_test_osc("f16-saw", saw_osc_hz(freq))?;
+    write_test_osc("f16-triangle", triangle_osc_hz(freq))?;
+    write_test_osc("f16-square", square_osc_hz(freq))?;
+    write_test_osc("f16-funky-square", funky_osc_hz(freq))?;
     write_test_adsr()?;
     write_test_lpf()?;
 
