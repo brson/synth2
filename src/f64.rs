@@ -85,6 +85,22 @@ impl OscillatorHz {
     }
 }
 
+struct SinOscillator {
+    pub period: u32,
+}
+
+impl SinOscillator {
+    pub fn sample(&self, offset: u32) -> One64 {
+        let period = f64::from(self.period);
+        let offset = f64::from(offset);
+        let offset = offset % period;
+        let pi = std::f64::consts::PI;
+        let sin_offset = offset * pi / period;
+        let sample = sin_offset.sin();
+        One64::assert_from(sample)
+    }
+}
+
 struct TriSquareOscillator {
     pub period: u32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
