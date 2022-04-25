@@ -231,10 +231,10 @@ pub struct AdsrMs {
 }
 
 pub struct Adsr {
-    pub attack: Snat32,
-    pub decay: Snat32,
+    pub attack: u32,
+    pub decay: u32,
     pub sustain: ZOne64,
-    pub release: Snat32,
+    pub release: u32,
 }
 
 enum AdsrStage {
@@ -260,7 +260,7 @@ impl AdsrMs {
 
 
 impl Adsr {
-    pub fn sample(&self, offset: Snat32, release_offset: Option<Snat32>) -> ZOne64 {
+    pub fn sample(&self, offset: Snat32, release_offset: Option<u32>) -> ZOne64 {
         let attack: f64 = self.attack.into();
         let decay: f64 = self.decay.into();
         let sustain: f64 = self.sustain.into();
@@ -271,8 +271,8 @@ impl Adsr {
         let sustain_offset = attack + decay;
         let release_offset = f64::from(
             release_offset
-                .map(i32::from)
-                .unwrap_or(i32::MAX)
+                .map(u32::from)
+                .unwrap_or(u32::MAX)
         ).max(sustain_offset);
         let end_offset = release_offset + release;
 
@@ -479,11 +479,11 @@ fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
     write_image_ch(&buf, &PathBuf::from("out"), name)
 }
 
-fn fill_buf_adsr(buf: &mut [f64], adsr: Adsr, release_offset: i32) {
+fn fill_buf_adsr(buf: &mut [f64], adsr: Adsr, release_offset: u32) {
     for i in 0..buf.len() {
         let sample = adsr.sample(
             Snat32::assert_from(i as i32),
-            Some(Snat32::assert_from(release_offset))
+            Some(release_offset)
         );
         buf[i] = sample.into();
     }
@@ -492,10 +492,10 @@ fn fill_buf_adsr(buf: &mut [f64], adsr: Adsr, release_offset: i32) {
 fn write_test_adsr() -> Result<()> {
     let mut buf = vec![0_f64; 125];
     let adsr = Adsr {
-        attack: Snat32::assert_from(25),
-        decay: Snat32::assert_from(25),
+        attack: 25,
+        decay: 25,
         sustain: ZOne64::assert_from(0.5),
-        release: Snat32::assert_from(25),
+        release: 25,
     };
     fill_buf_adsr(&mut buf, adsr, 75);
     write_image_ch(&buf, &PathBuf::from("out"), "f64-adsr")
