@@ -3,13 +3,24 @@ use crate::math::*;
 
 pub struct Synth2 {
     pub sample_rate: SampleRateKhz,
+    pub osc: OscChain,
+    pub noise: NoiseChain,
+    pub mod_env: AdsrMs,
+}
+
+pub struct OscChain {
     pub osc: OscillatorHz,
     pub lpf: LowPassFilter,
-    pub amp_adsr: AdsrMs,
-    pub gain: ZPos64,
-    pub mod_adsr: AdsrMs,
-    pub lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
+    pub amp_env: AdsrMs,
     pub osc_mod_freq_multiplier: f64, // 0 = no mod, 1 = 1 octave
+    pub lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
+}
+
+pub struct NoiseChain {
+    pub noise: Noise,
+    pub lpf: LowPassFilter,
+    pub amp_env: AdsrMs,
+    pub lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
 }
 
 pub struct Synth {
