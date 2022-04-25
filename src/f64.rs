@@ -63,6 +63,7 @@ pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
         freq,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
+        sineness: ZOne64::assert_from(0_f64),
     }
 }
 
@@ -71,17 +72,29 @@ pub struct OscillatorHz {
     pub freq: Hz64,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
+    pub sineness: ZOne64, // 0 for saw/tri/square, 1 for sine
 }
 
 impl OscillatorHz {
     pub fn sample(&self, offset: u32) -> One64 {
         let period = self.freq.as_samples(self.sample_rate);
-        let osc = TriSquareOscillator {
+        let angle_osc = TriSquareOscillator {
             period,
             triangleness: self.triangleness,
             squareness: self.squareness,
         };
-        osc.sample(offset)
+        let sin_osc = SinOscillator {
+            period,
+        };
+        let angle_sample = f64::from(angle_osc.sample(offset));
+        let sin_sample = f64::from(sin_osc.sample(offset));
+
+        // Cross-fade between the angle_osc and sin_osc
+        let diff_range = sin_sample - angle_sample;
+        let angle_offset = diff_range * f64::from(self.sineness);
+        let sample = angle_sample + angle_offset;
+
+        One64::assert_from(sample)
     }
 }
 
