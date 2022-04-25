@@ -11,9 +11,9 @@ use anyhow::Result;
 fn main() -> Result<()> {
     env_logger::init();
 
-    //f64::run()?;
+    f64::run()?;
 
-    threads::run()?;
+    //threads::run()?;
 
     Ok(())
 }

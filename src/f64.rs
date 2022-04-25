@@ -155,7 +155,7 @@ impl SinOscillator {
         let offset = f64::from(offset);
         let offset = offset % period;
         let pi = std::f64::consts::PI;
-        let sin_offset = offset * pi / period;
+        let sin_offset = offset * pi * 2.0 / period;
         let sample = sin_offset.sin();
         One64::assert_from(sample)
     }
@@ -586,10 +586,15 @@ fn write_test_lpf() -> Result<()> {
 
 pub fn run() -> Result<()> {
     let freq = Hz64::assert_from(440.0);
-    write_test_osc("f16-saw", saw_osc_hz(freq))?;
-    write_test_osc("f16-triangle", triangle_osc_hz(freq))?;
-    write_test_osc("f16-square", square_osc_hz(freq))?;
-    write_test_osc("f16-funky-square", funky_osc_hz(freq))?;
+    write_test_osc("f64-saw", saw_osc_hz(freq))?;
+    write_test_osc("f64-triangle", triangle_osc_hz(freq))?;
+    write_test_osc("f64-square", square_osc_hz(freq))?;
+    write_test_osc("f64-funky", funky_osc_hz(freq))?;
+    write_test_osc("f64-sin", sin_osc_hz(freq))?;
+    write_test_osc("f64-rounded-saw", round_saw_osc_hz(freq))?;
+    write_test_osc("f64-rounded-triangle", round_triangle_osc_hz(freq))?;
+    write_test_osc("f64-rounded-square", round_square_osc_hz(freq))?;
+    write_test_osc("f64-rounded-funky", round_funky_osc_hz(freq))?;
     write_test_adsr()?;
     write_test_lpf()?;
 
