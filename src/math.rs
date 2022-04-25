@@ -145,7 +145,7 @@ impl TryFrom<f64> for Pos64 {
 
 /// Sample rate in khz
 #[derive(Copy, Clone)]
-pub struct SampleRateKhz(pub Snat32);
+pub struct SampleRateKhz(pub u32);
 
 /// Time in ms
 #[derive(Copy, Clone)]
@@ -154,8 +154,7 @@ pub struct Ms64(ZPos64);
 impl Ms64 {
     /// Get the time as samples
     pub fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
-        let sample_rate = i32::from(sample_rate.0);
-        let sample_rate = f64::from(sample_rate);
+        let sample_rate = f64::from(sample_rate.0);
         let ms = f64::from(self.0);
         let seconds = ms / 1000.0;
         let samples: f64 = sample_rate * seconds;
@@ -178,8 +177,7 @@ pub struct Hz64(Pos64);
 
 impl Hz64 {
     pub fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
-        let sample_rate = i32::from(sample_rate.0);
-        let sample_rate = f64::from(sample_rate);
+        let sample_rate = f64::from(sample_rate.0);
         let hz = f64::from(self.0);
         let period: f64 = sample_rate / hz;
         let period: i32 = period as i32;

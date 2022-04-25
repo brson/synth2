@@ -63,7 +63,7 @@ pub fn funky_square_osc() -> Oscillator {
 
 pub fn square_osc_hz(freq: Hz64) -> OscillatorHz {
     OscillatorHz {
-        sample_rate: SampleRateKhz(Snat32::assert_from(SAMPLE_RATE_KHZ)),
+        sample_rate: SampleRateKhz(SAMPLE_RATE_KHZ as u32),
         freq,
         phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
