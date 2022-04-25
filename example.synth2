@@ -2,8 +2,8 @@ osc TriangleOsc (
     freq,
 ) {
     freq: freq,
-    triangleness: 0,
-    squareness: 1,
+    triangleness: 1,
+    squareness: 0,
 }
 
 synth Kick {
