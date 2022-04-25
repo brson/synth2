@@ -27,7 +27,7 @@ const A440_SAMPLES: i32 = SAMPLE_RATE_KHZ / 440;
 
 pub fn saw_osc() -> Oscillator {
     Oscillator {
-        period: Snat32::assert_from(A440_SAMPLES),
+        period: A440_SAMPLES as u32,
         phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(0_f64),
@@ -36,7 +36,7 @@ pub fn saw_osc() -> Oscillator {
 
 pub fn triangle_osc() -> Oscillator {
     Oscillator {
-        period: Snat32::assert_from(A440_SAMPLES),
+        period: A440_SAMPLES as u32,
         phase: 0,
         triangleness: ZOne64::assert_from(1_f64),
         squareness: ZOne64::assert_from(0_f64),
@@ -45,7 +45,7 @@ pub fn triangle_osc() -> Oscillator {
 
 pub fn square_osc() -> Oscillator {
     Oscillator {
-        period: Snat32::assert_from(A440_SAMPLES),
+        period: A440_SAMPLES as u32,
         phase: 0,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
@@ -54,7 +54,7 @@ pub fn square_osc() -> Oscillator {
 
 pub fn funky_square_osc() -> Oscillator {
     Oscillator {
-        period: Snat32::assert_from(A440_SAMPLES),
+        period: A440_SAMPLES as u32,
         phase: 0,
         triangleness: ZOne64::assert_from(1_f64 / 4_f64),
         squareness: ZOne64::assert_from(1_f64 / 4_f64),
@@ -94,7 +94,7 @@ impl OscillatorHz {
 }
 
 pub struct Oscillator {
-    pub period: Snat32,
+    pub period: u32,
     pub phase: i32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square

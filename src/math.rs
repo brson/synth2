@@ -175,12 +175,11 @@ impl TryFrom<f64> for Ms64 {
 pub struct Hz64(Pos64);
 
 impl Hz64 {
-    pub fn as_samples(&self, sample_rate: SampleRateKhz) -> Snat32 {
+    pub fn as_samples(&self, sample_rate: SampleRateKhz) -> u32 {
         let sample_rate = f64::from(sample_rate.0);
         let hz = f64::from(self.0);
         let period: f64 = sample_rate / hz;
-        let period: i32 = period as i32;
-        Snat32::assert_from(period)
+        period as u32
     }
 }
 
