@@ -2,25 +2,6 @@ use crate::f64::*;
 use crate::math::*;
 use crate::synth::*;
 
-struct Set {
-    track: Vec<Track>,
-}
-
-struct Track {
-    name: String,
-    synth: Synth,
-    clips: Vec<Option<Clip>>,
-}
-
-struct Clip {
-    notes: Vec<Note>,
-}
-
-struct Note {
-    start_sample: u32,
-    sample_length: u32,
-}
-
 pub struct Sequencer {
     global_offset: u32,
     bpm: Pos64,
