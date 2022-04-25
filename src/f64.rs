@@ -25,32 +25,32 @@ fn line_y_value_with_y_offset(
 pub const SAMPLE_RATE_KHZ: u32 = 32_000;
 const A440_SAMPLES: u32 = SAMPLE_RATE_KHZ / 440;
 
-fn saw_osc() -> Oscillator {
-    Oscillator {
+fn saw_osc() -> TriSquareOscillator {
+    TriSquareOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
 }
 
-fn triangle_osc() -> Oscillator {
-    Oscillator {
+fn triangle_osc() -> TriSquareOscillator {
+    TriSquareOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(1_f64),
         squareness: ZOne64::assert_from(0_f64),
     }
 }
 
-fn square_osc() -> Oscillator {
-    Oscillator {
+fn square_osc() -> TriSquareOscillator {
+    TriSquareOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(0_f64),
         squareness: ZOne64::assert_from(1_f64),
     }
 }
 
-fn funky_square_osc() -> Oscillator {
-    Oscillator {
+fn funky_square_osc() -> TriSquareOscillator {
+    TriSquareOscillator {
         period: A440_SAMPLES,
         triangleness: ZOne64::assert_from(1_f64 / 4_f64),
         squareness: ZOne64::assert_from(1_f64 / 4_f64),
@@ -76,7 +76,7 @@ pub struct OscillatorHz {
 impl OscillatorHz {
     pub fn sample(&self, offset: u32) -> One64 {
         let period = self.freq.as_samples(self.sample_rate);
-        let osc = Oscillator {
+        let osc = TriSquareOscillator {
             period,
             triangleness: self.triangleness,
             squareness: self.squareness,
@@ -85,20 +85,20 @@ impl OscillatorHz {
     }
 }
 
-struct Oscillator {
+struct TriSquareOscillator {
     pub period: u32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
     pub squareness: ZOne64, // 0 for saw/tri, 1 for square
 }
 
-enum OscillatorStage {
+enum TriSquareOscillatorStage {
     InitialRise,
     InitialFall,
     FinalFall,
     FinalRise,
 }
 
-impl Oscillator {
+impl TriSquareOscillator {
     pub fn sample(&self, offset: u32) -> One64 {
         let offset: f64 = offset.into();
         let period: f64 = self.period.into();
@@ -121,20 +121,20 @@ impl Oscillator {
             let in_second_half_fall = in_fall && !in_first_half_fall;
 
             if in_initial_rise {
-                OscillatorStage::InitialRise
+                TriSquareOscillatorStage::InitialRise
             } else if in_first_half_fall {
-                OscillatorStage::InitialFall
+                TriSquareOscillatorStage::InitialFall
             } else if in_second_half_fall {
-                OscillatorStage::FinalFall
+                TriSquareOscillatorStage::FinalFall
             } else if in_final_rise {
-                OscillatorStage::FinalRise
+                TriSquareOscillatorStage::FinalRise
             } else {
                 unreachable!()
             }
         };
 
         match stage {
-            OscillatorStage::InitialRise => {
+            TriSquareOscillatorStage::InitialRise => {
                 let rise = 1.0;
                 let run = half_rise_time;
                 let x_offset = osc_offset;
@@ -144,7 +144,7 @@ impl Oscillator {
                 );
                 One64::assert_from(sample)
             }
-            OscillatorStage::InitialFall => {
+            TriSquareOscillatorStage::InitialFall => {
                 let rise = -(1.0 - squareness);
                 let run = half_fall_time;
                 let x_offset = osc_offset - half_rise_time;
@@ -154,7 +154,7 @@ impl Oscillator {
                 );
                 One64::assert_from(sample)
             }
-            OscillatorStage::FinalFall => {
+            TriSquareOscillatorStage::FinalFall => {
                 let rise = -(1.0 - squareness);
                 let run = half_fall_time;
                 let x_offset = osc_offset - half_period;
@@ -164,7 +164,7 @@ impl Oscillator {
                 );
                 One64::assert_from(sample)
             }
-            OscillatorStage::FinalRise => {
+            TriSquareOscillatorStage::FinalRise => {
                 let rise = 1.0;
                 let run = half_rise_time;
                 let x_offset = osc_offset - half_rise_time - fall_time;
@@ -456,14 +456,14 @@ fn write_image_ch(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
     Ok(())
 }
 
-fn fill_buf_osc(buf: &mut [f64], osc: Oscillator) {
+fn fill_buf_osc(buf: &mut [f64], osc: TriSquareOscillator) {
     for i in 0..buf.len() {
         let sample = osc.sample(i as u32);
         buf[i] = sample.into();
     }
 }
 
-fn write_test_osc(name: &str, osc: Oscillator) -> Result<()> {
+fn write_test_osc(name: &str, osc: TriSquareOscillator) -> Result<()> {
     let mut buf = vec![0_f64; A440_SAMPLES as usize];
     fill_buf_osc(&mut buf, osc);
     write_image_ch(&buf, &PathBuf::from("out"), name)
