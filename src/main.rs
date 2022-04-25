@@ -3,6 +3,7 @@
 mod f64;
 mod math;
 mod seq;
+mod synth;
 mod threads;
 
 use anyhow::Result;
