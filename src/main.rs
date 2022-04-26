@@ -2,6 +2,7 @@
 
 mod f64;
 mod math;
+mod oscillators;
 mod seq;
 mod synth;
 mod threads;
