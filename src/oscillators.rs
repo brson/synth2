@@ -69,13 +69,33 @@ impl SawOscillator {
 
 impl SineOscillator {
     pub fn sample(&self, offset: u32) -> One64 {
-        todo!()
+        let period = self.freq.as_samples(self.sample_rate);
+        let period = f64::from(period);
+        let offset = f64::from(offset);
+        let offset = offset % period;
+        let pi = std::f64::consts::PI;
+        let sin_offset = offset * pi * 2.0 / period;
+        let sample = sin_offset.sin();
+        One64::assert_from(sample)
     }
 }
 
 impl NoiseOscillator {
     pub fn sample(&self, offset: u32) -> One64 {
-        todo!()
+        // Use a hash function to generate a pseudo-random rng seed
+        // based on the noise seed and the offset,
+        // then an rng to generate a sample with the correct distribution.
+
+        use std::hash::Hasher;
+        use rand::Rng;
+
+        let mut hasher = fxhash::FxHasher::default();
+        hasher.write_u32(self.seed);
+        hasher.write_u32(offset);
+        let rand_u64 = hasher.finish();
+        let mut rng = rand_pcg::Pcg64Mcg::new(rand_u64.into());
+        let rand_f64: f64 = rng.gen_range(-1.0..=1.0);
+        One64::assert_from(rand_f64)
     }
 }
 
