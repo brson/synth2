@@ -473,36 +473,6 @@ impl<'this> ModulatedLowPassFilter<'this> {
     }
 }
 
-
-fn write_image(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
-    use plotters::prelude::*;
-
-    let filepath = outdir.join(file_stem).with_extension("png");
-
-    let root = BitMapBackend::new(&filepath, (1280, 720)).into_drawing_area();
-
-    root.fill(&WHITE)?;
-
-    let mut chart = ChartBuilder::on(&root)
-        .caption("Waveform", ("sans-serif", 50).into_font())
-        .margin(50_f64)
-        .set_label_area_size(LabelAreaPosition::Left, 100_f64)
-        .set_label_area_size(LabelAreaPosition::Bottom, 100_f64)
-        .build_cartesian_2d(0..buf.len(), (-1_f64)..(1_f64))?;
-
-    chart.configure_mesh()
-        .draw()?;
-
-    chart.draw_series(
-        LineSeries::new(
-            (0..).zip(buf.iter().copied()),
-            RED.mix(1.0).stroke_width(4),
-        )
-    )?;
-
-    Ok(())
-}
-
 fn write_image_ch(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
     use charts::{Chart, ScaleLinear, MarkerType, PointLabelPosition, LineSeriesView};
 
