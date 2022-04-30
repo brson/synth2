@@ -12,25 +12,21 @@ pub enum Oscillator {
 pub struct SquareOscillator {
     pub sample_rate: SampleRateKhz,
     pub freq: Hz64,
-    pub period: u32,
 }
 
 pub struct SawOscillator {
     pub sample_rate: SampleRateKhz,
     pub freq: Hz64,
-    pub period: u32,
 }
 
 pub struct TriangleOscillator {
     pub sample_rate: SampleRateKhz,
     pub freq: Hz64,
-    pub period: u32,
 }
 
 pub struct SineOscillator {
     pub sample_rate: SampleRateKhz,
     pub freq: Hz64,
-    pub period: u32,
 }
 
 pub struct NoiseOscillator {
