@@ -51,7 +51,19 @@ impl Oscillator {
 
 impl SquareOscillator {
     pub fn sample(&self, offset: u32) -> One64 {
-        todo!()
+        let period = self.freq.as_samples(self.sample_rate);
+        let period = f64::from(period);
+        let offset = f64::from(offset);
+        let offset = offset % period;
+
+        let half_period = period / 2.0;
+        let sample = if offset < half_period {
+            1.0
+        } else {
+            -1.0
+        };
+
+        One64::assert_from(sample)
     }
 }
 
