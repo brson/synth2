@@ -332,8 +332,8 @@ enum AdsrStage {
 }
 
 impl AdsrMs {
-    pub fn sample(&self, offset: u32, release_ms: Option<Ms64>) -> ZOne64 {
-        let release_offset = release_ms.map(|ms| ms.as_samples(self.sample_rate));
+    pub fn sample(&self, offset: u32, release: Option<Ms64>) -> ZOne64 {
+        let release_offset = release.map(|ms| ms.as_samples(self.sample_rate));
         let sample_adsr = Adsr {
             attack: self.attack.as_samples(self.sample_rate),
             decay: self.decay.as_samples(self.sample_rate),
