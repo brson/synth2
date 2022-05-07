@@ -12,9 +12,9 @@ pub struct Voice {
     pub osc: Oscillator,
     pub lpf: LowPassFilter,
     pub amp_env: AdsrMs,
+    pub mod_env: AdsrMs,
     pub osc_mod_freq_multiplier: f64, // 1 = no mod, 2 = 1 octave
     pub lpf_mod_range_multiplier: f64, // 1 = no mod, 2 = 1 octave
-    pub mod_env: AdsrMs,
 }
 
 impl Voice {
