@@ -2,6 +2,7 @@
 
 mod f64;
 mod envelopes;
+mod filters;
 mod math;
 mod oscillators;
 mod plotting;

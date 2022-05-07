@@ -165,6 +165,12 @@ impl Hz64 {
     }
 }
 
+impl From<Hz64> for f64 {
+    fn from(other: Hz64) -> f64 {
+        other.0.0
+    }
+}
+
 impl TryFrom<f64> for Hz64 {
     type Error = anyhow::Error;
 
