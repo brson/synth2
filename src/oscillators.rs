@@ -10,19 +10,15 @@ pub enum Oscillator {
 }
 
 pub struct SquareOscillator {
-    pub sample_rate: SampleRateKhz,
 }
 
 pub struct SawOscillator {
-    pub sample_rate: SampleRateKhz,
 }
 
 pub struct TriangleOscillator {
-    pub sample_rate: SampleRateKhz,
 }
 
 pub struct SineOscillator {
-    pub sample_rate: SampleRateKhz,
 }
 
 pub struct NoiseOscillator {
@@ -30,20 +26,30 @@ pub struct NoiseOscillator {
 }
 
 impl Oscillator {
-    pub fn sample(&self, freq: Hz64, offset: u32) -> One64 {
+    pub fn sample(
+        &self,
+        freq: Hz64,
+        sample_rate: SampleRateKhz,
+        offset: u32
+    ) -> One64 {
         match self {
-            Oscillator::Square(osc) => osc.sample(freq, offset),
-            Oscillator::Triangle(osc) => osc.sample(freq, offset),
-            Oscillator::Saw(osc) => osc.sample(freq, offset),
-            Oscillator::Sine(osc) => osc.sample(freq, offset),
+            Oscillator::Square(osc) => osc.sample(freq, sample_rate, offset),
+            Oscillator::Triangle(osc) => osc.sample(freq, sample_rate, offset),
+            Oscillator::Saw(osc) => osc.sample(freq, sample_rate, offset),
+            Oscillator::Sine(osc) => osc.sample(freq, sample_rate, offset),
             Oscillator::Noise(osc) => osc.sample(offset),
         }
     }
 }
 
 impl SquareOscillator {
-    pub fn sample(&self, freq: Hz64, offset: u32) -> One64 {
-        let period = freq.as_samples(self.sample_rate);
+    pub fn sample(
+        &self,
+        freq: Hz64,
+        sample_rate: SampleRateKhz,
+        offset: u32
+    ) -> One64 {
+        let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
         let offset = offset % period;
@@ -61,8 +67,13 @@ impl SquareOscillator {
 
 
 impl SawOscillator {
-    pub fn sample(&self, freq: Hz64, offset: u32) -> One64 {
-        let period = freq.as_samples(self.sample_rate);
+    pub fn sample(
+        &self,
+        freq: Hz64,
+        sample_rate: SampleRateKhz,
+        offset: u32
+    ) -> One64 {
+        let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
         let offset = offset % period;
@@ -81,8 +92,13 @@ impl SawOscillator {
 }
 
 impl TriangleOscillator {
-    pub fn sample(&self, freq: Hz64, offset: u32) -> One64 {
-        let period = freq.as_samples(self.sample_rate);
+    pub fn sample(
+        &self,
+        freq: Hz64,
+        sample_rate: SampleRateKhz,
+        offset: u32
+    ) -> One64 {
+        let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
         let offset = offset % period;
@@ -113,8 +129,13 @@ impl TriangleOscillator {
 }
 
 impl SineOscillator {
-    pub fn sample(&self, freq: Hz64, offset: u32) -> One64 {
-        let period = freq.as_samples(self.sample_rate);
+    pub fn sample(
+        &self,
+        freq: Hz64,
+        sample_rate: SampleRateKhz,
+        offset: u32
+    ) -> One64 {
+        let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
 
