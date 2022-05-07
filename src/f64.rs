@@ -309,7 +309,6 @@ impl Noise {
 }
 
 pub struct AdsrMs {
-    pub sample_rate: SampleRateKhz,
     pub attack: Ms64,
     pub decay: Ms64,
     pub sustain: ZOne64,
@@ -332,13 +331,18 @@ enum AdsrStage {
 }
 
 impl AdsrMs {
-    pub fn sample(&self, offset: u32, release: Option<Ms64>) -> ZOne64 {
-        let release_offset = release.map(|ms| ms.as_samples(self.sample_rate));
+    pub fn sample(
+        &self,
+        sample_rate: SampleRateKhz,
+        offset: u32,
+        release: Option<Ms64>
+    ) -> ZOne64 {
+        let release_offset = release.map(|ms| ms.as_samples(sample_rate));
         let sample_adsr = Adsr {
-            attack: self.attack.as_samples(self.sample_rate),
-            decay: self.decay.as_samples(self.sample_rate),
+            attack: self.attack.as_samples(sample_rate),
+            decay: self.decay.as_samples(sample_rate),
             sustain: self.sustain,
-            release: self.release.as_samples(self.sample_rate),
+            release: self.release.as_samples(sample_rate),
         };
         sample_adsr.sample(offset, release_offset)
     }
