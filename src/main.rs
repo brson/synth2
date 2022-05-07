@@ -4,6 +4,7 @@ mod f64;
 mod envelopes;
 mod math;
 mod oscillators;
+mod plotting;
 mod seq;
 mod synth;
 mod threads;
