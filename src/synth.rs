@@ -5,11 +5,11 @@ use crate::envelopes::Adsr;
 
 pub struct Synth2 {
     pub sample_rate: SampleRateKhz,
-    pub voice1: Voice,
-    pub voice2: Voice,
+    pub partial1: Partial,
+    pub partial2: Partial,
 }
 
-pub struct Voice {
+pub struct Partial {
     pub osc: Oscillator,
     pub lpf: LowPassFilter,
     pub amp_env: Adsr,
@@ -18,7 +18,7 @@ pub struct Voice {
     pub lpf_mod_range_multiplier: f64, // 1 = no mod, 2 = 1 octave
 }
 
-impl Voice {
+impl Partial {
 }
 
 pub struct Synth {
