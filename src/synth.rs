@@ -6,15 +6,18 @@ pub struct Synth2 {
     pub sample_rate: SampleRateKhz,
     pub voice1: Voice,
     pub voice2: Voice,
-    pub mod_env: AdsrMs,
 }
 
 pub struct Voice {
     pub osc: Oscillator,
     pub lpf: LowPassFilter,
     pub amp_env: AdsrMs,
-    pub osc_mod_freq_multiplier: f64, // 0 = no mod, 1 = 1 octave
-    pub lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
+    pub osc_mod_freq_multiplier: f64, // 1 = no mod, 2 = 1 octave
+    pub lpf_mod_range_multiplier: f64, // 1 = no mod, 2 = 1 octave
+    pub mod_env: AdsrMs,
+}
+
+impl Voice {
 }
 
 pub struct Synth {
