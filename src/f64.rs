@@ -308,18 +308,11 @@ impl Noise {
     }
 }
 
-pub struct AdsrMs {
+pub struct Adsr {
     pub attack: Ms64,
     pub decay: Ms64,
     pub sustain: ZOne64,
     pub release: Ms64,
-}
-
-pub struct Adsr {
-    pub attack: u32,
-    pub decay: u32,
-    pub sustain: ZOne64,
-    pub release: u32,
 }
 
 enum AdsrStage {
@@ -330,31 +323,17 @@ enum AdsrStage {
     End,
 }
 
-impl AdsrMs {
+impl Adsr {
     pub fn sample(
         &self,
         sample_rate: SampleRateKhz,
         offset: u32,
-        release: Option<Ms64>
+        release_offset: Option<u32>
     ) -> ZOne64 {
-        let release_offset = release.map(|ms| ms.as_samples(sample_rate));
-        let sample_adsr = Adsr {
-            attack: self.attack.as_samples(sample_rate),
-            decay: self.decay.as_samples(sample_rate),
-            sustain: self.sustain,
-            release: self.release.as_samples(sample_rate),
-        };
-        sample_adsr.sample(offset, release_offset)
-    }
-}
-
-
-impl Adsr {
-    pub fn sample(&self, offset: u32, release_offset: Option<u32>) -> ZOne64 {
-        let attack: f64 = self.attack.into();
-        let decay: f64 = self.decay.into();
-        let sustain: f64 = self.sustain.into();
-        let release: f64 = self.release.into();
+        let attack = f64::from(self.attack.as_samples(sample_rate));
+        let decay = f64::from(self.decay.as_samples(sample_rate));
+        let sustain = f64::from(self.sustain);
+        let release = f64::from(self.release.as_samples(sample_rate));
 
         let offset: f64 = offset.into();
         let decay_offset = attack;
@@ -522,75 +501,6 @@ fn write_image_ch(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
         //.add_bottom_axis_label("Custom X Axis Label")
         .save(filepath)
         .map_err(|e| anyhow!("{}", e))?;
-
-    Ok(())
-}
-
-fn fill_buf_osc(buf: &mut [f64], osc: OscillatorHz) {
-    for i in 0..buf.len() {
-        let sample = osc.sample(i as u32);
-        buf[i] = sample.into();
-    }
-}
-
-fn write_test_osc(name: &str, osc: OscillatorHz) -> Result<()> {
-    let period = osc.freq.as_samples(osc.sample_rate);
-    let mut buf = vec![0_f64; period as usize];
-    fill_buf_osc(&mut buf, osc);
-    write_image_ch(&buf, &PathBuf::from("out"), name)
-}
-
-fn fill_buf_adsr(buf: &mut [f64], adsr: Adsr, release_offset: u32) {
-    for i in 0..buf.len() {
-        let sample = adsr.sample(
-            i as u32,
-            Some(release_offset)
-        );
-        buf[i] = sample.into();
-    }
-}
-
-fn write_test_adsr() -> Result<()> {
-    let mut buf = vec![0_f64; 125];
-    let adsr = Adsr {
-        attack: 25,
-        decay: 25,
-        sustain: ZOne64::assert_from(0.5),
-        release: 25,
-    };
-    fill_buf_adsr(&mut buf, adsr, 75);
-    write_image_ch(&buf, &PathBuf::from("out"), "f64-adsr")
-}
-
-fn write_test_lpf() -> Result<()> {
-    let freq = Hz64::assert_from(440.0);
-    let osc = triangle_osc_hz(freq);
-    let period = freq.as_samples(osc.sample_rate);
-    let mut buf = vec![0_f64; period as usize * 4];
-    fill_buf_osc(&mut buf, osc);
-    let mut lpf = LowPassFilter::new(
-        ZPos64::assert_from(440.0 * 2.0),
-        SAMPLE_RATE_KHZ,
-    );
-    for i in 0..buf.len() {
-        buf[i] = lpf.process(buf[i]);
-    }
-    write_image_ch(&buf, &PathBuf::from("out"), "f64-lpf")
-}
-
-pub fn run() -> Result<()> {
-    let freq = Hz64::assert_from(440.0);
-    write_test_osc("f64-saw", saw_osc_hz(freq))?;
-    write_test_osc("f64-triangle", triangle_osc_hz(freq))?;
-    write_test_osc("f64-square", square_osc_hz(freq))?;
-    write_test_osc("f64-funky", funky_osc_hz(freq))?;
-    write_test_osc("f64-sin", sin_osc_hz(freq))?;
-    write_test_osc("f64-rounded-saw", round_saw_osc_hz(freq))?;
-    write_test_osc("f64-rounded-triangle", round_triangle_osc_hz(freq))?;
-    write_test_osc("f64-rounded-square", round_square_osc_hz(freq))?;
-    write_test_osc("f64-rounded-funky", round_funky_osc_hz(freq))?;
-    write_test_adsr()?;
-    write_test_lpf()?;
 
     Ok(())
 }

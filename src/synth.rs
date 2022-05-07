@@ -11,8 +11,8 @@ pub struct Synth2 {
 pub struct Voice {
     pub osc: Oscillator,
     pub lpf: LowPassFilter,
-    pub amp_env: AdsrMs,
-    pub mod_env: AdsrMs,
+    pub amp_env: Adsr,
+    pub mod_env: Adsr,
     pub osc_mod_freq_multiplier: f64, // 1 = no mod, 2 = 1 octave
     pub lpf_mod_range_multiplier: f64, // 1 = no mod, 2 = 1 octave
 }
@@ -24,18 +24,18 @@ pub struct Synth {
     pub sample_rate: SampleRateKhz,
     pub osc: OscillatorHz,
     pub lpf: LowPassFilter,
-    pub adsr: AdsrMs,
+    pub adsr: Adsr,
     pub gain: ZPos64,
-    pub lpf_mod_adsr: AdsrMs,
+    pub lpf_mod_adsr: Adsr,
     pub lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
 }
 
 impl Synth {
     pub fn sample(&mut self, offset: u32) -> f64 {
-        let release = Some(Ms64::assert_from(50.0));
+        let release_offset = Some(Ms64::assert_from(100.0).as_samples(self.sample_rate));
 
         let mut modulated_lpf = {
-            let lpf_mod_sample = self.lpf_mod_adsr.sample(self.sample_rate, offset, release);
+            let lpf_mod_sample = self.lpf_mod_adsr.sample(self.sample_rate, offset, release_offset);
             let lpf_mod_sample = f64::from(lpf_mod_sample);
             let lpf_freq = f64::from(self.lpf.freq);
             let addtl_lpf_freq = lpf_freq * lpf_mod_sample * self.lpf_mod_range_multiplier;
@@ -47,8 +47,7 @@ impl Synth {
 
         let sample = f64::from(self.osc.sample(offset));
         let sample = modulated_lpf.process(sample);
-        let release_offset = Ms64::assert_from(1000.0).as_samples(self.sample_rate);
-        let adsr_sample = self.adsr.sample(self.sample_rate, offset, release);
+        let adsr_sample = self.adsr.sample(self.sample_rate, offset, release_offset);
 
         let sample = sample * f64::from(adsr_sample);
         let sample = sample * f64::from(self.gain);

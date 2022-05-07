@@ -40,14 +40,14 @@ impl Sequencer {
                 ZPos64::assert_from(freq),
                 SAMPLE_RATE_KHZ,
             ),
-            adsr: AdsrMs {
+            adsr: Adsr {
                 attack: Ms64::assert_from(5.0),
                 decay: Ms64::assert_from(900.0),
                 sustain: ZOne64::assert_from(0.1),
                 release: Ms64::assert_from(100.0),
             },
             gain: ZPos64::assert_from(1.0),
-            lpf_mod_adsr: AdsrMs {
+            lpf_mod_adsr: Adsr {
                 attack: Ms64::assert_from(0.0),
                 decay: Ms64::assert_from(50.0),
                 sustain: ZOne64::assert_from(0.0),
