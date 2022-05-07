@@ -8,6 +8,7 @@ mod oscillators;
 mod plotting;
 mod seq;
 mod synth;
+mod synth2;
 mod threads;
 
 use anyhow::Result;
