@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 mod f64;
+mod envelopes;
 mod math;
 mod oscillators;
 mod seq;

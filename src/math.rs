@@ -3,6 +3,26 @@ use std::ops::Div;
 use std::cmp::{Ord, PartialOrd, Eq, PartialEq, Ordering};
 use std::fmt::Debug;
 
+pub fn line_y_value(
+    y_rise: f64,
+    x_run: f64,
+    x_value: f64,
+) -> f64 {
+    let slope = y_rise / x_run;
+    let y_value = slope * x_value;
+    y_value
+}
+
+pub fn line_y_value_with_y_offset(
+    y_rise: f64,
+    x_run: f64,
+    x_value: f64,
+    y_offset: f64,
+) -> f64 {
+    let y_value = line_y_value(y_rise, x_run, x_value);
+    y_value + y_offset
+}
+
 pub trait AssertFrom<From>: Sized {
     fn assert_from(value: From) -> Self;
 }

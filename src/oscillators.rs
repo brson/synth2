@@ -165,23 +165,3 @@ impl NoiseOscillator {
         One64::assert_from(rand_f64)
     }
 }
-
-fn line_y_value(
-    y_rise: f64,
-    x_run: f64,
-    x_value: f64,
-) -> f64 {
-    let slope = y_rise / x_run;
-    let y_value = slope * x_value;
-    y_value
-}
-
-fn line_y_value_with_y_offset(
-    y_rise: f64,
-    x_run: f64,
-    x_value: f64,
-    y_offset: f64,
-) -> f64 {
-    let y_value = line_y_value(y_rise, x_run, x_value);
-    y_value + y_offset
-}

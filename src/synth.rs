@@ -1,6 +1,7 @@
 use crate::f64::*;
 use crate::math::*;
 use crate::oscillators::Oscillator;
+use crate::envelopes::Adsr;
 
 pub struct Synth2 {
     pub sample_rate: SampleRateKhz,

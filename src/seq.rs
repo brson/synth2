@@ -1,6 +1,7 @@
 use crate::f64::*;
 use crate::math::*;
 use crate::synth::*;
+use crate::envelopes::Adsr;
 
 struct Set {
     track: Vec<Track>,
