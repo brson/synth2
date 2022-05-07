@@ -1,25 +1,19 @@
 use crate::f64::*;
 use crate::math::*;
+use crate::oscillators::Oscillator;
 
 pub struct Synth2 {
     pub sample_rate: SampleRateKhz,
-    pub osc: OscChain,
-    pub noise: NoiseChain,
+    pub voice1: Voice,
+    pub voice2: Voice,
     pub mod_env: AdsrMs,
 }
 
-pub struct OscChain {
-    pub osc: OscillatorHz,
+pub struct Voice {
+    pub osc: Oscillator,
     pub lpf: LowPassFilter,
     pub amp_env: AdsrMs,
     pub osc_mod_freq_multiplier: f64, // 0 = no mod, 1 = 1 octave
-    pub lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
-}
-
-pub struct NoiseChain {
-    pub noise: Noise,
-    pub lpf: LowPassFilter,
-    pub amp_env: AdsrMs,
     pub lpf_mod_range_multiplier: f64, // 0 = no mod, 1 = 1 octave
 }
 
