@@ -18,6 +18,20 @@ pub struct Partial {
     pub lpf_mod: f64, // 0 = no mod, 1 = 1 octave
 }
 
+impl Synth2 {
+    pub fn sample(
+        &mut self,
+        sample_rate: SampleRateKhz,
+        pitch: Hz64,
+        offset: u32,
+        release_offset: Option<u32>,
+    ) -> f64 {
+        let partial1_value = self.partial1.sample(sample_rate, pitch, offset, release_offset);
+        let partial2_value = self.partial2.sample(sample_rate, pitch, offset, release_offset);
+        partial1_value + partial2_value
+    }
+}
+
 impl Partial {
     pub fn sample(
         &mut self,
