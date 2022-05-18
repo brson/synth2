@@ -6,3 +6,6 @@ https://www.musicradar.com/how-to/how-to-recreate-classic-analogue-drum-sounds-i
 https://jamesmunns.com/blog/fixed-point-math/
 https://docs.rs/music-note/0.3.0/music_note/
 https://www.soundonsound.com/techniques/synthesizing-cowbells-claves
+https://github.com/greatest-ape/OctaSine
+https://docs.rs/vst/latest/vst/
+https://rolandcorp.com.au/blog/fantom-the-ultimate-guide

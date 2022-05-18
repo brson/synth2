@@ -1,14 +1,3 @@
-osc TriangleOsc (
-    freq,
-) {
-    freq: freq,
-    triangleness: 1,
-    squareness: 0,
-}
+synth mySynth {
 
-synth Kick {
-    osc-chain {
-        osc: TriangleOsc(440),
-        lpf: 
-    }
 }
