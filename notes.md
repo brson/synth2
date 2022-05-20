@@ -8,3 +8,5 @@ https://docs.rs/music-note/0.3.0/music_note/
 https://www.soundonsound.com/techniques/synthesizing-cowbells-claves
 https://github.com/greatest-ape/OctaSine
 https://docs.rs/vst/latest/vst/
+https://thewolfsound.com/sound-synthesis/wavetable-synthesis-algorithm/
+
