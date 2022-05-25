@@ -9,4 +9,5 @@ https://www.soundonsound.com/techniques/synthesizing-cowbells-claves
 https://github.com/greatest-ape/OctaSine
 https://docs.rs/vst/latest/vst/
 https://thewolfsound.com/sound-synthesis/wavetable-synthesis-algorithm/
-
+https://github.com/mtytel/vital
+https://github.com/surge-synthesizer
