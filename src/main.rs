@@ -11,6 +11,12 @@ mod synth;
 mod synth2;
 mod threads;
 
+mod try3 {
+    mod static_config;
+    //mod dynamic_config;
+    //mod state;
+}
+
 use anyhow::Result;
 
 fn main() -> Result<()> {
