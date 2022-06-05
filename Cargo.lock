@@ -78,6 +78,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "core_simd"
+version = "0.1.0"
+source = "git+https://github.com/rust-lang/portable-simd#f237f133c1c0c0025ac3d162c07a36cb18112051"
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -431,6 +436,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "charts",
+ "core_simd",
  "env_logger",
  "fxhash",
  "log",

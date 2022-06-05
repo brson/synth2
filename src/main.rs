@@ -1,3 +1,4 @@
+#![feature(portable_simd)]
 #![allow(unused)]
 
 mod f64;
@@ -16,6 +17,8 @@ mod try3 {
     //mod dynamic_config;
     //mod state;
 }
+
+mod simdtest;
 
 use anyhow::Result;
 
