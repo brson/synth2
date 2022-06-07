@@ -1,4 +1,4 @@
-use core_simd::{f32x4, u8x4};
+use core_simd::{f32x4, u8x4, mask32x4};
 use core_simd::{SimdFloat};
 
 pub struct OscillatorX4 {
@@ -14,7 +14,7 @@ impl OscillatorX4 {
         let period = self.period;
         let offset = offset as f32;
         let offset = f32x4::splat(offset);
-        let period_offset = offset % period;
+        let offset = offset % period;
 
         let square_sample = {
             let two = f32x4::splat(2.0);
@@ -29,7 +29,7 @@ impl OscillatorX4 {
         let saw_sample = {
             let x_rise = f32x4::splat(-2.0);
             let x_run = period;
-            let x_value = period_offset;
+            let x_value = offset;
             let y_offset = f32x4::splat(1.0);
 
             line_y_value_with_y_offset(
@@ -37,7 +37,7 @@ impl OscillatorX4 {
             )
         };
 
-        {
+        let tri_sample = {
             let two = f32x4::splat(2.0);
             let half_period = period / two;
 
@@ -51,7 +51,7 @@ impl OscillatorX4 {
                     x_rise, x_run, x_value, y_offset
                 )
             };
-            let try_second_half_sample = {
+            let tri_second_half_sample = {
                 let x_rise = f32x4::splat(2.0);
                 let x_run = half_period;
                 let x_value = offset - half_period;
@@ -62,8 +62,10 @@ impl OscillatorX4 {
                 )
             };
 
-            let in_first_half = offset < half_period;
-        }
+            let in_first_half: mask32x4 = (offset - half_period).is_sign_negative();
+
+            in_first_half.select(tri_first_half_sample, tri_second_half_sample)
+        };
 
         panic!()
     }
