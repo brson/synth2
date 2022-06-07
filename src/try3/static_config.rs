@@ -9,7 +9,7 @@ pub struct Layer {
     pub lpf: LowPassFilter,
     pub amp_env: Adsr,
     pub mod_env: Adsr,
-    pub mods: Modulations,
+    pub modulations: Modulations,
 }
 
 pub struct Modulations {
