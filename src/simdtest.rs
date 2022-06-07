@@ -12,7 +12,9 @@ const OSC_KIND_TRI: u8 = 3;
 
 impl OscillatorX4 {
     pub fn sample(&self, offset: u32) -> f32x4 {
+        let kind = self.kind;
         let period = self.period;
+
         let offset = offset as f32;
         let offset = f32x4::splat(offset);
         let offset = offset % period;
@@ -68,8 +70,6 @@ impl OscillatorX4 {
             in_first_half.select(tri_first_half_sample, tri_second_half_sample)
         };
 
-        let kind = self.kind;
-
         let is_kind_square = kind.simd_eq(u8x4::splat(OSC_KIND_SQUARE));
         let is_kind_saw = kind.simd_eq(u8x4::splat(OSC_KIND_SAW));
         let is_kind_tri = kind.simd_eq(u8x4::splat(OSC_KIND_TRI));
@@ -105,4 +105,32 @@ pub fn line_y_value_with_y_offset(
 ) -> f32x4 {
     let y_value = line_y_value(y_rise, x_run, x_value);
     y_value + y_offset
+}
+
+pub struct Adsr {
+    pub attack: f32x4, // +samples
+    pub decay: f32x4, // +samples
+    pub sustain: f32x4, // [0, 1]
+    pub release: f32x4, // +samples
+}
+
+impl Adsr {
+    pub fn sample(&self, offset: u32, release_offset: Option<u32>) -> f32x4 {
+        let attack = self.attack;
+        let decay = self.decay;
+        let sustain = self.sustain;
+        let release = self.release;
+
+        let offset = offset as f32;
+        let offset = f32x4::splat(offset);
+
+        let decay_offset = attack;
+        let sustain_offset = attack + decay;
+        let release_offset = release_offset.unwrap_or(u32::MAX) as f32;
+        let release_offset = f32x4::splat(release_offset);
+        let release_offset = release_offset.simd_max(sustain_offset);
+        let end_offset = release_offset + release;
+
+        todo!();
+    }
 }
