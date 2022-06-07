@@ -1,4 +1,4 @@
-pub const NUM_LAYERS: usize = 2;
+pub const NUM_LAYERS: usize = 4;
 
 pub struct Synth {
     pub layers: [Layer; NUM_LAYERS],
@@ -13,15 +13,14 @@ pub struct Layer {
 }
 
 pub struct Modulations {
-    pub osc_freq: f64,
-    pub lpf_freq: f64,
+    pub mod_env_to_osc_freq: f32,
+    pub mod_env_to_lpf_freq: f32,
 }
 
 pub enum Oscillator {
     Square,
     Saw,
     Triangle,
-    Sine,
     Noise,
 }
 
@@ -32,11 +31,11 @@ pub struct LowPassFilter {
 pub struct Adsr {
     pub attack: Ms,
     pub decay: Ms,
-    pub sustain: ZOne,
+    pub sustain: Unipolar,
     pub release: Ms,
 }
 
-pub struct Hz(pub f64);
-pub struct Ms(pub f64);
-pub struct ZOne(pub f64);
+pub struct Hz(pub f32);
+pub struct Ms(pub f32);
+pub struct Unipolar(pub f32);
 
