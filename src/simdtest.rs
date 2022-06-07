@@ -74,6 +74,15 @@ impl OscillatorX4 {
         let is_kind_saw = kind.simd_eq(u8x4::splat(OSC_KIND_SAW));
         let is_kind_tri = kind.simd_eq(u8x4::splat(OSC_KIND_TRI));
 
+        let is_kind_square = mask32x4::from(is_kind_square);
+        let is_kind_saw = mask32x4::from(is_kind_saw);
+        let is_kind_tri = mask32x4::from(is_kind_tri);
+
+        let sample = f32x4::splat(0.0);
+        let sample = is_kind_square.select(square_sample, sample);
+        let sample = is_kind_saw.select(saw_sample, sample);
+        let sample = is_kind_tri.select(tri_sample, sample);
+
         panic!()
     }
 }
