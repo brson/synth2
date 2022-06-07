@@ -27,10 +27,10 @@ impl OscillatorX4 {
         };
 
         let saw_sample = {
-            let x_rise = f32x4::from([-2.0; 4]);
+            let x_rise = f32x4::splat(-2.0);
             let x_run = period;
             let x_value = period_offset;
-            let y_offset = f32x4::from([1.0; 4]);
+            let y_offset = f32x4::splat(1.0);
 
             line_y_value_with_y_offset(
                 x_rise, x_run, x_value, y_offset
