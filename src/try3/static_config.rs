@@ -13,8 +13,8 @@ pub struct Layer {
 }
 
 pub struct Modulations {
-    pub mod_env_to_osc_freq: f32,
-    pub mod_env_to_lpf_freq: f32,
+    pub mod_env_to_osc_freq: Bipolar<5>,
+    pub mod_env_to_lpf_freq: Bipolar<5>,
 }
 
 pub enum Oscillator {
@@ -31,11 +31,11 @@ pub struct LowPassFilter {
 pub struct Adsr {
     pub attack: Ms,
     pub decay: Ms,
-    pub sustain: Unipolar,
+    pub sustain: Unipolar<1>,
     pub release: Ms,
 }
 
 pub struct Hz(pub f32);
 pub struct Ms(pub f32);
-pub struct Unipolar(pub f32);
-
+pub struct Bipolar<const N: u16>(pub f32);
+pub struct Unipolar<const N: u16>(pub f32);
