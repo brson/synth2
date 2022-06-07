@@ -1,5 +1,5 @@
 use core_simd::{f32x4, u8x4, mask32x4};
-use core_simd::{SimdFloat};
+use core_simd::{SimdFloat, SimdPartialEq, Mask};
 
 pub struct OscillatorX4 {
     kind: u8x4,
@@ -8,6 +8,7 @@ pub struct OscillatorX4 {
 
 const OSC_KIND_SQUARE: u8 = 1;
 const OSC_KIND_SAW: u8 = 2;
+const OSC_KIND_TRI: u8 = 3;
 
 impl OscillatorX4 {
     pub fn sample(&self, offset: u32) -> f32x4 {
@@ -66,6 +67,12 @@ impl OscillatorX4 {
 
             in_first_half.select(tri_first_half_sample, tri_second_half_sample)
         };
+
+        let kind = self.kind;
+
+        let is_kind_square = kind.simd_eq(u8x4::splat(OSC_KIND_SQUARE));
+        let is_kind_saw = kind.simd_eq(u8x4::splat(OSC_KIND_SAW));
+        let is_kind_tri = kind.simd_eq(u8x4::splat(OSC_KIND_TRI));
 
         panic!()
     }
