@@ -13,16 +13,16 @@ impl OscillatorX4 {
     pub fn sample(&self, offset: u32) -> f32x4 {
         let period = self.period;
         let offset = offset as f32;
-        let offset = f32x4::from([offset; 4]);
+        let offset = f32x4::splat(offset);
         let period_offset = offset % period;
 
         let square_sample = {
-            let two = f32x4::from([2.0; 4]);
+            let two = f32x4::splat(2.0);
             let half_period = period / two;
             if offset < half_period {
-                f32x4::from([1.0; 4])
+                f32x4::splat(1.0)
             } else {
-                f32x4::from([-1.0; 4])
+                f32x4::splat(-1.0)
             }
         };
 
