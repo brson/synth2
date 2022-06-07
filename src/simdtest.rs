@@ -36,6 +36,35 @@ impl OscillatorX4 {
                 x_rise, x_run, x_value, y_offset
             )
         };
+
+        {
+            let two = f32x4::splat(2.0);
+            let half_period = period / two;
+
+            let tri_first_half_sample = {
+                let x_rise = f32x4::splat(-2.0);
+                let x_run = half_period;
+                let x_value = offset;
+                let y_offset = f32x4::splat(1.0);
+
+                line_y_value_with_y_offset(
+                    x_rise, x_run, x_value, y_offset
+                )
+            };
+            let try_second_half_sample = {
+                let x_rise = f32x4::splat(2.0);
+                let x_run = half_period;
+                let x_value = offset - half_period;
+                let y_offset = f32x4::splat(-1.0);
+
+                line_y_value_with_y_offset(
+                    x_rise, x_run, x_value, y_offset
+                )
+            };
+
+            let in_first_half = offset < half_period;
+        }
+
         panic!()
     }
 }
