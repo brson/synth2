@@ -176,6 +176,13 @@ impl Adsr {
             f32x4::splat(0.0)
         };
 
-        todo!()
+        let sample = f32x4::splat(0.0);
+        let sample = in_attack.select(attack_sample, sample);
+        let sample = in_decay.select(decay_sample, sample);
+        let sample = in_sustain.select(sustain_sample, sample);
+        let sample = in_release.select(release_sample, sample);
+        let sample = in_end.select(end_sample, sample);
+
+        sample
     }
 }
