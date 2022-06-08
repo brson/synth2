@@ -139,23 +139,41 @@ impl Adsr {
         let in_end = !in_attack & !in_decay & !in_sustain & !in_release;
 
         let attack_sample = {
-            todo!()
+            let rise = f32x4::splat(1.0);
+            let run = attack;
+            let x_offset = offset;
+            let y_start = f32x4::splat(0.0);
+            line_y_value_with_y_offset(
+                rise, run, x_offset, y_start
+            )
         };
 
         let decay_sample = {
-            todo!()
+            let rise = sustain - f32x4::splat(1.0);
+            let run = decay;
+            let x_offset = offset - decay_offset;
+            let y_start = f32x4::splat(1.0);
+            line_y_value_with_y_offset(
+                rise, run, x_offset, y_start
+            )
         };
 
         let sustain_sample = {
-            todo!()
+            sustain
         };
 
         let release_sample = {
-            todo!()
+            let rise = -sustain;
+            let run = release;
+            let x_offset = offset - release_offset;
+            let y_start = sustain;
+            line_y_value_with_y_offset(
+                rise, run, x_offset, y_start
+            )
         };
 
         let end_sample = {
-            todo!()
+            f32x4::splat(0.0)
         };
 
         todo!()
