@@ -1,5 +1,5 @@
 use core_simd::{f32x4, u8x4, mask32x4, u32x4};
-use core_simd::{SimdFloat, SimdPartialEq, Mask};
+use core_simd::{SimdFloat, SimdPartialEq, Mask, SimdPartialOrd};
 
 pub struct OscillatorX4 {
     kind: u8x4,
@@ -66,7 +66,7 @@ impl OscillatorX4 {
                 )
             };
 
-            let in_first_half: mask32x4 = (offset - half_period).is_sign_negative();
+            let in_first_half = offset.simd_lt(half_period);
 
             in_first_half.select(tri_first_half_sample, tri_second_half_sample)
         };
@@ -132,6 +132,32 @@ impl Adsr {
         let release_offset = release_offset.simd_max(sustain_offset);
         let end_offset = release_offset + release;
 
-        todo!();
+        let in_attack = offset.simd_lt(decay_offset);
+        let in_decay = !in_attack & offset.simd_lt(sustain_offset);
+        let in_sustain = !in_attack & !in_decay & offset.simd_lt(release_offset);
+        let in_release = !in_attack & !in_decay & !in_sustain & offset.simd_lt(end_offset);
+        let in_end = !in_attack & !in_decay & !in_sustain & !in_release;
+
+        let attack_sample = {
+            todo!()
+        };
+
+        let decay_sample = {
+            todo!()
+        };
+
+        let sustain_sample = {
+            todo!()
+        };
+
+        let release_sample = {
+            todo!()
+        };
+
+        let end_sample = {
+            todo!()
+        };
+
+        todo!()
     }
 }
