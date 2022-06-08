@@ -116,14 +116,15 @@ pub struct Adsr {
 }
 
 impl Adsr {
-    pub fn sample(&self, offset: u32, release_offset: Option<u32>) -> f32x4 {
+    pub fn sample(&self, offset: u32x4, release_offset: Option<u32>) -> f32x4 {
         let attack = self.attack;
         let decay = self.decay;
         let sustain = self.sustain;
         let release = self.release;
 
-        let offset = offset as f32;
-        let offset = f32x4::splat(offset);
+        let offset = offset.to_array();
+        let offset = offset.map(|v| v as f32);
+        let offset = f32x4::from_array(offset);
 
         let decay_offset = attack;
         let sustain_offset = attack + decay;
