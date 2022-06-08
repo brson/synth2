@@ -1,4 +1,4 @@
-use core_simd::{f32x4, u8x4, mask32x4};
+use core_simd::{f32x4, u8x4, mask32x4, u32x4};
 use core_simd::{SimdFloat, SimdPartialEq, Mask};
 
 pub struct OscillatorX4 {
@@ -11,12 +11,13 @@ const OSC_KIND_SAW: u8 = 2;
 const OSC_KIND_TRI: u8 = 3;
 
 impl OscillatorX4 {
-    pub fn sample(&self, offset: u32) -> f32x4 {
+    pub fn sample(&self, offset: u32x4) -> f32x4 {
         let kind = self.kind;
         let period = self.period;
 
-        let offset = offset as f32;
-        let offset = f32x4::splat(offset);
+        let offset = offset.to_array();
+        let offset = offset.map(|v| v as f32);
+        let offset = f32x4::from_array(offset);
         let offset = offset % period;
 
         let square_sample = {
