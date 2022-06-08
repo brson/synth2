@@ -84,7 +84,7 @@ impl OscillatorX4 {
         let sample = is_kind_saw.select(saw_sample, sample);
         let sample = is_kind_tri.select(tri_sample, sample);
 
-        panic!()
+        sample
     }
 }
 
