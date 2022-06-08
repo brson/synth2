@@ -108,14 +108,14 @@ pub fn line_y_value_with_y_offset(
     y_value + y_offset
 }
 
-pub struct Adsr {
+pub struct AdsrX4 {
     pub attack: f32x4, // +samples
     pub decay: f32x4, // +samples
     pub sustain: f32x4, // [0, 1]
     pub release: f32x4, // +samples
 }
 
-impl Adsr {
+impl AdsrX4 {
     pub fn sample(&self, offset: u32x4, release_offset: Option<u32>) -> f32x4 {
         let attack = self.attack;
         let decay = self.decay;
