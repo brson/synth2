@@ -13,3 +13,4 @@ https://github.com/juce-framework/JUCE
 https://github.com/mtytel/vital
 https://github.com/surge-synthesizer
 https://github.com/google/music-synthesizer-for-android
+https://github.com/free-audio/clap
