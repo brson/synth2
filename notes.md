@@ -14,3 +14,5 @@ https://github.com/mtytel/vital
 https://github.com/surge-synthesizer
 https://github.com/google/music-synthesizer-for-android
 https://github.com/free-audio/clap
+https://github.com/robbert-vdh/nih-plug
+https://github.com/glowcoil/clap-sys
