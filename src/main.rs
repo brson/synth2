@@ -11,14 +11,7 @@ mod seq;
 mod synth;
 mod synth2;
 mod threads;
-
-mod try3 {
-    mod static_config;
-    mod dynamic_config;
-    mod units;
-    //mod state;
-}
-
+mod try3;
 mod simdtest;
 
 use anyhow::Result;
