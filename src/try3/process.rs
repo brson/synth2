@@ -9,12 +9,24 @@ pub fn process_voice(
     offset: u32,
     release_offset: Option<u32>
 ) -> f32 {
-    todo!()
+    let dynamic_config = prepare_frame(static_config, pitch, sample_rate);
+    let sample = sample_voice(&dynamic_config, sample_rate, offset, release_offset);
+    sample
 }
 
 fn prepare_frame(
     static_config: &sc::Voice,
     pitch: Hz,
+    sample_rate: SampleRateKhz,
 ) -> dc::Voice {
+    todo!()
+}
+
+pub fn sample_voice(
+    dynamic_config: &dc::Voice,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>
+) -> f32 {
     todo!()
 }
