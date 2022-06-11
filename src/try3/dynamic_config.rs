@@ -14,7 +14,12 @@ pub struct Layer {
     pub mod_env: Adsr,
 }
 
-pub enum Oscillator {
+pub struct Oscillator {
+    pub period: SampleOffset,
+    pub kind: OscillatorKind,
+}
+
+pub enum OscillatorKind {
     Square,
     Saw,
     Triangle,

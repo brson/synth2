@@ -11,3 +11,10 @@ pub fn process_voice(
 ) -> f32 {
     todo!()
 }
+
+fn prepare_frame(
+    static_config: &sc::Voice,
+    pitch: Hz,
+) -> dc::Voice {
+    todo!()
+}
