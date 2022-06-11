@@ -14,7 +14,8 @@ mod threads;
 
 mod try3 {
     mod static_config;
-    //mod dynamic_config;
+    mod dynamic_config;
+    mod units;
     //mod state;
 }
 

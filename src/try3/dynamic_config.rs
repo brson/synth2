@@ -1,6 +1,7 @@
 use super::units::*;
-
-pub const NUM_LAYERS: usize = 4;
+use super::static_config::{
+    NUM_LAYERS,
+};
 
 pub struct Voice {
     pub layers: [Layer; NUM_LAYERS],
@@ -11,12 +12,6 @@ pub struct Layer {
     pub lpf: LowPassFilter,
     pub amp_env: Adsr,
     pub mod_env: Adsr,
-    pub modulations: Modulations,
-}
-
-pub struct Modulations {
-    pub mod_env_to_osc_freq: Bipolar<5>,
-    pub mod_env_to_lpf_freq: Bipolar<5>,
 }
 
 pub enum Oscillator {
@@ -27,12 +22,12 @@ pub enum Oscillator {
 
 pub struct LowPassFilter {
     pub freq: Hz,
+    pub sample_rate: SampleRateKhz,
 }
 
 pub struct Adsr {
-    pub attack: Ms,
-    pub decay: Ms,
+    pub attack: SampleOffset,
+    pub decay: SampleOffset,
     pub sustain: Unipolar<1>,
-    pub release: Ms,
+    pub release: SampleOffset,
 }
-
