@@ -26,3 +26,15 @@ impl Ms {
         samples
     }
 }    
+
+impl<const N: u16> TryFrom<f32> for Unipolar<N> {
+    type Error = anyhow::Error;
+
+    fn try_from(other: f32) -> anyhow::Result<Unipolar<N>> {
+        if other >= 0.0 && other <= N as f32 {
+            Ok(Unipolar(other))
+        } else {
+            Err(anyhow::anyhow!("float out of [0, {}] range", N))
+        }
+    }
+}
