@@ -18,12 +18,12 @@ pub struct SampleOffset(pub f32);
 
 impl Ms {
     /// Get the time as samples
-    pub fn as_samples(&self, sample_rate: SampleRateKhz) -> f32 {
+    pub fn as_samples(&self, sample_rate: SampleRateKhz) -> SampleOffset {
         let sample_rate = sample_rate.0 as f32;
         let ms = self.0;
         let seconds = ms / 1000.0;
         let samples = sample_rate * seconds;
-        samples
+        SampleOffset(samples)
     }
 }    
 

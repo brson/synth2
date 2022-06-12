@@ -22,6 +22,12 @@ fn prepare_frame(
     release_offset: Option<u32>
 ) -> dc::Voice {
     let layers = static_config.layers.map(|layer| {
+        let mod_env_sample = sample_mod_envelope(
+            layer.mod_env,
+            sample_rate,
+            offset,
+            release_offset
+        );
         dc::Layer {
             osc: todo!(),
             lpf: todo!(),
@@ -33,6 +39,21 @@ fn prepare_frame(
     dc::Voice {
         layers,
     }
+}
+
+fn sample_mod_envelope(
+    adsr_config: sc::Adsr,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>
+) -> Unipolar<1> {
+    let adsr = super::envelopes::Adsr {
+        attack: adsr_config.attack.as_samples(sample_rate),
+        decay: adsr_config.decay.as_samples(sample_rate),
+        sustain: adsr_config.sustain,
+        release: adsr_config.release.as_samples(sample_rate),
+    };
+    adsr.sample(offset, release_offset)
 }
 
 pub fn sample_voice(
