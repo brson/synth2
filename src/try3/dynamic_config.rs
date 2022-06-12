@@ -11,7 +11,6 @@ pub struct Layer {
     pub osc: Oscillator,
     pub lpf: LowPassFilter,
     pub amp_env: Adsr,
-    pub mod_env: Adsr,
 }
 
 pub struct Oscillator {

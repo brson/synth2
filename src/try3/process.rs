@@ -32,7 +32,6 @@ fn prepare_frame(
             osc: todo!(),
             lpf: todo!(),
             amp_env: todo!(),
-            mod_env: todo!(),
         }
     });
 
