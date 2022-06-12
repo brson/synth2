@@ -21,7 +21,18 @@ fn prepare_frame(
     offset: u32,
     release_offset: Option<u32>
 ) -> dc::Voice {
-    todo!()
+    let layers = static_config.layers.map(|layer| {
+        dc::Layer {
+            osc: todo!(),
+            lpf: todo!(),
+            amp_env: todo!(),
+            mod_env: todo!(),
+        }
+    });
+
+    dc::Voice {
+        layers,
+    }
 }
 
 pub fn sample_voice(
