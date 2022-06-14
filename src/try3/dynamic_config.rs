@@ -1,11 +1,4 @@
 use super::units::*;
-use super::static_config::{
-    NUM_LAYERS,
-};
-
-pub struct Voice {
-    pub layers: [Layer; NUM_LAYERS],
-}
 
 pub struct Layer {
     pub osc: Oscillator,

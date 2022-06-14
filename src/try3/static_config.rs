@@ -1,12 +1,5 @@
 use super::units::*;
 
-pub const NUM_LAYERS: usize = 4;
-
-#[derive(Copy, Clone)]
-pub struct Voice {
-    pub layers: [Layer; NUM_LAYERS],
-}
-
 #[derive(Copy, Clone)]
 pub struct Layer {
     pub osc: Oscillator,

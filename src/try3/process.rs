@@ -2,8 +2,8 @@ use super::units::*;
 use super::static_config as sc;
 use super::dynamic_config as dc;
 
-pub fn process_voice(
-    static_config: &sc::Voice,
+pub fn process_layer(
+    static_config: &sc::Layer,
     pitch: Hz,
     sample_rate: SampleRateKhz,
     offset: u32,
@@ -15,28 +15,22 @@ pub fn process_voice(
 }
 
 fn prepare_frame(
-    static_config: &sc::Voice,
+    static_config: &sc::Layer,
     pitch: Hz,
     sample_rate: SampleRateKhz,
     offset: u32,
     release_offset: Option<u32>
-) -> dc::Voice {
-    let layers = static_config.layers.map(|layer| {
-        let mod_env_sample = sample_mod_envelope(
-            layer.mod_env,
-            sample_rate,
-            offset,
-            release_offset
-        );
-        dc::Layer {
-            osc: todo!(),
-            lpf: todo!(),
-            amp_env: todo!(),
-        }
-    });
-
-    dc::Voice {
-        layers,
+) -> dc::Layer {
+    let mod_env_sample = sample_mod_envelope(
+        static_config.mod_env,
+        sample_rate,
+        offset,
+        release_offset
+    );
+    dc::Layer {
+        osc: todo!(),
+        lpf: todo!(),
+        amp_env: todo!(),
     }
 }
 
@@ -56,7 +50,7 @@ fn sample_mod_envelope(
 }
 
 pub fn sample_voice(
-    dynamic_config: &dc::Voice,
+    dynamic_config: &dc::Layer,
     sample_rate: SampleRateKhz,
     offset: u32,
     release_offset: Option<u32>
