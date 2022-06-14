@@ -79,7 +79,9 @@ fn modulate_freq_unipolar(
     modulation_sample: Unipolar<1>,
     modulation_amount: Bipolar<5>,
 ) -> Hz {
-    todo!()
+    let mod_addtl_freq = freq.0 * modulation_sample.0 * modulation_amount.0;
+    let freq = freq.0 + mod_addtl_freq;
+    Hz(freq)
 }
 
 pub fn sample_voice(
