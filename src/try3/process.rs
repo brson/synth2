@@ -79,7 +79,11 @@ fn modulate_freq_unipolar(
     modulation_sample: Unipolar<1>,
     modulation_amount: Bipolar<5>,
 ) -> Hz {
-    let mod_addtl_freq = freq.0 * modulation_sample.0 * modulation_amount.0;
+    let mod_addtl_freq = if modulation_amount.0 >= 0.0 {
+        freq.0 * modulation_sample.0 * modulation_amount.0
+    } else {
+        freq.0 * modulation_sample.0 / modulation_amount.0
+    };
     let freq = freq.0 + mod_addtl_freq;
     Hz(freq)
 }
