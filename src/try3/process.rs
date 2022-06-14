@@ -31,7 +31,12 @@ fn prepare_frame(
         pitch,
         mod_env_sample,
         layer.modulations.mod_env_to_osc_freq
-    );        
+    );
+    let modulated_lpf_freq = modulate_freq_unipolar(
+        layer.lpf.freq,
+        mod_env_sample,
+        layer.modulations.mod_env_to_lpf_freq
+    );
     dc::Layer {
         osc: dc::Oscillator {
             period: modulated_osc_freq.as_samples(sample_rate),
@@ -41,8 +46,16 @@ fn prepare_frame(
                 sc::Oscillator::Triangle => dc::OscillatorKind::Triangle,
             },
         },
-        lpf: todo!(),
-        amp_env: todo!(),
+        lpf: dc::LowPassFilter {
+            freq: modulated_lpf_freq,
+            sample_rate,
+        },
+        amp_env: dc::Adsr {
+            attack: layer.amp_env.attack.as_samples(sample_rate),
+            decay: layer.amp_env.decay.as_samples(sample_rate),
+            sustain: layer.amp_env.sustain,
+            release: layer.amp_env.release.as_samples(sample_rate),
+        },
     }
 }
 
