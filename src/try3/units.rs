@@ -16,6 +16,15 @@ pub struct SampleRateKhz(pub u32);
 #[derive(Copy, Clone)]
 pub struct SampleOffset(pub f32);
 
+impl Hz {
+    pub fn as_samples(&self, sample_rate: SampleRateKhz) -> SampleOffset {
+        let sample_rate = sample_rate.0 as f32;
+        let hz = self.0;
+        let samples = sample_rate / hz;
+        SampleOffset(samples)
+    }
+}
+
 impl Ms {
     /// Get the time as samples
     pub fn as_samples(&self, sample_rate: SampleRateKhz) -> SampleOffset {
@@ -25,7 +34,7 @@ impl Ms {
         let samples = sample_rate * seconds;
         SampleOffset(samples)
     }
-}    
+}
 
 impl<const N: u16> TryFrom<f32> for Unipolar<N> {
     type Error = anyhow::Error;

@@ -15,20 +15,32 @@ pub fn process_layer(
 }
 
 fn prepare_frame(
-    static_config: &sc::Layer,
+    layer: &sc::Layer,
     pitch: Hz,
     sample_rate: SampleRateKhz,
     offset: u32,
     release_offset: Option<u32>
 ) -> dc::Layer {
     let mod_env_sample = sample_mod_envelope(
-        static_config.mod_env,
+        layer.mod_env,
         sample_rate,
         offset,
         release_offset
     );
+    let modulated_osc_freq = modulate_freq_unipolar(
+        pitch,
+        mod_env_sample,
+        layer.modulations.mod_env_to_osc_freq
+    );        
     dc::Layer {
-        osc: todo!(),
+        osc: dc::Oscillator {
+            period: modulated_osc_freq.as_samples(sample_rate),
+            kind: match layer.osc {
+                sc::Oscillator::Square => dc::OscillatorKind::Square,
+                sc::Oscillator::Saw => dc::OscillatorKind::Saw,
+                sc::Oscillator::Triangle => dc::OscillatorKind::Triangle,
+            },
+        },
         lpf: todo!(),
         amp_env: todo!(),
     }
@@ -47,6 +59,14 @@ fn sample_mod_envelope(
         release: adsr_config.release.as_samples(sample_rate),
     };
     adsr.sample(offset, release_offset)
+}
+
+fn modulate_freq_unipolar(
+    freq: Hz,
+    modulation_sample: Unipolar<1>,
+    modulation_amount: Bipolar<5>,
+) -> Hz {
+    todo!()
 }
 
 pub fn sample_voice(
