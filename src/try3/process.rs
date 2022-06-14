@@ -10,7 +10,7 @@ pub fn process_layer(
     release_offset: Option<u32>
 ) -> f32 {
     let dynamic_config = prepare_frame(static_config, pitch, sample_rate, offset, release_offset);
-    let sample = sample_voice(&dynamic_config, sample_rate, offset, release_offset);
+    let sample = sample_voice(&dynamic_config, offset, release_offset);
     sample
 }
 
@@ -84,7 +84,6 @@ fn modulate_freq_unipolar(
 
 pub fn sample_voice(
     dynamic_config: &dc::Layer,
-    sample_rate: SampleRateKhz,
     offset: u32,
     release_offset: Option<u32>
 ) -> f32 {
