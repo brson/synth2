@@ -10,7 +10,7 @@ mod plotting;
 mod seq;
 mod synth;
 mod synth2;
-mod threads;
+//mod threads;
 mod try3;
 mod simdtest;
 
