@@ -9,7 +9,7 @@ pub struct Layer {
     #[nested_soa]
     pub lpf: LowPassFilter,
     #[nested_soa]
-    pub amp_env: Adsr,
+    pub amp_env: Adsr, // fixme chainge to gain
 }
 
 #[derive(StructOfArray)]

@@ -89,5 +89,17 @@ pub fn sample_voice(
     offset: u32,
     release_offset: Option<u32>
 ) -> f32 {
+    use super::oscillators::*;
+    let osc = match dynamic_config.osc.kind {
+        dc::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
+            period: dynamic_config.osc.period,
+        }),
+        dc::OscillatorKind::Saw => Oscillator::Saw(SawOscillator {
+            period: dynamic_config.osc.period,
+        }),
+        dc::OscillatorKind::Triangle => Oscillator::Triangle(TriangleOscillator {
+            period: dynamic_config.osc.period,
+        }),
+    };
     todo!()
 }
