@@ -21,7 +21,13 @@ fn prepare_frame(
     offset: u32,
     release_offset: Option<u32>
 ) -> dc::Layer {
-    let mod_env_sample = sample_mod_envelope(
+    let amp_env_sample = sample_envelope(
+        layer.amp_env,
+        sample_rate,
+        offset,
+        release_offset
+    );
+    let mod_env_sample = sample_envelope(
         layer.mod_env,
         sample_rate,
         offset,
@@ -50,16 +56,11 @@ fn prepare_frame(
             freq: modulated_lpf_freq,
             sample_rate,
         },
-        amp_env: dc::Adsr {
-            attack: layer.amp_env.attack.as_samples(sample_rate),
-            decay: layer.amp_env.decay.as_samples(sample_rate),
-            sustain: layer.amp_env.sustain,
-            release: layer.amp_env.release.as_samples(sample_rate),
-        },
+        gain: amp_env_sample,
     }
 }
 
-fn sample_mod_envelope(
+fn sample_envelope(
     adsr_config: sc::Adsr,
     sample_rate: SampleRateKhz,
     offset: u32,

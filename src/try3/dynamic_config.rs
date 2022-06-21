@@ -8,8 +8,7 @@ pub struct Layer {
     pub osc: Oscillator,
     #[nested_soa]
     pub lpf: LowPassFilter,
-    #[nested_soa]
-    pub amp_env: Adsr, // fixme chainge to gain
+    pub gain: Unipolar<1>,
 }
 
 #[derive(StructOfArray)]
@@ -28,12 +27,4 @@ pub enum OscillatorKind {
 pub struct LowPassFilter {
     pub freq: Hz,
     pub sample_rate: SampleRateKhz,
-}
-
-#[derive(StructOfArray)]
-pub struct Adsr {
-    pub attack: SampleOffset,
-    pub decay: SampleOffset,
-    pub sustain: Unipolar<1>,
-    pub release: SampleOffset,
 }
