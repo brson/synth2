@@ -20,8 +20,8 @@ enum AdsrStage {
 impl Adsr {
     pub fn sample(
         &self,
-        offset: u32,
-        release_offset: Option<u32>
+        offset: u32, // fixme SampleOffset
+        release_offset: Option<u32> // fixme ditto
     ) -> Unipolar<1> {
         let attack = self.attack.0;
         let decay = self.decay.0;

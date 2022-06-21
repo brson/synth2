@@ -1,16 +1,18 @@
 use super::units::*;
 use super::static_config as sc;
 use super::dynamic_config as dc;
+use super::state as st;
 
 pub fn process_layer(
     static_config: &sc::Layer,
+    state: &mut st::Layer,
     pitch: Hz,
     sample_rate: SampleRateKhz,
     offset: u32,
     release_offset: Option<u32>
 ) -> f32 {
     let dynamic_config = prepare_frame(static_config, pitch, sample_rate, offset, release_offset);
-    let sample = sample_voice(&dynamic_config, offset, release_offset);
+    let sample = sample_voice(&dynamic_config, state, offset, release_offset);
     sample
 }
 
@@ -87,10 +89,12 @@ fn modulate_freq_unipolar(
 
 pub fn sample_voice(
     dynamic_config: &dc::Layer,
+    state: &mut st::Layer,
     offset: u32,
     release_offset: Option<u32>
 ) -> f32 {
     use super::oscillators::*;
+    use super::filters::*;
     let osc = match dynamic_config.osc.kind {
         dc::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
             period: dynamic_config.osc.period,
@@ -102,5 +106,14 @@ pub fn sample_voice(
             period: dynamic_config.osc.period,
         }),
     };
-    todo!()
+    let mut lpf = LowPassFilter {
+        state: &mut state.lpf,
+        sample_rate: dynamic_config.lpf.sample_rate,
+        freq: dynamic_config.lpf.freq,
+    };
+    let offset = SampleOffset(offset as f32);
+    let sample = osc.sample(offset);
+    let sample = lpf.process(sample.0);
+    let sample = sample * dynamic_config.gain.0;
+    sample
 }
