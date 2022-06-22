@@ -10,16 +10,5 @@ mod plotting;
 mod seq;
 mod synth;
 mod synth2;
-//mod threads;
 mod try3;
 mod simdtest;
-
-use anyhow::Result;
-
-fn main() -> Result<()> {
-    env_logger::init();
-
-    //threads::run()?;
-
-    Ok(())
-}
