@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use crate::math::*;
+use super::math::*;
 
 pub struct LowPassFilter {
     last: f64,

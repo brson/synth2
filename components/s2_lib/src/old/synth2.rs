@@ -1,7 +1,7 @@
-use crate::math::*;
-use crate::oscillators::Oscillator;
-use crate::envelopes::Adsr;
-use crate::filters::LowPassFilter;
+use super::math::*;
+use super::oscillators::Oscillator;
+use super::envelopes::Adsr;
+use super::filters::LowPassFilter;
 
 pub struct Synth2 {
     pub partial1: Partial,

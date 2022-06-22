@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use crate::math::*;
+use super::math::*;
 
 pub const SAMPLE_RATE_KHZ: u32 = 32_000;
 

@@ -1,7 +1,7 @@
-use crate::f64::*;
-use crate::math::*;
-use crate::oscillators::Oscillator;
-use crate::envelopes::Adsr;
+use super::f64::*;
+use super::math::*;
+use super::oscillators::Oscillator;
+use super::envelopes::Adsr;
 
 pub struct Synth2 {
     pub partial1: Partial,
