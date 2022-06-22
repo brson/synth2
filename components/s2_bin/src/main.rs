@@ -1,3 +1,4 @@
+mod plotting;
 //mod threads;
 
 use anyhow::Result;

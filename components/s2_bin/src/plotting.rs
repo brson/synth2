@@ -1,5 +1,7 @@
+#![allow(unused)]
+
 use anyhow::{Result, anyhow};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub fn write_image(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
     use charts::{Chart, ScaleLinear, MarkerType, PointLabelPosition, LineSeriesView};

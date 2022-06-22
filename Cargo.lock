@@ -346,9 +346,11 @@ name = "s2_bin"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "charts",
  "env_logger",
  "log",
  "s2_lib",
+ "tungstenite",
 ]
 
 [[package]]
@@ -356,7 +358,6 @@ name = "s2_lib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "charts",
  "core_simd",
  "fxhash",
  "log",
@@ -365,7 +366,6 @@ dependencies = [
  "serde",
  "serde_json",
  "soa_derive",
- "tungstenite",
 ]
 
 [[package]]

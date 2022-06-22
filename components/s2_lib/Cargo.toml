@@ -5,14 +5,11 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.57"
-charts = "0.3.0"
 fxhash = "0.2.1"
 log = "0.4.17"
 rand = "0.8.5"
 rand_pcg = "0.3.1"
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
-#termion = "1.5.6"
-tungstenite = "0.17.2"
 core_simd = { git = "https://github.com/rust-lang/portable-simd" }
 soa_derive = "0.12.0"

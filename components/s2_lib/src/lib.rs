@@ -6,7 +6,6 @@ mod envelopes;
 mod filters;
 mod math;
 mod oscillators;
-mod plotting;
 mod seq;
 mod synth;
 mod synth2;
