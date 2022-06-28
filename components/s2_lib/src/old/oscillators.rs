@@ -1,5 +1,5 @@
-use anyhow::{Result, anyhow};
 use super::math::*;
+use anyhow::{anyhow, Result};
 
 pub enum Oscillator {
     Square(SquareOscillator),
@@ -9,29 +9,20 @@ pub enum Oscillator {
     Noise(NoiseOscillator),
 }
 
-pub struct SquareOscillator {
-}
+pub struct SquareOscillator {}
 
-pub struct SawOscillator {
-}
+pub struct SawOscillator {}
 
-pub struct TriangleOscillator {
-}
+pub struct TriangleOscillator {}
 
-pub struct SineOscillator {
-}
+pub struct SineOscillator {}
 
 pub struct NoiseOscillator {
     pub seed: u32,
 }
 
 impl Oscillator {
-    pub fn sample(
-        &self,
-        sample_rate: SampleRateKhz,
-        freq: Hz64,
-        offset: u32
-    ) -> One64 {
+    pub fn sample(&self, sample_rate: SampleRateKhz, freq: Hz64, offset: u32) -> One64 {
         match self {
             Oscillator::Square(osc) => osc.sample(sample_rate, freq, offset),
             Oscillator::Triangle(osc) => osc.sample(sample_rate, freq, offset),
@@ -43,36 +34,21 @@ impl Oscillator {
 }
 
 impl SquareOscillator {
-    pub fn sample(
-        &self,
-        sample_rate: SampleRateKhz,
-        freq: Hz64,
-        offset: u32
-    ) -> One64 {
+    pub fn sample(&self, sample_rate: SampleRateKhz, freq: Hz64, offset: u32) -> One64 {
         let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
         let offset = offset % period;
 
         let half_period = period / 2.0;
-        let sample = if offset < half_period {
-            1.0
-        } else {
-            -1.0
-        };
+        let sample = if offset < half_period { 1.0 } else { -1.0 };
 
         One64::assert_from(sample)
     }
 }
 
-
 impl SawOscillator {
-    pub fn sample(
-        &self,
-        sample_rate: SampleRateKhz,
-        freq: Hz64,
-        offset: u32
-    ) -> One64 {
+    pub fn sample(&self, sample_rate: SampleRateKhz, freq: Hz64, offset: u32) -> One64 {
         let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
@@ -83,21 +59,14 @@ impl SawOscillator {
         let x_value = offset;
         let y_offset = 1.0;
 
-        let sample = line_y_value_with_y_offset(
-            x_rise, x_run, x_value, y_offset
-        );
+        let sample = line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset);
 
         One64::assert_from(sample)
     }
 }
 
 impl TriangleOscillator {
-    pub fn sample(
-        &self,
-        sample_rate: SampleRateKhz,
-        freq: Hz64,
-        offset: u32
-    ) -> One64 {
+    pub fn sample(&self, sample_rate: SampleRateKhz, freq: Hz64, offset: u32) -> One64 {
         let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
@@ -110,18 +79,14 @@ impl TriangleOscillator {
             let x_value = offset;
             let y_offset = 1.0;
 
-            line_y_value_with_y_offset(
-                x_rise, x_run, x_value, y_offset
-            )
+            line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
         } else {
             let x_rise = 2.0;
             let x_run = half_period;
             let x_value = offset - half_period;
             let y_offset = -1.0;
 
-            line_y_value_with_y_offset(
-                x_rise, x_run, x_value, y_offset
-            )
+            line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
         };
 
         One64::assert_from(sample)
@@ -129,12 +94,7 @@ impl TriangleOscillator {
 }
 
 impl SineOscillator {
-    pub fn sample(
-        &self,
-        sample_rate: SampleRateKhz,
-        freq: Hz64,
-        offset: u32
-    ) -> One64 {
+    pub fn sample(&self, sample_rate: SampleRateKhz, freq: Hz64, offset: u32) -> One64 {
         let period = freq.as_samples(sample_rate);
         let period = f64::from(period);
         let offset = f64::from(offset);
@@ -153,8 +113,8 @@ impl NoiseOscillator {
         // based on the noise seed and the offset,
         // then an rng to generate a sample with the correct distribution.
 
-        use std::hash::Hasher;
         use rand::Rng;
+        use std::hash::Hasher;
 
         let mut hasher = fxhash::FxHasher::default();
         hasher.write_u32(self.seed);

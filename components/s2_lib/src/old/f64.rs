@@ -1,5 +1,5 @@
-use anyhow::{Result, anyhow};
 use super::math::*;
+use anyhow::{anyhow, Result};
 
 pub const SAMPLE_RATE_KHZ: u32 = 32_000;
 
@@ -97,8 +97,8 @@ pub struct OscillatorHz {
     pub sample_rate: SampleRateKhz,
     pub freq: Hz64,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
-    pub squareness: ZOne64, // 0 for saw/tri, 1 for square
-    pub sineness: ZOne64, // 0 for saw/tri/square, 1 for sine
+    pub squareness: ZOne64,   // 0 for saw/tri, 1 for square
+    pub sineness: ZOne64,     // 0 for saw/tri/square, 1 for sine
 }
 
 impl OscillatorHz {
@@ -109,9 +109,7 @@ impl OscillatorHz {
             triangleness: self.triangleness,
             squareness: self.squareness,
         };
-        let sin_osc = SinOscillator {
-            period,
-        };
+        let sin_osc = SinOscillator { period };
         let angle_sample = f64::from(angle_osc.sample(offset));
         let sin_sample = f64::from(sin_osc.sample(offset));
 
@@ -163,7 +161,7 @@ impl SinOscillator {
 struct AngleOscillator {
     pub period: u32,
     pub triangleness: ZOne64, // 0 for sawtooth, 1 for triangle
-    pub squareness: ZOne64, // 0 for saw/tri, 1 for square
+    pub squareness: ZOne64,   // 0 for saw/tri, 1 for square
 }
 
 enum AngleOscillatorStage {
@@ -214,9 +212,7 @@ impl AngleOscillator {
                 let run = half_rise_time;
                 let x_offset = osc_offset;
                 let y_start = 0.0;
-                let sample = line_y_value_with_y_offset(
-                    rise, run, x_offset, y_start
-                );
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 One64::assert_from(sample)
             }
             AngleOscillatorStage::InitialFall => {
@@ -224,9 +220,7 @@ impl AngleOscillator {
                 let run = half_fall_time;
                 let x_offset = osc_offset - half_rise_time;
                 let y_start = 1.0;
-                let sample = line_y_value_with_y_offset(
-                    rise, run, x_offset, y_start
-                );
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 One64::assert_from(sample)
             }
             AngleOscillatorStage::FinalFall => {
@@ -234,9 +228,7 @@ impl AngleOscillator {
                 let run = half_fall_time;
                 let x_offset = osc_offset - half_period;
                 let y_start = -squareness;
-                let sample = line_y_value_with_y_offset(
-                    rise, run, x_offset, y_start
-                );
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 One64::assert_from(sample)
             }
             AngleOscillatorStage::FinalRise => {
@@ -244,9 +236,7 @@ impl AngleOscillator {
                 let run = half_rise_time;
                 let x_offset = osc_offset - half_rise_time - fall_time;
                 let y_start = -1.0;
-                let sample = line_y_value_with_y_offset(
-                    rise, run, x_offset, y_start
-                );
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 One64::assert_from(sample)
             }
         }
@@ -262,7 +252,7 @@ impl Noise {
         // Use a hash function to generate a pseudo-random rng seed
         // based on the noise seed and the offset,
         // then an rng to generate a sample with the correct distribution.
-        
+
         //let mut hasher = blake3::Hasher::new();
         //let seed_buf = &self.seed.to_le_bytes()[..];
         //let offset_buf = &i32::from(offset).to_le_bytes()[..];
@@ -274,8 +264,8 @@ impl Noise {
         //let rand_u128 = u128::from_le_bytes(rand_buf);
         //let mut rng = rand_pcg::Pcg64Mcg::new(rand_u64);
 
-        use std::hash::Hasher;
         use rand::Rng;
+        use std::hash::Hasher;
 
         let mut hasher = fxhash::FxHasher::default();
         hasher.write_u32(self.seed);
@@ -316,10 +306,7 @@ impl LowPassFilter {
     }
 
     pub fn modulate(&mut self, freq: ZPos64) -> ModulatedLowPassFilter<'_> {
-        ModulatedLowPassFilter {
-            parent: self,
-            freq,
-        }
+        ModulatedLowPassFilter { parent: self, freq }
     }
 }
 
@@ -337,5 +324,3 @@ impl<'this> ModulatedLowPassFilter<'this> {
         sample
     }
 }
-
-

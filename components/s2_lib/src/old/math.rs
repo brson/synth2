@@ -1,24 +1,15 @@
 use anyhow::Result;
-use std::ops::Div;
-use std::cmp::{Ord, PartialOrd, Eq, PartialEq, Ordering};
+use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::fmt::Debug;
+use std::ops::Div;
 
-pub fn line_y_value(
-    y_rise: f64,
-    x_run: f64,
-    x_value: f64,
-) -> f64 {
+pub fn line_y_value(y_rise: f64, x_run: f64, x_value: f64) -> f64 {
     let slope = y_rise / x_run;
     let y_value = slope * x_value;
     y_value
 }
 
-pub fn line_y_value_with_y_offset(
-    y_rise: f64,
-    x_run: f64,
-    x_value: f64,
-    y_offset: f64,
-) -> f64 {
+pub fn line_y_value_with_y_offset(y_rise: f64, x_run: f64, x_value: f64, y_offset: f64) -> f64 {
     let y_value = line_y_value(y_rise, x_run, x_value);
     y_value + y_offset
 }
@@ -28,8 +19,9 @@ pub trait AssertFrom<From>: Sized {
 }
 
 impl<T, From> AssertFrom<From> for T
-where T: TryFrom<From>,
-      <T as TryFrom<From>>::Error: Debug
+where
+    T: TryFrom<From>,
+    <T as TryFrom<From>>::Error: Debug,
 {
     fn assert_from(value: From) -> Self {
         Self::try_from(value).expect("try from")
@@ -81,8 +73,7 @@ impl TryFrom<f64> for One64 {
 }
 
 /// Positive or zero float
-#[derive(Copy, Clone)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct ZPos64(f64);
 
 impl From<ZPos64> for f64 {
@@ -142,7 +133,7 @@ impl Ms64 {
         let samples: f64 = sample_rate * seconds;
         samples as u32
     }
-}    
+}
 
 impl TryFrom<f64> for Ms64 {
     type Error = anyhow::Error;
@@ -167,7 +158,7 @@ impl Hz64 {
 
 impl From<Hz64> for f64 {
     fn from(other: Hz64) -> f64 {
-        other.0.0
+        other.0 .0
     }
 }
 
@@ -178,4 +169,3 @@ impl TryFrom<f64> for Hz64 {
         Ok(Hz64(Pos64::try_from(other)?))
     }
 }
-

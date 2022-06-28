@@ -1,5 +1,5 @@
-use core_simd::{f32x4, u8x4, mask32x4, u32x4};
-use core_simd::{SimdFloat, SimdPartialEq, Mask, SimdPartialOrd};
+use core_simd::{f32x4, mask32x4, u32x4, u8x4};
+use core_simd::{Mask, SimdFloat, SimdPartialEq, SimdPartialOrd};
 
 pub struct OscillatorX4 {
     kind: u8x4,
@@ -36,9 +36,7 @@ impl OscillatorX4 {
             let x_value = offset;
             let y_offset = f32x4::splat(1.0);
 
-            line_y_value_with_y_offset(
-                x_rise, x_run, x_value, y_offset
-            )
+            line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
         };
 
         let tri_sample = {
@@ -51,9 +49,7 @@ impl OscillatorX4 {
                 let x_value = offset;
                 let y_offset = f32x4::splat(1.0);
 
-                line_y_value_with_y_offset(
-                    x_rise, x_run, x_value, y_offset
-                )
+                line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
             };
             let tri_second_half_sample = {
                 let x_rise = f32x4::splat(2.0);
@@ -61,9 +57,7 @@ impl OscillatorX4 {
                 let x_value = offset - half_period;
                 let y_offset = f32x4::splat(-1.0);
 
-                line_y_value_with_y_offset(
-                    x_rise, x_run, x_value, y_offset
-                )
+                line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
             };
 
             let in_first_half = offset.simd_lt(half_period);
@@ -88,11 +82,7 @@ impl OscillatorX4 {
     }
 }
 
-pub fn line_y_value(
-    y_rise: f32x4,
-    x_run: f32x4,
-    x_value: f32x4,
-) -> f32x4 {
+pub fn line_y_value(y_rise: f32x4, x_run: f32x4, x_value: f32x4) -> f32x4 {
     let slope = y_rise / x_run;
     let y_value = slope * x_value;
     y_value
@@ -109,8 +99,8 @@ pub fn line_y_value_with_y_offset(
 }
 
 pub struct AdsrX4 {
-    pub attack: f32x4, // +samples
-    pub decay: f32x4, // +samples
+    pub attack: f32x4,  // +samples
+    pub decay: f32x4,   // +samples
     pub sustain: f32x4, // [0, 1]
     pub release: f32x4, // +samples
 }
@@ -144,9 +134,7 @@ impl AdsrX4 {
             let run = attack;
             let x_offset = offset;
             let y_start = f32x4::splat(0.0);
-            line_y_value_with_y_offset(
-                rise, run, x_offset, y_start
-            )
+            line_y_value_with_y_offset(rise, run, x_offset, y_start)
         };
 
         let decay_sample = {
@@ -154,28 +142,20 @@ impl AdsrX4 {
             let run = decay;
             let x_offset = offset - decay_offset;
             let y_start = f32x4::splat(1.0);
-            line_y_value_with_y_offset(
-                rise, run, x_offset, y_start
-            )
+            line_y_value_with_y_offset(rise, run, x_offset, y_start)
         };
 
-        let sustain_sample = {
-            sustain
-        };
+        let sustain_sample = { sustain };
 
         let release_sample = {
             let rise = -sustain;
             let run = release;
             let x_offset = offset - release_offset;
             let y_start = sustain;
-            line_y_value_with_y_offset(
-                rise, run, x_offset, y_start
-            )
+            line_y_value_with_y_offset(rise, run, x_offset, y_start)
         };
 
-        let end_sample = {
-            f32x4::splat(0.0)
-        };
+        let end_sample = { f32x4::splat(0.0) };
 
         let sample = f32x4::splat(0.0);
         let sample = in_attack.select(attack_sample, sample);

@@ -1,7 +1,7 @@
-use super::units::*;
-use super::static_config as sc;
 use super::dynamic_config as dc;
 use super::state as st;
+use super::static_config as sc;
+use super::units::*;
 
 pub fn process_layer(
     static_config: &sc::Layer,
@@ -9,7 +9,7 @@ pub fn process_layer(
     pitch: Hz,
     sample_rate: SampleRateKhz,
     offset: u32,
-    release_offset: Option<u32>
+    release_offset: Option<u32>,
 ) -> f32 {
     let dynamic_config = prepare_frame(static_config, pitch, sample_rate, offset, release_offset);
     let sample = sample_voice(&dynamic_config, state, offset, release_offset);
@@ -21,29 +21,16 @@ fn prepare_frame(
     pitch: Hz,
     sample_rate: SampleRateKhz,
     offset: u32,
-    release_offset: Option<u32>
+    release_offset: Option<u32>,
 ) -> dc::Layer {
-    let amp_env_sample = sample_envelope(
-        layer.amp_env,
-        sample_rate,
-        offset,
-        release_offset
-    );
-    let mod_env_sample = sample_envelope(
-        layer.mod_env,
-        sample_rate,
-        offset,
-        release_offset
-    );
-    let modulated_osc_freq = modulate_freq_unipolar(
-        pitch,
-        mod_env_sample,
-        layer.modulations.mod_env_to_osc_freq
-    );
+    let amp_env_sample = sample_envelope(layer.amp_env, sample_rate, offset, release_offset);
+    let mod_env_sample = sample_envelope(layer.mod_env, sample_rate, offset, release_offset);
+    let modulated_osc_freq =
+        modulate_freq_unipolar(pitch, mod_env_sample, layer.modulations.mod_env_to_osc_freq);
     let modulated_lpf_freq = modulate_freq_unipolar(
         layer.lpf.freq,
         mod_env_sample,
-        layer.modulations.mod_env_to_lpf_freq
+        layer.modulations.mod_env_to_lpf_freq,
     );
     dc::Layer {
         osc: dc::Oscillator {
@@ -66,7 +53,7 @@ fn sample_envelope(
     adsr_config: sc::Adsr,
     sample_rate: SampleRateKhz,
     offset: u32,
-    release_offset: Option<u32>
+    release_offset: Option<u32>,
 ) -> Unipolar<1> {
     let adsr = super::envelopes::Adsr {
         attack: adsr_config.attack.as_samples(sample_rate),
@@ -91,10 +78,10 @@ pub fn sample_voice(
     dynamic_config: &dc::Layer,
     state: &mut st::Layer,
     offset: u32,
-    release_offset: Option<u32>
+    release_offset: Option<u32>,
 ) -> f32 {
-    use super::oscillators::*;
     use super::filters::*;
+    use super::oscillators::*;
     let osc = match dynamic_config.osc.kind {
         dc::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
             period: dynamic_config.osc.period,

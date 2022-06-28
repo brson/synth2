@@ -1,5 +1,5 @@
-use super::units::*;
 use super::state as st;
+use super::units::*;
 
 pub struct LowPassFilter<'this> {
     pub state: &'this mut st::LowPassFilter,

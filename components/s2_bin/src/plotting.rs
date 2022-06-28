@@ -1,10 +1,10 @@
 #![allow(unused)]
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use std::path::Path;
 
 pub fn write_image(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
-    use charts::{Chart, ScaleLinear, MarkerType, PointLabelPosition, LineSeriesView};
+    use charts::{Chart, LineSeriesView, MarkerType, PointLabelPosition, ScaleLinear};
 
     let filepath = outdir.join(file_stem).with_extension("svg");
 
@@ -31,7 +31,7 @@ pub fn write_image(buf: &[f64], outdir: &Path, file_stem: &str) -> Result<()> {
         .set_x_scale(&x)
         .set_y_scale(&y)
         .set_marker_type(MarkerType::Circle)
-    //.set_label_position(PointLabelPosition::N)
+        //.set_label_position(PointLabelPosition::N)
         .set_label_visibility(false)
         .load_data(&line_data)
         .map_err(|e| anyhow!("{}", e))?;

@@ -1,5 +1,5 @@
-use anyhow::{Result, anyhow};
 use super::math::*;
+use anyhow::{anyhow, Result};
 
 pub struct Adsr {
     pub attack: Ms64,
@@ -21,7 +21,7 @@ impl Adsr {
         &self,
         sample_rate: SampleRateKhz,
         offset: u32,
-        release_offset: Option<u32>
+        release_offset: Option<u32>,
     ) -> ZOne64 {
         let attack = f64::from(self.attack.as_samples(sample_rate));
         let decay = f64::from(self.decay.as_samples(sample_rate));
@@ -31,11 +31,8 @@ impl Adsr {
         let offset: f64 = offset.into();
         let decay_offset = attack;
         let sustain_offset = attack + decay;
-        let release_offset = f64::from(
-            release_offset
-                .map(u32::from)
-                .unwrap_or(u32::MAX)
-        ).max(sustain_offset);
+        let release_offset =
+            f64::from(release_offset.map(u32::from).unwrap_or(u32::MAX)).max(sustain_offset);
         let end_offset = release_offset + release;
 
         let stage = {
@@ -63,9 +60,7 @@ impl Adsr {
                 let run = attack;
                 let x_offset = offset;
                 let y_start = 0.0;
-                let sample = line_y_value_with_y_offset(
-                    rise, run, x_offset, y_start
-                );
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 ZOne64::assert_from(sample)
             }
             AdsrStage::Decay => {
@@ -73,27 +68,19 @@ impl Adsr {
                 let run = decay;
                 let x_offset = offset - decay_offset;
                 let y_start = 1.0;
-                let sample = line_y_value_with_y_offset(
-                    rise, run, x_offset, y_start
-                );
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 ZOne64::assert_from(sample)
             }
-            AdsrStage::Sustain => {
-                ZOne64::assert_from(sustain)
-            }
+            AdsrStage::Sustain => ZOne64::assert_from(sustain),
             AdsrStage::Release => {
                 let rise = -sustain;
                 let run = release;
                 let x_offset = offset - release_offset;
                 let y_start = sustain;
-                let sample = line_y_value_with_y_offset(
-                    rise, run, x_offset, y_start
-                );
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 ZOne64::assert_from(sample)
             }
-            AdsrStage::End => {
-                ZOne64::assert_from(0.0)
-            }
+            AdsrStage::End => ZOne64::assert_from(0.0),
         }
     }
 }

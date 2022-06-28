@@ -34,4 +34,3 @@ pub struct Adsr {
     pub sustain: Unipolar<1>,
     pub release: Ms,
 }
-

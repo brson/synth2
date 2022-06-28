@@ -1,7 +1,7 @@
+use super::envelopes::Adsr;
 use super::f64::*;
 use super::math::*;
 use super::synth::*;
-use super::envelopes::Adsr;
 
 struct Set {
     track: Vec<Track>,
@@ -30,17 +30,13 @@ pub struct Sequencer {
 
 impl Sequencer {
     pub fn new() -> Sequencer {
-
         let bpm = Pos64::assert_from(40.0);
         let sample_rate = SampleRateKhz(SAMPLE_RATE_KHZ);
         let freq = 80.0;
         let synth = Synth {
             sample_rate,
             osc: square_osc_hz(Hz64::assert_from(freq)),
-            lpf: LowPassFilter::new(
-                ZPos64::assert_from(freq),
-                SAMPLE_RATE_KHZ,
-            ),
+            lpf: LowPassFilter::new(ZPos64::assert_from(freq), SAMPLE_RATE_KHZ),
             adsr: Adsr {
                 attack: Ms64::assert_from(5.0),
                 decay: Ms64::assert_from(900.0),
@@ -56,7 +52,7 @@ impl Sequencer {
             },
             lpf_mod_range_multiplier: 16.0,
         };
-        
+
         Sequencer {
             global_offset: 0,
             bpm,

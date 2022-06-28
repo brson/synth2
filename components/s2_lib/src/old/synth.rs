@@ -1,7 +1,7 @@
+use super::envelopes::Adsr;
 use super::f64::*;
 use super::math::*;
 use super::oscillators::Oscillator;
-use super::envelopes::Adsr;
 
 pub struct Synth2 {
     pub partial1: Partial,
@@ -14,11 +14,10 @@ pub struct Partial {
     pub amp_env: Adsr,
     pub mod_env: Adsr,
     pub pitch_mod_freq_multiplier: f64, // 1 = no mod, 2 = 1 octave
-    pub lpf_mod_freq_multiplier: f64, // 1 = no mod, 2 = 1 octave
+    pub lpf_mod_freq_multiplier: f64,   // 1 = no mod, 2 = 1 octave
 }
 
-impl Partial {
-}
+impl Partial {}
 
 pub struct Synth {
     pub sample_rate: SampleRateKhz,
@@ -35,7 +34,9 @@ impl Synth {
         let release_offset = Some(Ms64::assert_from(100.0).as_samples(self.sample_rate));
 
         let mut modulated_lpf = {
-            let lpf_mod_sample = self.lpf_mod_adsr.sample(self.sample_rate, offset, release_offset);
+            let lpf_mod_sample = self
+                .lpf_mod_adsr
+                .sample(self.sample_rate, offset, release_offset);
             let lpf_mod_sample = f64::from(lpf_mod_sample);
             let lpf_freq = f64::from(self.lpf.freq);
             let addtl_lpf_freq = lpf_freq * lpf_mod_sample * self.lpf_mod_range_multiplier;

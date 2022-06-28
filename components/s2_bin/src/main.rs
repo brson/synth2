@@ -1,8 +1,8 @@
 mod plotting;
 //mod threads;
 
-use clap::Parser;
 use anyhow::Result;
+use clap::Parser;
 
 #[derive(Parser)]
 enum Command {
@@ -27,7 +27,7 @@ fn main() -> Result<()> {
 }
 
 fn do_midi() -> Result<()> {
-    use midir::{MidiInput, Ignore};
+    use midir::{Ignore, MidiInput};
 
     let mut midi_in = MidiInput::new("midir test input")?;
     midi_in.ignore(Ignore::None);

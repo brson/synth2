@@ -36,11 +36,7 @@ impl SquareOscillator {
         let offset = offset % period;
 
         let half_period = period / 2.0;
-        let sample = if offset < half_period {
-            1.0
-        } else {
-            -1.0
-        };
+        let sample = if offset < half_period { 1.0 } else { -1.0 };
 
         Bipolar(sample)
     }
@@ -57,9 +53,7 @@ impl SawOscillator {
         let x_value = offset;
         let y_offset = 1.0;
 
-        let sample = line_y_value_with_y_offset(
-            x_rise, x_run, x_value, y_offset
-        );
+        let sample = line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset);
 
         Bipolar(sample)
     }
@@ -78,18 +72,14 @@ impl TriangleOscillator {
             let x_value = offset;
             let y_offset = 1.0;
 
-            line_y_value_with_y_offset(
-                x_rise, x_run, x_value, y_offset
-            )
+            line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
         } else {
             let x_rise = 2.0;
             let x_run = half_period;
             let x_value = offset - half_period;
             let y_offset = -1.0;
 
-            line_y_value_with_y_offset(
-                x_rise, x_run, x_value, y_offset
-            )
+            line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
         };
 
         Bipolar(sample)

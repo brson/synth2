@@ -1,7 +1,7 @@
-use super::math::*;
-use super::oscillators::Oscillator;
 use super::envelopes::Adsr;
 use super::filters::LowPassFilter;
+use super::math::*;
+use super::oscillators::Oscillator;
 
 pub struct Synth2 {
     pub partial1: Partial,
@@ -15,7 +15,7 @@ pub struct Partial {
     pub amp_env: Adsr,
     pub mod_env: Adsr,
     pub pitch_mod: f64, // 0 = no mod, 1 = 1 octave
-    pub lpf_mod: f64, // 0 = no mod, 1 = 1 octave
+    pub lpf_mod: f64,   // 0 = no mod, 1 = 1 octave
 }
 
 impl Synth2 {
@@ -26,8 +26,12 @@ impl Synth2 {
         offset: u32,
         release_offset: Option<u32>,
     ) -> f64 {
-        let partial1_value = self.partial1.sample(sample_rate, pitch, offset, release_offset);
-        let partial2_value = self.partial2.sample(sample_rate, pitch, offset, release_offset);
+        let partial1_value = self
+            .partial1
+            .sample(sample_rate, pitch, offset, release_offset);
+        let partial2_value = self
+            .partial2
+            .sample(sample_rate, pitch, offset, release_offset);
         partial1_value + partial2_value
     }
 }
@@ -52,7 +56,7 @@ impl Partial {
         let mod_addtl_lpf_freq = lpf_freq * mod_value * self.lpf_mod;
         let lpf_freq = lpf_freq + mod_addtl_lpf_freq;
         let lpf_freq = Hz64::assert_from(lpf_freq);
-        
+
         let osc_sample = self.osc.sample(sample_rate, pitch, offset);
         let osc_sample = f64::from(osc_sample);
 
