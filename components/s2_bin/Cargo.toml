@@ -12,3 +12,5 @@ log = "0.4.17"
 #termion = "1.5.6"
 tungstenite = "0.17.2"
 charts = "0.3.0"
+clap = { version = "3.2.6", features = ["derive"] }
+midir = "0.8.0"
