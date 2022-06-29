@@ -68,6 +68,28 @@ fn do_midi() -> Result<()> {
             match midi_msg {
                 Ok(midi_msg) => {
                     log::debug!("midi msg bytes: {:?}", midi_msg);
+
+                    use muddy2::parser::{Parser, MessageParseOutcome, MessageParseOutcomeStatus};
+
+                    let mut parser = Parser::new();
+                    let parse = parser.parse(&midi_msg);
+
+                    match parse {
+                        Ok(parse) => {
+                            if parse.bytes_consumed as usize != midi_msg.len() {
+                                log::error!("did not consume entire midi message. len = {}, consumed = {}", midi_msg.len(), parse.bytes_consumed);
+                            }
+                            log::debug!("midi msg: {:#?}", parse.status);
+                        }
+                        Err(e) => {
+                            log::error!("midi parse error: {}", e);
+                            let mut maybe_source = e.source();
+                            while let Some(source) = maybe_source {
+                                log::error!("source: {}", source);
+                                maybe_source = source.source();
+                            }
+                        }
+                    }
                 }
                 _ => { }
             }

@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 s2_lib = { path = "../s2_lib" }
+muddy2 = { path = "../../../muddy2" }
 
 anyhow = "1.0.57"
 env_logger = "0.9.0"
