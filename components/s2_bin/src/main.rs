@@ -1,7 +1,9 @@
+#![allow(unused)]
+
 mod plotting;
 //mod threads;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use clap::Parser;
 
 #[derive(Parser)]
@@ -32,10 +34,51 @@ fn do_midi() -> Result<()> {
     let mut midi_in = MidiInput::new("midir test input")?;
     midi_in.ignore(Ignore::None);
 
-    println!("Available input ports:");
+    log::info!("available input ports:");
     for (i, p) in midi_in.ports().iter().enumerate() {
-        println!("{}: {}", i, midi_in.port_name(p)?);
+        log::info!("{}: {}", i, midi_in.port_name(p)?);
     }
+
+    let port = midi_in.ports().get(0).cloned()
+        .ok_or_else(|| anyhow!("no midi ports"))?;
+
+    let (midi_tx, midi_rx) = std::sync::mpsc::channel();
+
+    let midi = midi_in.connect(
+        &port,
+        "midi",
+        move |stamp, msg, _| {
+            midi_tx.send(msg.to_vec());
+        },
+        ()
+    )?;
+
+    let (exit_tx, exit_rx) = std::sync::mpsc::channel();
+
+    let thread = std::thread::spawn(move || {
+        loop {
+            if exit_rx.try_recv().is_ok() {
+                break;
+            }
+
+            std::thread::yield_now();
+
+            let midi_msg = midi_rx.try_recv();
+
+            match midi_msg {
+                Ok(midi_msg) => {
+                    log::debug!("midi msg bytes: {:?}", midi_msg);
+                }
+                _ => { }
+            }
+        }
+    });
+
+    std::io::stdin().read_line(&mut String::new());
+
+    exit_tx.send(());
+    thread.join();
+    drop(midi);
 
     Ok(())
 }
