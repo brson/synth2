@@ -40,21 +40,25 @@ fn do_midi() -> Result<()> {
             log::info!("{}: {}", i, midi_in.port_name(p)?);
         }
 
-        let port = midi_in.ports().get(0).cloned()
-            .ok_or_else(|| anyhow!("no midi ports"))?;
-
         let (midi_tx, midi_rx) = std::sync::mpsc::channel();
 
-        let midi = midi_in.connect(
-            &port,
-            "midi",
-            move |stamp, msg, _| {
-                midi_tx.send(msg.to_vec());
-            },
-            ()
-        )?;
-
-        (midi, midi_rx)
+        let port = midi_in.ports().get(0).cloned();
+        match port {
+            Some(port) => {
+                let midi = midi_in.connect(
+                    &port,
+                    "midi",
+                    move |stamp, msg, _| {
+                        midi_tx.send(msg.to_vec());
+                    },
+                    ()
+                )?;
+                (Some(midi), midi_rx)
+            }
+            None => {
+                (None, midi_rx)
+            }
+        }
     };
 
     {
