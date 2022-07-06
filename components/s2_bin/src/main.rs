@@ -29,29 +29,33 @@ fn main() -> Result<()> {
 }
 
 fn do_midi() -> Result<()> {
-    use midir::{Ignore, MidiInput};
+    let (midi, midi_rx) = {
+        use midir::{Ignore, MidiInput};
 
-    let mut midi_in = MidiInput::new("midir test input")?;
-    midi_in.ignore(Ignore::None);
+        let mut midi_in = MidiInput::new("midir test input")?;
+        midi_in.ignore(Ignore::None);
 
-    log::info!("available input ports:");
-    for (i, p) in midi_in.ports().iter().enumerate() {
-        log::info!("{}: {}", i, midi_in.port_name(p)?);
-    }
+        log::info!("available input ports:");
+        for (i, p) in midi_in.ports().iter().enumerate() {
+            log::info!("{}: {}", i, midi_in.port_name(p)?);
+        }
 
-    let port = midi_in.ports().get(0).cloned()
-        .ok_or_else(|| anyhow!("no midi ports"))?;
+        let port = midi_in.ports().get(0).cloned()
+            .ok_or_else(|| anyhow!("no midi ports"))?;
 
-    let (midi_tx, midi_rx) = std::sync::mpsc::channel();
+        let (midi_tx, midi_rx) = std::sync::mpsc::channel();
 
-    let midi = midi_in.connect(
-        &port,
-        "midi",
-        move |stamp, msg, _| {
-            midi_tx.send(msg.to_vec());
-        },
-        ()
-    )?;
+        let midi = midi_in.connect(
+            &port,
+            "midi",
+            move |stamp, msg, _| {
+                midi_tx.send(msg.to_vec());
+            },
+            ()
+        )?;
+
+        (midi, midi_rx)
+    };
 
     let (midi_exit_tx, midi_exit_rx) = std::sync::mpsc::channel();
 
