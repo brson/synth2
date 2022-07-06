@@ -35,7 +35,7 @@ fn do_midi() -> Result<()> {
         let mut midi_in = MidiInput::new("midir test input")?;
         midi_in.ignore(Ignore::None);
 
-        log::info!("available input ports:");
+        log::info!("available midi input ports:");
         for (i, p) in midi_in.ports().iter().enumerate() {
             log::info!("{}: {}", i, midi_in.port_name(p)?);
         }
@@ -56,6 +56,17 @@ fn do_midi() -> Result<()> {
 
         (midi, midi_rx)
     };
+
+    {
+        use cpal::traits::{HostTrait, DeviceTrait};
+
+        let host = cpal::default_host();
+
+        log::info!("audio devices:");
+        for device in host.devices()? {
+            log::info!("{}", device.name()?);
+        }
+    }
 
     let (midi_exit_tx, midi_exit_rx) = std::sync::mpsc::channel();
 
