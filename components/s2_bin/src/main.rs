@@ -53,11 +53,11 @@ fn do_midi() -> Result<()> {
         ()
     )?;
 
-    let (exit_tx, exit_rx) = std::sync::mpsc::channel();
+    let (midi_exit_tx, midi_exit_rx) = std::sync::mpsc::channel();
 
-    let thread = std::thread::spawn(move || {
+    let midi_thread = std::thread::spawn(move || {
         loop {
-            if exit_rx.try_recv().is_ok() {
+            if midi_exit_rx.try_recv().is_ok() {
                 break;
             }
 
@@ -98,8 +98,8 @@ fn do_midi() -> Result<()> {
 
     std::io::stdin().read_line(&mut String::new());
 
-    exit_tx.send(());
-    thread.join();
+    midi_exit_tx.send(());
+    midi_thread.join();
     drop(midi);
 
     Ok(())
