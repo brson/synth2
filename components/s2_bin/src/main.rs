@@ -143,11 +143,17 @@ fn do_midi() -> Result<()> {
         }
     });
 
+    if let Some(stream) = &audio_output_stream {
+        use cpal::traits::StreamTrait;
+        stream.play()?;
+    }
+
     std::io::stdin().read_line(&mut String::new());
 
     midi_exit_tx.send(());
     midi_thread.join();
     drop(midi);
+    drop(audio_output_stream);
 
     Ok(())
 }
