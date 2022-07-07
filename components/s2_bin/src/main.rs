@@ -61,7 +61,7 @@ fn do_midi() -> Result<()> {
         }
     };
 
-    {
+    let audio_output_stream = {
         use cpal::traits::{HostTrait, DeviceTrait};
 
         let host = cpal::default_host();
@@ -83,8 +83,22 @@ fn do_midi() -> Result<()> {
 
             let config = output_device.default_output_config()?;
             log::info!("default output config: {:#?}", config);
+            let config = cpal::StreamConfig::from(config);
+
+            let stream = output_device.build_output_stream(
+                &config,
+                |buffer: &mut [f32], info| {
+                },
+                |error| {
+                    log::error!("audio output error: {}", error);
+                }
+            )?;
+
+            Some(stream)
+        } else {
+            None
         }
-    }
+    };
 
     let (midi_exit_tx, midi_exit_rx) = std::sync::mpsc::channel();
 
