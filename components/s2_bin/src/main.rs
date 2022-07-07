@@ -70,6 +70,20 @@ fn do_midi() -> Result<()> {
         for device in host.devices()? {
             log::info!("{}", device.name()?);
         }
+
+        let output_device = host.default_output_device();
+
+        if let Some(output_device) = output_device {
+            log::info!("default output device: {}", output_device.name()?);
+
+            log::info!("supported output configs:");
+            for configs in output_device.supported_output_configs()? {
+                log::info!("{:#?}", configs);
+            }
+
+            let config = output_device.default_output_config()?;
+            log::info!("default output config: {:#?}", config);
+        }
     }
 
     let (midi_exit_tx, midi_exit_rx) = std::sync::mpsc::channel();
