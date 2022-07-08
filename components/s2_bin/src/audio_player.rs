@@ -54,7 +54,8 @@ pub fn start_player() -> Result<Option<Player>> {
             SampleFormat::I16 => {
                 output_device.build_output_stream(
                     &config,
-                    |buffer: &mut [i16], info| {
+                    move |buffer: &mut [i16], info| {
+                        fill_buffer(buffer, &buf_filled_rx, &buf_empty_tx)
                     },
                     handle_error,
                 )?
@@ -71,4 +72,14 @@ pub fn start_player() -> Result<Option<Player>> {
     } else {
         Ok(None)
     }
+}
+
+fn fill_buffer<S>(
+    buffer: &mut [S],
+    buf_filled_rx: &mpsc::Receiver<Buffer>,
+    buf_empty_tx: &mpsc::Sender<Buffer>,
+)
+where S: Sample
+{
+    todo!()
 }
