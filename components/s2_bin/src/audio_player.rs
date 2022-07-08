@@ -6,7 +6,7 @@ use std::sync::mpsc;
 pub struct Player {
     pub buf_filled_tx: mpsc::Sender<Buffer>,
     pub buf_empty_rx: mpsc::Receiver<Buffer>,
-    pub stream: Box<dyn StreamTrait>,
+    stream: Box<dyn StreamTrait>,
 }
 
 pub const BUFFER_FRAMES: usize = 4096;
@@ -79,6 +79,8 @@ pub fn start_player() -> Result<Option<Player>> {
                 )?
             }
         };
+
+        stream.play()?;
 
         Ok(Some(Player {
             buf_filled_tx,
