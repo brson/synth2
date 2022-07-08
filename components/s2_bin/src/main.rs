@@ -2,6 +2,7 @@
 
 mod plotting;
 //mod threads;
+mod audio_player;
 
 use anyhow::{Result, anyhow};
 use clap::Parser;
