@@ -4,7 +4,7 @@ use std::sync::mpsc;
 
 pub struct Player {
     pub buf_filled_tx: mpsc::Sender<Buffer>,
-    pub buf_empty_rx: mpsc::Sender<Buffer>,
+    pub buf_empty_rx: mpsc::Receiver<Buffer>,
     pub stream: Box<dyn StreamTrait>,
 }
 
@@ -40,6 +40,9 @@ pub fn start_player() -> Result<Option<Player>> {
         log::info!("default output config: {:#?}", config);
         let config = cpal::StreamConfig::from(config);
 
+        let (buf_filled_tx, buf_filled_rx) = mpsc::channel();
+        let (buf_empty_tx, buf_empty_rx) = mpsc::channel();
+
         let stream = output_device.build_output_stream(
             &config,
             |buffer: &mut [f32], info| {
@@ -49,7 +52,11 @@ pub fn start_player() -> Result<Option<Player>> {
             }
         )?;
 
-        todo!();
+        Ok(Some(Player {
+            buf_filled_tx,
+            buf_empty_rx,
+            stream: Box::from(stream),
+        }))
     } else {
         Ok(None)
     }
