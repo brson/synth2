@@ -30,6 +30,8 @@ fn main() -> Result<()> {
 }
 
 fn do_midi() -> Result<()> {
+    let audio_player = audio_player::start_player()?;
+
     let (midi, midi_rx) = {
         use midir::{Ignore, MidiInput};
 
@@ -59,45 +61,6 @@ fn do_midi() -> Result<()> {
             None => {
                 (None, midi_rx)
             }
-        }
-    };
-
-    let audio_output_stream = {
-        use cpal::traits::{HostTrait, DeviceTrait};
-
-        let host = cpal::default_host();
-
-        log::info!("audio devices:");
-        for device in host.devices()? {
-            log::info!("{}", device.name()?);
-        }
-
-        let output_device = host.default_output_device();
-
-        if let Some(output_device) = output_device {
-            log::info!("default output device: {}", output_device.name()?);
-
-            log::info!("supported output configs:");
-            for configs in output_device.supported_output_configs()? {
-                log::info!("{:#?}", configs);
-            }
-
-            let config = output_device.default_output_config()?;
-            log::info!("default output config: {:#?}", config);
-            let config = cpal::StreamConfig::from(config);
-
-            let stream = output_device.build_output_stream(
-                &config,
-                |buffer: &mut [f32], info| {
-                },
-                |error| {
-                    log::error!("audio output error: {}", error);
-                }
-            )?;
-
-            Some(stream)
-        } else {
-            None
         }
     };
 
@@ -144,17 +107,12 @@ fn do_midi() -> Result<()> {
         }
     });
 
-    if let Some(stream) = &audio_output_stream {
-        use cpal::traits::StreamTrait;
-        stream.play()?;
-    }
-
     std::io::stdin().read_line(&mut String::new());
 
     midi_exit_tx.send(());
     midi_thread.join();
     drop(midi);
-    drop(audio_output_stream);
+    drop(audio_player);
 
     Ok(())
 }
