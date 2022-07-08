@@ -18,3 +18,5 @@ https://github.com/robbert-vdh/nih-plug
 https://github.com/glowcoil/clap-sys
 https://sotrh.github.io/learn-wgpu/showcase/windowless
 https://cytomic.com/technical-papers/
+https://musicnotation.org/systems/
+https://clairnote.org/
