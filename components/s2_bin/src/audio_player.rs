@@ -1,5 +1,6 @@
 use anyhow::Result;
 use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
+use cpal::{SampleFormat, Sample};
 use std::sync::mpsc;
 
 pub struct Player {
@@ -36,21 +37,31 @@ pub fn start_player() -> Result<Option<Player>> {
             log::info!("{:#?}", configs);
         }
 
-        let config = output_device.default_output_config()?;
-        log::info!("default output config: {:#?}", config);
-        let config = cpal::StreamConfig::from(config);
+        let supported_config = output_device.default_output_config()?;
+        log::info!("default output config: {:#?}", supported_config);
+
+        let sample_format = supported_config.sample_format();
+        let config = cpal::StreamConfig::from(supported_config);
 
         let (buf_filled_tx, buf_filled_rx) = mpsc::channel();
         let (buf_empty_tx, buf_empty_rx) = mpsc::channel();
 
-        let stream = output_device.build_output_stream(
-            &config,
-            |buffer: &mut [f32], info| {
-            },
-            |error| {
-                log::error!("audio output error: {}", error);
+        let handle_error = |error| {
+            log::error!("audio output error: {}", error);
+        };
+
+        let stream = match sample_format {
+            SampleFormat::I16 => {
+                output_device.build_output_stream(
+                    &config,
+                    |buffer: &mut [i16], info| {
+                    },
+                    handle_error,
+                )?
             }
-        )?;
+            SampleFormat::U16 => todo!(),
+            SampleFormat::F32 => todo!(),
+        };
 
         Ok(Some(Player {
             buf_filled_tx,
