@@ -116,5 +116,43 @@ fn fill_buffer<S>(
 )
 where S: Sample
 {
+    
+    let output_channels = state.output_channels as usize;
+    assert!(buffer.len() % output_channels == 0);
+
+    let frames_to_write = buffer.len() / output_channels;
+    let mut frames_written = 0;
+
+    if frames_to_write > BUFFER_FRAMES {
+        log::error!("audio device requesting {} frames, but buffer is only {} frames", frames_to_write, BUFFER_FRAMES);
+    }
+
+    if state.pending_frames.len() > 0 {
+        let frames_to_write = frames_to_write.min(state.pending_frames.len());
+        let in_frames = state.pending_frames.iter().take(frames_to_write);
+        let out_frames = buffer.chunks_mut(output_channels).take(frames_to_write);
+        let frames = in_frames.zip(out_frames);
+        for (in_frame, out_frame) in frames {
+            for sample in out_frame.iter_mut() {
+                *sample = S::from(in_frame);
+            }
+        }
+
+        state.pending_frames.drain(0..frames_to_write);
+        
+        frames_written += frames_to_write;
+    }
+
+    assert!(frames_written <= frames_to_write);
+
+    if frames_written == frames_to_write {
+        return;
+    }
+
+    assert!(state.pending_frames.len() == 0);
+
+    let frames_to_write = frames_to_write - frames_written;
+    let mut frames_written = frames_written;
+
     todo!()
 }
