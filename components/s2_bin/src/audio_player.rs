@@ -60,8 +60,24 @@ pub fn start_player() -> Result<Option<Player>> {
                     handle_error,
                 )?
             }
-            SampleFormat::U16 => todo!(),
-            SampleFormat::F32 => todo!(),
+            SampleFormat::U16 => {
+                output_device.build_output_stream(
+                    &config,
+                    move |buffer: &mut [u16], info| {
+                        fill_buffer(buffer, &buf_filled_rx, &buf_empty_tx)
+                    },
+                    handle_error,
+                )?
+            }
+            SampleFormat::F32 => {
+                output_device.build_output_stream(
+                    &config,
+                    move |buffer: &mut [f32], info| {
+                        fill_buffer(buffer, &buf_filled_rx, &buf_empty_tx)
+                    },
+                    handle_error,
+                )?
+            }
         };
 
         Ok(Some(Player {
