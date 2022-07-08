@@ -116,7 +116,6 @@ fn fill_buffer<S>(
 )
 where S: Sample
 {
-    
     let output_channels = state.output_channels as usize;
     assert!(buffer.len() % output_channels == 0);
 
