@@ -1,6 +1,6 @@
 use anyhow::Result;
 use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
-use cpal::{SampleFormat, Sample};
+use cpal::{SampleFormat, Sample, ChannelCount};
 use std::sync::mpsc;
 
 pub struct Player {
@@ -11,6 +11,7 @@ pub struct Player {
 
 pub const BUFFER_FRAMES: usize = 4096;
 
+/// This buffer only takes a single channel.
 pub struct Buffer(Box<[f32]>);
 
 impl Buffer {
@@ -53,12 +54,19 @@ pub fn start_player() -> Result<Option<Player>> {
             log::error!("audio output error: {}", error);
         };
 
+        let mut state = State {
+            output_channels: config.channels,
+            pending_frames: Vec::with_capacity(BUFFER_FRAMES),
+            buf_filled_rx,
+            buf_empty_tx,
+        };
+
         let stream = match sample_format {
             SampleFormat::I16 => {
                 output_device.build_output_stream(
                     &config,
                     move |buffer: &mut [i16], info| {
-                        fill_buffer(buffer, &buf_filled_rx, &buf_empty_tx)
+                        fill_buffer(buffer, &mut state)
                     },
                     handle_error,
                 )?
@@ -67,7 +75,7 @@ pub fn start_player() -> Result<Option<Player>> {
                 output_device.build_output_stream(
                     &config,
                     move |buffer: &mut [u16], info| {
-                        fill_buffer(buffer, &buf_filled_rx, &buf_empty_tx)
+                        fill_buffer(buffer, &mut state)
                     },
                     handle_error,
                 )?
@@ -76,7 +84,7 @@ pub fn start_player() -> Result<Option<Player>> {
                 output_device.build_output_stream(
                     &config,
                     move |buffer: &mut [f32], info| {
-                        fill_buffer(buffer, &buf_filled_rx, &buf_empty_tx)
+                        fill_buffer(buffer, &mut state)
                     },
                     handle_error,
                 )?
@@ -95,10 +103,16 @@ pub fn start_player() -> Result<Option<Player>> {
     }
 }
 
+struct State {
+    output_channels: ChannelCount,
+    pending_frames: Vec<f32>,
+    buf_filled_rx: mpsc::Receiver<Buffer>,
+    buf_empty_tx: mpsc::SyncSender<Buffer>,
+}
+
 fn fill_buffer<S>(
     buffer: &mut [S],
-    buf_filled_rx: &mpsc::Receiver<Buffer>,
-    buf_empty_tx: &mpsc::SyncSender<Buffer>,
+    state: &mut State,
 )
 where S: Sample
 {
