@@ -4,7 +4,7 @@ use cpal::{SampleFormat, Sample};
 use std::sync::mpsc;
 
 pub struct Player {
-    pub buf_filled_tx: mpsc::Sender<Buffer>,
+    pub buf_filled_tx: mpsc::SyncSender<Buffer>,
     pub buf_empty_rx: mpsc::Receiver<Buffer>,
     stream: Box<dyn StreamTrait>,
 }
@@ -43,8 +43,11 @@ pub fn start_player() -> Result<Option<Player>> {
         let sample_format = supported_config.sample_format();
         let config = cpal::StreamConfig::from(supported_config);
 
-        let (buf_filled_tx, buf_filled_rx) = mpsc::channel();
-        let (buf_empty_tx, buf_empty_rx) = mpsc::channel();
+        let (buf_filled_tx, buf_filled_rx) = mpsc::sync_channel(2);
+        let (buf_empty_tx, buf_empty_rx) = mpsc::sync_channel(2);
+
+        buf_empty_tx.send(Buffer(Box::from([0_f32; BUFFER_FRAMES])));
+        buf_empty_tx.send(Buffer(Box::from([0_f32; BUFFER_FRAMES])));
 
         let handle_error = |error| {
             log::error!("audio output error: {}", error);
@@ -95,7 +98,7 @@ pub fn start_player() -> Result<Option<Player>> {
 fn fill_buffer<S>(
     buffer: &mut [S],
     buf_filled_rx: &mpsc::Receiver<Buffer>,
-    buf_empty_tx: &mpsc::Sender<Buffer>,
+    buf_empty_tx: &mpsc::SyncSender<Buffer>,
 )
 where S: Sample
 {
