@@ -4,6 +4,7 @@
 mod plotting;
 //mod threads;
 mod audio_player;
+mod synth;
 
 use anyhow::{Result, anyhow};
 use clap::Parser;
