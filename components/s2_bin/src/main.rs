@@ -31,6 +31,10 @@ fn main() -> Result<()> {
 
 fn do_midi() -> Result<()> {
     let audio_player = audio_player::start_player()?;
+    let (audio_player_channels, audio_player_stream) =
+        audio_player.map(|player| {
+            (Some(player.channels), Some(player.stream))
+        }).unwrap_or((None, None));
 
     let (midi, midi_rx) = {
         use midir::{Ignore, MidiInput};
@@ -105,6 +109,8 @@ fn do_midi() -> Result<()> {
                 _ => { }
             }
         }
+
+        drop(audio_player_channels);
     });
 
     std::io::stdin().read_line(&mut String::new());
@@ -112,7 +118,7 @@ fn do_midi() -> Result<()> {
     midi_exit_tx.send(());
     midi_thread.join();
     drop(midi);
-    drop(audio_player);
+    drop(audio_player_stream);
 
     Ok(())
 }
