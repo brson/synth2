@@ -4,12 +4,20 @@ use cpal::{SampleFormat, Sample, ChannelCount};
 use std::sync::mpsc;
 
 pub struct Player {
+    pub channels: PlayerChannels,
+    pub stream: PlayerStream,
+}
+
+pub struct PlayerChannels {
     pub buf_filled_tx: mpsc::SyncSender<Buffer>,
     pub buf_empty_rx: mpsc::Receiver<Buffer>,
+}
+
+pub struct PlayerStream {
     stream: Box<dyn StreamTrait>,
 }
 
-pub const BUFFER_FRAMES: usize = 4096;
+pub const BUFFER_FRAMES: usize = 1024;
 
 /// This buffer only takes a single channel.
 pub struct Buffer(Box<[f32]>);
@@ -94,9 +102,13 @@ pub fn start_player() -> Result<Option<Player>> {
         stream.play()?;
 
         Ok(Some(Player {
-            buf_filled_tx,
-            buf_empty_rx,
-            stream: Box::from(stream),
+            channels: PlayerChannels {
+                buf_filled_tx,
+                buf_empty_rx,
+            },
+            stream: PlayerStream {
+                stream: Box::from(stream),
+            },
         }))
     } else {
         Ok(None)
