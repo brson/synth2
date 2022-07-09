@@ -48,7 +48,9 @@ fn do_midi() -> Result<()> {
             log::info!("{}: {}", i, midi_in.port_name(p)?);
         }
 
-        let (midi_tx, midi_rx) = mpsc::channel();
+        const MAX_MIDI_MESSAGES: usize = 1024;
+
+        let (midi_tx, midi_rx) = mpsc::sync_channel(MAX_MIDI_MESSAGES);
 
         let port = midi_in.ports().get(0).cloned();
         match port {
@@ -57,7 +59,15 @@ fn do_midi() -> Result<()> {
                     &port,
                     "midi",
                     move |stamp, msg, _| {
-                        midi_tx.send(msg.to_vec());
+                        match midi_tx.try_send(msg.to_vec()) {
+                            Ok(_) => { },
+                            Err(mpsc::TrySendError::Disconnected(_)) => {
+                                /* shutting down? */
+                            },
+                            Err(mpsc::TrySendError::Full(_)) => {
+                                log::error!("midi channel full");
+                            }
+                        }
                     },
                     ()
                 )?;
