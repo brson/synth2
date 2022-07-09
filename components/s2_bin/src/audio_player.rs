@@ -131,7 +131,7 @@ where S: Sample
         log::error!("audio device requesting {} frames, but buffer is only {} frames", frames_to_write, BUFFER_FRAMES);
     }
 
-    if let Some(pending_buffer) = state.pending_buffer.as_mut() {
+    if let Some(mut pending_buffer) = state.pending_buffer.take() {
 
         assert!(pending_buffer.consumed < pending_buffer.buf.0.len());
 
@@ -149,23 +149,23 @@ where S: Sample
 
         pending_buffer.consumed += frames_to_write;
         frames_written += frames_to_write;
-    }
 
-    /*if state.pending_frames.len() > 0 {
-        let frames_to_write = frames_to_write.min(state.pending_frames.len());
-        let in_frames = state.pending_frames.iter().take(frames_to_write);
-        let out_frames = buffer.chunks_mut(output_channels).take(frames_to_write);
-        let frames = in_frames.zip(out_frames);
-        for (in_frame, out_frame) in frames {
-            for sample in out_frame.iter_mut() {
-                *sample = S::from(in_frame);
+        assert!(pending_buffer.consumed <= pending_buffer.buf.0.len());
+
+        if pending_buffer.consumed < pending_buffer.buf.0.len() {
+            state.pending_buffer = Some(pending_buffer);
+        } else {
+            match state.buf_empty_tx.try_send(pending_buffer.buf) {
+                Ok(_) => { },
+                Err(mpsc::TrySendError::Disconnected(_)) => {
+                    /* shutting down */
+                }
+                Err(mpsc::TrySendError::Full(_)) => {
+                    panic!("full channel");
+                }
             }
         }
-
-        state.pending_frames.drain(0..frames_to_write);
-        
-        frames_written += frames_to_write;
-    }*/
+    }
 
     assert!(frames_written <= frames_to_write);
 
