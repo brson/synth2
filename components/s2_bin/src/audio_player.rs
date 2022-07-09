@@ -131,6 +131,26 @@ where S: Sample
         log::error!("audio device requesting {} frames, but buffer is only {} frames", frames_to_write, BUFFER_FRAMES);
     }
 
+    if let Some(pending_buffer) = state.pending_buffer.as_mut() {
+
+        assert!(pending_buffer.consumed < pending_buffer.buf.0.len());
+
+        let remaining_buffer = &pending_buffer.buf.0[pending_buffer.consumed..];
+        let frames_to_write = frames_to_write.min(remaining_buffer.len());
+        let in_frames = remaining_buffer.iter().take(frames_to_write);
+        let out_frames = buffer.chunks_mut(output_channels).take(frames_to_write);
+        let frames = in_frames.zip(out_frames);
+
+        for (in_frame, out_frame) in frames {
+            for sample in out_frame.iter_mut() {
+                *sample = S::from(in_frame);
+            }
+        }
+
+        pending_buffer.consumed += frames_to_write;
+        frames_written += frames_to_write;
+    }
+
     /*if state.pending_frames.len() > 0 {
         let frames_to_write = frames_to_write.min(state.pending_frames.len());
         let in_frames = state.pending_frames.iter().take(frames_to_write);
