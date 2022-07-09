@@ -124,14 +124,70 @@ where S: Sample
     let output_channels = state.output_channels as usize;
     assert!(buffer.len() % output_channels == 0);
 
-    let frames_to_write = buffer.len() / output_channels;
-    let mut frames_written = 0;
+    let total_frames_to_write = buffer.len() / output_channels;
 
-    if frames_to_write > BUFFER_FRAMES {
-        log::error!("audio device requesting {} frames, but buffer is only {} frames", frames_to_write, BUFFER_FRAMES);
+    if total_frames_to_write > BUFFER_FRAMES {
+        log::error!("audio device requesting {} frames, but buffer is only {} frames", total_frames_to_write, BUFFER_FRAMES);
     }
 
     // First fill the output buffer from a buffer we already have.
+    let initial_frames_written = fill_buffer_from_pending(buffer, state);
+    assert!(initial_frames_written <= total_frames_to_write);
+
+    if initial_frames_written == total_frames_to_write {
+        return;
+    }
+
+    assert!(state.pending_buffer.is_none());
+
+    let buffer = &mut buffer[output_channels * initial_frames_written ..];
+    let final_frames_to_write = total_frames_to_write - initial_frames_written;
+
+    let fill_remaining_zeros = |buffer: &mut [S]| {
+        let out_frames = buffer.chunks_mut(output_channels);
+        for out_frame in out_frames {
+            for sample in out_frame.iter_mut() {
+                *sample = S::from(&0.0);
+            }
+        }
+    };
+
+    // Receive a new buffer.
+    match state.buf_filled_rx.try_recv() {
+        Ok(new_buffer) => {
+            state.pending_buffer = Some(PendingBuffer {
+                buf: new_buffer,
+                consumed: 0,
+            });
+            let final_frames_written = fill_buffer_from_pending(buffer, state);
+            assert!(final_frames_written <= final_frames_to_write);
+
+            let buffer = &mut buffer[output_channels * final_frames_written ..];
+            fill_remaining_zeros(buffer);
+        }
+        Err(mpsc::TryRecvError::Disconnected) => {
+            /* shutting down */
+            fill_remaining_zeros(buffer);
+        }
+        Err(mpsc::TryRecvError::Empty) => {
+            log::warn!("didn't receive buffer in time for audio out");
+            fill_remaining_zeros(buffer);
+        }
+    }
+}
+
+fn fill_buffer_from_pending<S>(
+    buffer: &mut [S],
+    state: &mut State,
+) -> usize
+where S: Sample
+{
+    let output_channels = state.output_channels as usize;
+    assert!(buffer.len() % output_channels == 0);
+
+    let frames_to_write = buffer.len() / output_channels;
+    let mut frames_written = 0;
+
     if let Some(mut pending_buffer) = state.pending_buffer.take() {
 
         assert!(pending_buffer.consumed < pending_buffer.buf.0.len());
@@ -168,40 +224,5 @@ where S: Sample
         }
     }
 
-    assert!(frames_written <= frames_to_write);
-
-    if frames_written == frames_to_write {
-        return;
-    }
-
-    assert!(state.pending_buffer.is_none());
-
-    let frames_to_write = frames_to_write - frames_written;
-    let frames_written = frames_written;
-
-    let fill_remaining_zeros = |buffer: &mut [S]| {
-        let out_frames = buffer.chunks_mut(output_channels)
-            .skip(frames_written)
-            .take(frames_to_write);
-        for out_frame in out_frames {
-            for sample in out_frame.iter_mut() {
-                *sample = S::from(&0.0);
-            }
-        }
-    };
-
-    // Receive a new buffer.
-    match state.buf_filled_rx.try_recv() {
-        Ok(new_buffer) => {
-            let remaining_buffer = &mut buffer[output_channels * frames_written ..];
-        }
-        Err(mpsc::TryRecvError::Disconnected) => {
-            /* shutting down */
-            fill_remaining_zeros(buffer);
-        }
-        Err(mpsc::TryRecvError::Empty) => {
-            log::warn!("didn't receive buffer in time for audio out");
-            fill_remaining_zeros(buffer);
-        }
-    }
+    frames_written
 }
