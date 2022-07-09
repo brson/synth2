@@ -6,6 +6,7 @@ mod audio_player;
 
 use anyhow::{Result, anyhow};
 use clap::Parser;
+use std::sync::mpsc;
 
 #[derive(Parser)]
 enum Command {
@@ -47,7 +48,7 @@ fn do_midi() -> Result<()> {
             log::info!("{}: {}", i, midi_in.port_name(p)?);
         }
 
-        let (midi_tx, midi_rx) = std::sync::mpsc::channel();
+        let (midi_tx, midi_rx) = mpsc::channel();
 
         let port = midi_in.ports().get(0).cloned();
         match port {
@@ -68,19 +69,9 @@ fn do_midi() -> Result<()> {
         }
     };
 
-    let (midi_exit_tx, midi_exit_rx) = std::sync::mpsc::channel();
-
     let midi_thread = std::thread::spawn(move || {
         loop {
-            if midi_exit_rx.try_recv().is_ok() {
-                break;
-            }
-
-            std::thread::yield_now();
-
-            let midi_msg = midi_rx.try_recv();
-
-            match midi_msg {
+            match midi_rx.recv() {
                 Ok(midi_msg) => {
                     log::debug!("midi msg bytes: {:?}", midi_msg);
 
@@ -106,19 +97,20 @@ fn do_midi() -> Result<()> {
                         }
                     }
                 }
-                _ => { }
+                Err(mpsc::RecvError) => {
+                    break;
+                }
             }
         }
 
-        drop(audio_player_channels);
+        log::info!("midi thread exiting");
     });
 
     std::io::stdin().read_line(&mut String::new());
 
-    midi_exit_tx.send(());
-    midi_thread.join();
     drop(midi);
     drop(audio_player_stream);
+    midi_thread.join();
 
     Ok(())
 }

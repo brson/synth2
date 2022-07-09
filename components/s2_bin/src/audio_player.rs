@@ -17,7 +17,7 @@ pub struct PlayerStream {
     stream: Box<dyn StreamTrait>,
 }
 
-pub const BUFFER_FRAMES: usize = 1024;
+pub const BUFFER_FRAMES: usize = 2048;
 
 /// This buffer only takes a single channel.
 pub struct Buffer(Box<[f32]>);
