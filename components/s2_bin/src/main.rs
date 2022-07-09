@@ -1,3 +1,4 @@
+#![feature(let_else)]
 #![allow(unused)]
 
 mod plotting;
@@ -79,48 +80,102 @@ fn do_midi() -> Result<()> {
         }
     };
 
-    let midi_thread = std::thread::spawn(move || {
-        loop {
-            match midi_rx.recv() {
-                Ok(midi_msg) => {
-                    log::debug!("midi msg bytes: {:?}", midi_msg);
+    let midi_thread = std::thread::Builder::new()
+        .name("midi".to_string())
+        .spawn(move || {
+            loop {
+                match midi_rx.recv() {
+                    Ok(midi_msg) => {
+                        log::debug!("midi msg bytes: {:?}", midi_msg);
 
-                    use muddy2::parser::{Parser, MessageParseOutcome, MessageParseOutcomeStatus};
+                        use muddy2::parser::{Parser, MessageParseOutcome, MessageParseOutcomeStatus};
 
-                    let mut parser = Parser::new();
-                    let parse = parser.parse(&midi_msg);
+                        let mut parser = Parser::new();
+                        let parse = parser.parse(&midi_msg);
 
-                    match parse {
-                        Ok(parse) => {
-                            if parse.bytes_consumed as usize != midi_msg.len() {
-                                log::error!("did not consume entire midi message. len = {}, consumed = {}", midi_msg.len(), parse.bytes_consumed);
+                        match parse {
+                            Ok(parse) => {
+                                if parse.bytes_consumed as usize != midi_msg.len() {
+                                    log::error!("did not consume entire midi message. len = {}, consumed = {}", midi_msg.len(), parse.bytes_consumed);
+                                }
+                                log::debug!("midi msg: {:#?}", parse.status);
                             }
-                            log::debug!("midi msg: {:#?}", parse.status);
-                        }
-                        Err(e) => {
-                            log::error!("midi parse error: {}", e);
-                            let mut maybe_source = e.source();
-                            while let Some(source) = maybe_source {
-                                log::error!("source: {}", source);
-                                maybe_source = source.source();
+                            Err(e) => {
+                                log::error!("midi parse error: {}", e);
+                                let mut maybe_source = e.source();
+                                while let Some(source) = maybe_source {
+                                    log::error!("source: {}", source);
+                                    maybe_source = source.source();
+                                }
                             }
                         }
                     }
-                }
-                Err(mpsc::RecvError) => {
-                    break;
+                    Err(mpsc::RecvError) => {
+                        break;
+                    }
                 }
             }
-        }
 
-        log::info!("midi thread exiting");
-    });
+            log::info!("midi thread exiting");
+        })?;
+
+    let synth_thread = std::thread::Builder::new()
+        .name("synth".to_string())
+        .spawn(move || {
+            let Some(audio_player_channels) = audio_player_channels else {
+                log::info!("no audio player");
+                return;
+            };
+
+            loop {
+                match audio_player_channels.buf_empty_rx.recv() {
+                    Ok(mut buffer) => {
+                        for sample in buffer.as_slice_mut() {
+                            *sample = 0.0;
+                        }
+                        match audio_player_channels.buf_filled_tx.try_send(buffer) {
+                            Ok(_) => { },
+                            Err(mpsc::TrySendError::Disconnected(_)) => {
+                                /* shutting down */
+                            }
+                            Err(mpsc::TrySendError::Full(_)) => {
+                                panic!("full channel");
+                            }
+                        }
+                    }
+                    Err(mpsc::RecvError) => {
+                        break;
+                    }
+                }
+            }
+
+            drop(audio_player_channels);
+
+            log::info!("synth thread exiting");
+        })?;
 
     std::io::stdin().read_line(&mut String::new());
 
     drop(midi);
     drop(audio_player_stream);
-    midi_thread.join();
+
+    let threads = [
+        midi_thread,
+        synth_thread,
+    ];
+
+    let thread_results = threads.map(|t| {
+        (
+            t.thread().name().unwrap_or("unknown").to_owned(),
+            t.join()
+        )
+    });
+
+    for (thread_name, thread_result) in thread_results {
+        if let Err(e) = thread_result {
+            log::error!("thread {} panicked: {:?}", thread_name, e);
+        }
+    }
 
     Ok(())
 }

@@ -23,7 +23,7 @@ pub const BUFFER_FRAMES: usize = 2048;
 pub struct Buffer(Box<[f32]>);
 
 impl Buffer {
-    fn as_slice_mut(&mut self) -> &mut [f32] {
+    pub fn as_slice_mut(&mut self) -> &mut [f32] {
         &mut self.0
     }
 }
