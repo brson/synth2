@@ -56,7 +56,7 @@ pub fn start_player() -> Result<Option<Player>> {
 
         let mut state = State {
             output_channels: config.channels,
-            pending_frames: Vec::with_capacity(BUFFER_FRAMES),
+            pending_buffer: None,
             buf_filled_rx,
             buf_empty_tx,
         };
@@ -105,9 +105,14 @@ pub fn start_player() -> Result<Option<Player>> {
 
 struct State {
     output_channels: ChannelCount,
-    pending_frames: Vec<f32>,
+    pending_buffer: Option<PendingBuffer>,
     buf_filled_rx: mpsc::Receiver<Buffer>,
     buf_empty_tx: mpsc::SyncSender<Buffer>,
+}
+
+struct PendingBuffer {
+    buf: Buffer,
+    consumed: usize,
 }
 
 fn fill_buffer<S>(
@@ -126,7 +131,7 @@ where S: Sample
         log::error!("audio device requesting {} frames, but buffer is only {} frames", frames_to_write, BUFFER_FRAMES);
     }
 
-    if state.pending_frames.len() > 0 {
+    /*if state.pending_frames.len() > 0 {
         let frames_to_write = frames_to_write.min(state.pending_frames.len());
         let in_frames = state.pending_frames.iter().take(frames_to_write);
         let out_frames = buffer.chunks_mut(output_channels).take(frames_to_write);
@@ -140,7 +145,7 @@ where S: Sample
         state.pending_frames.drain(0..frames_to_write);
         
         frames_written += frames_to_write;
-    }
+    }*/
 
     assert!(frames_written <= frames_to_write);
 
@@ -148,7 +153,7 @@ where S: Sample
         return;
     }
 
-    assert!(state.pending_frames.len() == 0);
+    //assert!(state.pending_frames.len() == 0);
 
     let frames_to_write = frames_to_write - frames_written;
     let mut frames_written = frames_written;
