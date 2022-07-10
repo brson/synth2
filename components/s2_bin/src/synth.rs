@@ -12,6 +12,7 @@ pub struct Synth {
 pub struct Note(pub u8);
 pub struct Velocity(pub Unipolar<1>);
 #[derive(PartialEq, PartialOrd)]
+#[derive(Copy, Clone)]
 pub struct FrameOffset(pub f32);
 
 pub struct Voice {
@@ -26,6 +27,14 @@ impl Synth {
     }
 
     pub fn note_off(&mut self, note: Note) {
+        let global_frame_offset = self.global_frame_offset;
+        if let Some(voice) = self.find_voice(note) {
+            if voice.release_frame_offset.is_none() {
+                voice.release_frame_offset = Some(global_frame_offset);
+            } else {
+                log::warn!("note {} released twice", note.0);
+            }
+        }
     }
 
     fn start_voice(&mut self, note: Note) -> &mut Voice {
