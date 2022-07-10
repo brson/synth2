@@ -9,11 +9,13 @@ pub struct Synth {
 #[derive(Eq, PartialEq)]
 #[derive(Copy, Clone)]
 pub struct Note(pub u8);
+#[derive(Copy, Clone)]
 pub struct Velocity(pub Unipolar<1>);
 #[derive(PartialEq, PartialOrd)]
 #[derive(Copy, Clone)]
 pub struct FrameOffset(pub u16);
 
+#[derive(Copy, Clone)]
 pub struct Voice {
     note: Note,
     velocity: Velocity,
@@ -21,9 +23,22 @@ pub struct Voice {
     release_frame_offset: Option<FrameOffset>,
 }
 
+impl Default for Voice {
+    fn default() -> Voice {
+        Voice {
+            note: Note(0),
+            velocity: Velocity(Unipolar(0.0)),
+            current_frame_offset: None,
+            release_frame_offset: None,
+        }
+    }
+}
+
 impl Synth {
     pub fn new() -> Synth {
-        todo!()
+        Synth {
+            voices: [Voice::default(); NUM_VOICES],
+        }
     }
 
     pub fn note_on(&mut self, note: Note, velocity: Velocity) {
