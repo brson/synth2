@@ -1,5 +1,6 @@
 use s2_lib::try3::units::{Unipolar, Hz, Ms, Bipolar, SampleRateKhz};
 use s2_lib::try3::static_config as sc;
+use s2_lib::try3::state as st;
 
 const NUM_VOICES: usize = 1;
 
@@ -23,6 +24,7 @@ pub struct Voice {
     velocity: Velocity,
     current_frame_offset: Option<FrameOffset>,
     release_frame_offset: Option<FrameOffset>,
+    state: st::Layer,
 }
 
 impl Default for Voice {
@@ -32,6 +34,7 @@ impl Default for Voice {
             velocity: Velocity(Unipolar(0.0)),
             current_frame_offset: None,
             release_frame_offset: None,
+            state: st::Layer::default(),
         }
     }
 }
@@ -51,6 +54,7 @@ impl Synth {
             velocity,
             current_frame_offset: Some(FrameOffset(0)),
             release_frame_offset: None,
+            state: st::Layer::default(),
         };
     }
 
