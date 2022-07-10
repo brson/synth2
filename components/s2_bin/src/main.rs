@@ -81,23 +81,6 @@ fn do_midi() -> Result<()> {
         }
     };
 
-    let midi_thread = std::thread::Builder::new()
-        .name("midi".to_string())
-        .spawn(move || {
-            loop {
-                match midi_rx.recv() {
-                    Ok(midi_msg) => {
-                        let midi_msg = parse_midi_message(&midi_msg);
-                    }
-                    Err(mpsc::RecvError) => {
-                        break;
-                    }
-                }
-            }
-
-            log::info!("midi thread exiting");
-        })?;
-
     let synth_thread = std::thread::Builder::new()
         .name("synth".to_string())
         .spawn(move || {
@@ -109,9 +92,22 @@ fn do_midi() -> Result<()> {
             loop {
                 match audio_player_channels.buf_empty_rx.recv() {
                     Ok(mut buffer) => {
+                        loop {
+                            match midi_rx.try_recv() {
+                                Ok(midi_msg) => {
+                                    let midi_msg = parse_midi_message(&midi_msg);
+                                    // todo
+                                }
+                                Err(_) => {
+                                    break;
+                                }
+                            }
+                        }
+
                         for sample in buffer.as_slice_mut() {
                             *sample = 0.0;
                         }
+
                         match audio_player_channels.buf_filled_tx.try_send(buffer) {
                             Ok(_) => { },
                             Err(mpsc::TrySendError::Disconnected(_)) => {
@@ -139,7 +135,6 @@ fn do_midi() -> Result<()> {
     drop(audio_player_stream);
 
     let threads = [
-        midi_thread,
         synth_thread,
     ];
 
