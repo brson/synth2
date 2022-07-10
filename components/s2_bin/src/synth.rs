@@ -15,9 +15,10 @@ pub struct Velocity(pub Unipolar<1>);
 pub struct FrameOffset(pub f32);
 
 pub struct Voice {
-    active: bool,
     note: Note,
-    start_frame_offset: f32,
+    velocity: Velocity,
+    start_frame_offset: FrameOffset,
+    release_frame_offset: Option<FrameOffset>,
 }
 
 impl Synth {
@@ -38,7 +39,7 @@ impl Synth {
     fn find_voice_index(&self, note: Note) -> Option<usize> {
         let mut found = None;
         for (index, voice) in self.voices.iter().enumerate() {
-            if voice.note == note && voice.active {
+            if voice.note == note {
                 found = Some(index);
             }
         }
@@ -52,29 +53,18 @@ impl Synth {
     }
 
     fn add_voice(&mut self, note: Note) -> &mut Voice {
-        let mut available = None;
         let mut oldest: Option<&mut Voice> = None;
         for voice in &mut self.voices {
-            assert!(!(voice.note == note && voice.active));
-            if !voice.active {
-                available = Some(voice);
-            } else {
-                if let Some(current_oldest) = oldest {
-                    if voice.start_frame_offset < current_oldest.start_frame_offset {
-                        oldest = Some(voice)
-                    } else {
-                        oldest = Some(current_oldest)
-                    }
-                } else {
+            if let Some(current_oldest) = oldest {
+                if voice.start_frame_offset < current_oldest.start_frame_offset {
                     oldest = Some(voice)
+                } else {
+                    oldest = Some(current_oldest)
                 }
+            } else {
+                oldest = Some(voice)
             }
         }
-
-        match (available, oldest) {
-            (Some(voice), _) => voice,
-            (_, Some(voice)) => voice,
-            _ => panic!(),
-        }
+        oldest.unwrap()
     }
 }
