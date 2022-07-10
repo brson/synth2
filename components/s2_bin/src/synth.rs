@@ -23,7 +23,15 @@ pub struct Voice {
 }
 
 impl Synth {
-    pub fn note_on(&mut self, note: Note, vel: Velocity) {
+    pub fn note_on(&mut self, note: Note, velocity: Velocity) {
+        let global_frame_offset = self.global_frame_offset;
+        let voice = self.start_voice(note);
+        *voice = Voice {
+            note,
+            velocity,
+            start_frame_offset: global_frame_offset,
+            release_frame_offset: None,
+        };
     }
 
     pub fn note_off(&mut self, note: Note) {
