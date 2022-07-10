@@ -87,29 +87,7 @@ fn do_midi() -> Result<()> {
             loop {
                 match midi_rx.recv() {
                     Ok(midi_msg) => {
-                        log::debug!("midi msg bytes: {:?}", midi_msg);
-
-                        use muddy2::parser::{Parser, MessageParseOutcome, MessageParseOutcomeStatus};
-
-                        let mut parser = Parser::new();
-                        let parse = parser.parse(&midi_msg);
-
-                        match parse {
-                            Ok(parse) => {
-                                if parse.bytes_consumed as usize != midi_msg.len() {
-                                    log::error!("did not consume entire midi message. len = {}, consumed = {}", midi_msg.len(), parse.bytes_consumed);
-                                }
-                                log::debug!("midi msg: {:#?}", parse.status);
-                            }
-                            Err(e) => {
-                                log::error!("midi parse error: {}", e);
-                                let mut maybe_source = e.source();
-                                while let Some(source) = maybe_source {
-                                    log::error!("source: {}", source);
-                                    maybe_source = source.source();
-                                }
-                            }
-                        }
+                        let midi_msg = parse_midi_message(&midi_msg);
                     }
                     Err(mpsc::RecvError) => {
                         break;
@@ -179,4 +157,35 @@ fn do_midi() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn parse_midi_message(midi_msg: &[u8]) -> Option<muddy2::message::Message> {
+    log::debug!("midi msg bytes: {:?}", midi_msg);
+
+    use muddy2::parser::{Parser, MessageParseOutcome, MessageParseOutcomeStatus};
+
+    let mut parser = Parser::new();
+    let parse = parser.parse(&midi_msg);
+
+    match parse {
+        Ok(parse) => {
+            if parse.bytes_consumed as usize != midi_msg.len() {
+                log::error!("did not consume entire midi message. len = {}, consumed = {}", midi_msg.len(), parse.bytes_consumed);
+            }
+            log::debug!("midi msg: {:#?}", parse.status);
+            match parse.status {
+                MessageParseOutcomeStatus::Message(msg) => Some(msg),
+                _ => None,
+            }
+        }
+        Err(e) => {
+            log::error!("midi parse error: {}", e);
+            let mut maybe_source = e.source();
+            while let Some(source) = maybe_source {
+                log::error!("source: {}", source);
+                maybe_source = source.source();
+            }
+            None
+        }
+    }
 }
