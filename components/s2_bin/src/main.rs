@@ -84,49 +84,7 @@ fn do_midi() -> Result<()> {
     let synth_thread = std::thread::Builder::new()
         .name("synth".to_string())
         .spawn(move || {
-            let Some(audio_player_channels) = audio_player_channels else {
-                log::info!("no audio player");
-                return;
-            };
-
-            loop {
-                match audio_player_channels.buf_empty_rx.recv() {
-                    Ok(mut buffer) => {
-                        loop {
-                            match midi_rx.try_recv() {
-                                Ok(midi_msg) => {
-                                    let midi_msg = parse_midi_message(&midi_msg);
-                                    // todo
-                                }
-                                Err(_) => {
-                                    break;
-                                }
-                            }
-                        }
-
-                        for sample in buffer.as_slice_mut() {
-                            *sample = 0.0;
-                        }
-
-                        match audio_player_channels.buf_filled_tx.try_send(buffer) {
-                            Ok(_) => { },
-                            Err(mpsc::TrySendError::Disconnected(_)) => {
-                                /* shutting down */
-                            }
-                            Err(mpsc::TrySendError::Full(_)) => {
-                                panic!("full channel");
-                            }
-                        }
-                    }
-                    Err(mpsc::RecvError) => {
-                        break;
-                    }
-                }
-            }
-
-            drop(audio_player_channels);
-
-            log::info!("synth thread exiting");
+            run_synth(audio_player_channels, midi_rx);
         })?;
 
     std::io::stdin().read_line(&mut String::new());
@@ -183,4 +141,53 @@ fn parse_midi_message(midi_msg: &[u8]) -> Option<muddy2::message::Message> {
             None
         }
     }
+}
+
+fn run_synth(
+    audio_player_channels: Option<audio_player::PlayerChannels>,
+    midi_rx: mpsc::Receiver<Vec<u8>>,
+) {
+    let Some(audio_player_channels) = audio_player_channels else {
+        log::info!("no audio player");
+        return;
+    };
+
+    loop {
+        match audio_player_channels.buf_empty_rx.recv() {
+            Ok(mut buffer) => {
+                loop {
+                    match midi_rx.try_recv() {
+                        Ok(midi_msg) => {
+                            let midi_msg = parse_midi_message(&midi_msg);
+                            // todo
+                        }
+                        Err(_) => {
+                            break;
+                        }
+                    }
+                }
+
+                for sample in buffer.as_slice_mut() {
+                    *sample = 0.0;
+                }
+
+                match audio_player_channels.buf_filled_tx.try_send(buffer) {
+                    Ok(_) => { },
+                    Err(mpsc::TrySendError::Disconnected(_)) => {
+                        /* shutting down */
+                    }
+                    Err(mpsc::TrySendError::Full(_)) => {
+                        panic!("full channel");
+                    }
+                }
+            }
+            Err(mpsc::RecvError) => {
+                break;
+            }
+        }
+    }
+
+    drop(audio_player_channels);
+
+    log::info!("synth thread exiting");
 }
