@@ -135,6 +135,19 @@ impl Synth {
     pub fn sample(&mut self,
                   buffer: &mut [f32],
                   sample_rate: SampleRateKhz) {
-        todo!()
+        for index in 0..buffer.len() {
+            for voice in self.voices {
+                if let Some(current_frame_offset) = voice.current_frame_offset {
+                    let pitch = note_to_pitch(voice.note);
+                    todo!()
+                }
+            }
+        }
     }
+}
+
+fn note_to_pitch(note: Note) -> Hz {
+    let note = note.0 as f32;
+    let freq = 440.0 * 2_f32.powf((note - 69.0) / 12.0);
+    Hz(freq)
 }
