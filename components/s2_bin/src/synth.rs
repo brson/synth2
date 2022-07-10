@@ -4,7 +4,6 @@ const NUM_VOICES: usize = 1;
 
 pub struct Synth {
     voices: [Voice; NUM_VOICES],
-    global_frame_offset: FrameOffset,
 }
 
 #[derive(Eq, PartialEq)]
@@ -13,32 +12,34 @@ pub struct Note(pub u8);
 pub struct Velocity(pub Unipolar<1>);
 #[derive(PartialEq, PartialOrd)]
 #[derive(Copy, Clone)]
-pub struct FrameOffset(pub f32);
+pub struct FrameOffset(pub u16);
 
 pub struct Voice {
     note: Note,
     velocity: Velocity,
-    start_frame_offset: FrameOffset,
+    current_frame_offset: Option<FrameOffset>,
     release_frame_offset: Option<FrameOffset>,
 }
 
 impl Synth {
+    pub fn new() -> Synth {
+        todo!()
+    }
+
     pub fn note_on(&mut self, note: Note, velocity: Velocity) {
-        let global_frame_offset = self.global_frame_offset;
         let voice = self.start_voice(note);
         *voice = Voice {
             note,
             velocity,
-            start_frame_offset: global_frame_offset,
+            current_frame_offset: Some(FrameOffset(0)),
             release_frame_offset: None,
         };
     }
 
     pub fn note_off(&mut self, note: Note) {
-        let global_frame_offset = self.global_frame_offset;
         if let Some(voice) = self.find_voice(note) {
             if voice.release_frame_offset.is_none() {
-                voice.release_frame_offset = Some(global_frame_offset);
+                voice.release_frame_offset = voice.current_frame_offset;
             } else {
                 log::warn!("note {} released twice", note.0);
             }
@@ -73,7 +74,7 @@ impl Synth {
         let mut oldest: Option<&mut Voice> = None;
         for voice in &mut self.voices {
             if let Some(current_oldest) = oldest {
-                if voice.start_frame_offset < current_oldest.start_frame_offset {
+                if voice.current_frame_offset > current_oldest.current_frame_offset {
                     oldest = Some(voice)
                 } else {
                     oldest = Some(current_oldest)
