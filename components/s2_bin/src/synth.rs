@@ -1,8 +1,10 @@
-use s2_lib::try3::units::Unipolar;
+use s2_lib::try3::units::{Unipolar, Hz, Ms, Bipolar};
+use s2_lib::try3::static_config as sc;
 
 const NUM_VOICES: usize = 1;
 
 pub struct Synth {
+    config: sc::Layer,
     voices: [Voice; NUM_VOICES],
 }
 
@@ -37,7 +39,33 @@ impl Default for Voice {
 impl Synth {
     pub fn new() -> Synth {
         Synth {
+            config: Synth::default_config(),
             voices: [Voice::default(); NUM_VOICES],
+        }
+    }
+
+    fn default_config() -> sc::Layer {
+        sc::Layer {
+            osc: sc::Oscillator::Saw,
+            lpf: sc::LowPassFilter {
+                freq: Hz(20_000.0),
+            },
+            amp_env: sc::Adsr {
+                attack: Ms(1.0),
+                decay: Ms(0.0),
+                sustain: Unipolar(1.0),
+                release: Ms(50.0)
+            },
+            mod_env: sc::Adsr {
+                attack: Ms(0.0),
+                decay: Ms(50.0),
+                sustain: Unipolar(0.0),
+                release: Ms(10.0)
+            },
+            modulations: sc::Modulations {
+                mod_env_to_osc_freq: Bipolar(0.0),
+                mod_env_to_lpf_freq: Bipolar(0.0),
+            },
         }
     }
 
