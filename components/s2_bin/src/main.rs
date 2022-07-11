@@ -152,14 +152,35 @@ fn run_synth(
         return;
     };
 
+    let mut synth = synth::Synth::new();
+
     loop {
         match audio_player_channels.buf_empty_rx.recv() {
             Ok(mut buffer) => {
                 loop {
                     match midi_rx.try_recv() {
                         Ok(midi_msg) => {
+                            use muddy2::message::{Message, ChannelMessage, ChannelMessageType, ChannelVoiceMessage};
+
                             let midi_msg = parse_midi_message(&midi_msg);
-                            // todo
+                            match midi_msg {
+                                Some(Message::Channel(ch_msg)) => {
+                                    match ch_msg.message {
+                                        ChannelMessageType::ChannelVoice(
+                                            ChannelVoiceMessage::NoteOn(note_on)
+                                        ) => {
+                                                todo!()
+                                        }
+                                        ChannelMessageType::ChannelVoice(
+                                            ChannelVoiceMessage::NoteOff(note_off)
+                                        ) => {
+                                                todo!()
+                                        }
+                                        _ => { }
+                                    }
+                                }
+                                _ => { }
+                            }
                         }
                         Err(_) => {
                             break;
