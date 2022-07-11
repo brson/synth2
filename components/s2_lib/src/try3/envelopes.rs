@@ -63,7 +63,7 @@ impl Adsr {
             (stage, release_start_stage)
         };
 
-        let sustain_start_sample = match release_start_stage {
+        let release_start_sample = match release_start_stage {
             AdsrStage::Attack => {
                 let rise = 1.0;
                 let run = attack;
@@ -106,7 +106,7 @@ impl Adsr {
                 let rise = -sustain;
                 let run = release;
                 let x_offset = offset - release_offset;
-                let y_start = sustain_start_sample;
+                let y_start = release_start_sample;
                 let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 Unipolar::<1>::assert_from(sample)
             }
