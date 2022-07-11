@@ -9,6 +9,7 @@ pub struct Player {
 }
 
 pub struct PlayerChannels {
+    pub sample_rate: u32,
     pub buf_filled_tx: mpsc::SyncSender<Buffer>,
     pub buf_empty_rx: mpsc::Receiver<Buffer>,
 }
@@ -103,6 +104,7 @@ pub fn start_player() -> Result<Option<Player>> {
 
         Ok(Some(Player {
             channels: PlayerChannels {
+                sample_rate: config.sample_rate.0,
                 buf_filled_tx,
                 buf_empty_rx,
             },

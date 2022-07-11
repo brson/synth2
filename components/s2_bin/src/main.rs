@@ -147,11 +147,14 @@ fn run_synth(
     audio_player_channels: Option<audio_player::PlayerChannels>,
     midi_rx: mpsc::Receiver<Vec<u8>>,
 ) {
+    use s2_lib::try3::units::SampleRateKhz;
+
     let Some(audio_player_channels) = audio_player_channels else {
         log::info!("no audio player");
         return;
     };
 
+    let sample_rate = SampleRateKhz(audio_player_channels.sample_rate);
     let mut synth = synth::Synth::new();
 
     loop {
@@ -188,9 +191,7 @@ fn run_synth(
                     }
                 }
 
-                for sample in buffer.as_slice_mut() {
-                    *sample = 0.0;
-                }
+                synth.sample(buffer.as_slice_mut(), sample_rate);
 
                 match audio_player_channels.buf_filled_tx.try_send(buffer) {
                     Ok(_) => { },
