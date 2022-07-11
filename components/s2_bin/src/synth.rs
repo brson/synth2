@@ -16,7 +16,7 @@ pub struct Note(pub u8);
 pub struct Velocity(pub Unipolar<1>);
 #[derive(PartialEq, PartialOrd)]
 #[derive(Copy, Clone)]
-pub struct FrameOffset(pub u16);
+pub struct FrameOffset(pub u32);
 
 #[derive(Copy, Clone)]
 pub struct Voice {
@@ -140,12 +140,25 @@ impl Synth {
                   buffer: &mut [f32],
                   sample_rate: SampleRateKhz) {
         for index in 0..buffer.len() {
-            for voice in self.voices {
+            let mut sample_accum = 0.0;
+            for voice in &mut self.voices {
                 if let Some(current_frame_offset) = voice.current_frame_offset {
                     let pitch = note_to_pitch(voice.note);
-                    todo!()
+                    let offset = current_frame_offset.0;
+                    let release_offset = voice.release_frame_offset.map(|v| v.0);
+                    let sample = s2_lib::try3::process::process_layer(
+                        &self.config,
+                        &mut voice.state,
+                        pitch,
+                        sample_rate,
+                        offset,
+                        release_offset,
+                    );
+                    sample_accum += sample;
                 }
             }
+
+            buffer[index] = sample_accum;
         }
     }
 }
