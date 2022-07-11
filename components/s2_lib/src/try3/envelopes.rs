@@ -81,7 +81,13 @@ impl Adsr {
                 sample
             }
             AdsrStage::Sustain => sustain,
-            _ => panic!(),
+            _ => {
+                if cfg!(debug) {
+                    panic!()
+                } else {
+                    sustain
+                }
+            }
         };
 
         match stage {
@@ -91,7 +97,11 @@ impl Adsr {
                 let x_offset = offset;
                 let y_start = 0.0;
                 let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
-                Unipolar::<1>::assert_from(sample)
+                if cfg!(debug) {
+                    Unipolar::<1>::assert_from(sample)
+                } else {
+                    Unipolar::<1>(sample)
+                }
             }
             AdsrStage::Decay => {
                 let rise = sustain - 1.0;
@@ -99,18 +109,40 @@ impl Adsr {
                 let x_offset = offset - decay_offset;
                 let y_start = 1.0;
                 let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
-                Unipolar::<1>::assert_from(sample)
+                if cfg!(debug) {
+                    Unipolar::<1>::assert_from(sample)
+                } else {
+                    Unipolar::<1>(sample)
+                }
             }
-            AdsrStage::Sustain => Unipolar::<1>::assert_from(sustain),
+            AdsrStage::Sustain => {
+                let sample = sustain;
+                if cfg!(debug) {
+                    Unipolar::<1>::assert_from(sample)
+                } else {
+                    Unipolar::<1>(sample)
+                }
+            }
             AdsrStage::Release => {
                 let rise = -sustain;
                 let run = release;
                 let x_offset = offset - release_offset;
                 let y_start = release_start_sample;
                 let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
-                Unipolar::<1>::assert_from(sample)
+                if cfg!(debug) {
+                    Unipolar::<1>::assert_from(sample)
+                } else {
+                    Unipolar::<1>(sample)
+                }
             }
-            AdsrStage::End => Unipolar::<1>::assert_from(0.0),
+            AdsrStage::End => {
+                let sample = 0.0;
+                if cfg!(debug) {
+                    Unipolar::<1>::assert_from(sample)
+                } else {
+                    Unipolar::<1>(sample)
+                }
+            }
         }
     }
 }
