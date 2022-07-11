@@ -2,7 +2,7 @@ use s2_lib::try3::units::{Unipolar, Hz, Ms, Bipolar, SampleRateKhz};
 use s2_lib::try3::static_config as sc;
 use s2_lib::try3::state as st;
 
-const NUM_VOICES: usize = 1;
+const NUM_VOICES: usize = 8;
 
 pub struct Synth {
     config: sc::Layer,
@@ -70,6 +70,7 @@ impl Synth {
 
     fn start_voice(&mut self, note: Note) -> &mut Voice {
         if let Some(index) = self.find_voice_index(note) {
+            log::debug!("using existing voice index {} for note {}", index, note.0);
             &mut self.voices[index]
         } else {
             self.add_voice(note)
@@ -94,17 +95,22 @@ impl Synth {
 
     fn add_voice(&mut self, note: Note) -> &mut Voice {
         let mut oldest: Option<&mut Voice> = None;
-        for voice in &mut self.voices {
+        let mut oldest_index = 0;
+        for (index, voice) in self.voices.iter_mut().enumerate() {
             if let Some(current_oldest) = oldest {
-                if voice.current_frame_offset > current_oldest.current_frame_offset {
-                    oldest = Some(voice)
+                let this_frame_offset = voice.current_frame_offset.unwrap_or(FrameOffset(u32::max_value()));
+                let oldest_frame_offset = current_oldest.current_frame_offset.unwrap_or(FrameOffset(u32::max_value()));
+                if this_frame_offset > oldest_frame_offset {
+                    oldest = Some(voice);
+                    oldest_index = index;
                 } else {
-                    oldest = Some(current_oldest)
+                    oldest = Some(current_oldest);
                 }
             } else {
-                oldest = Some(voice)
+                oldest = Some(voice);
             }
         }
+        log::debug!("using new voice index {} for note {}", oldest_index, note.0);
         oldest.unwrap()
     }
 }
