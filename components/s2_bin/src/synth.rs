@@ -155,6 +155,7 @@ impl Synth {
                         release_offset,
                     );
                     sample_accum += sample;
+                    voice.current_frame_offset = Some(FrameOffset(current_frame_offset.0.saturating_add(1)));
                 }
             }
 
