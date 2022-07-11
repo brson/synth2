@@ -31,16 +31,16 @@ impl Adsr {
         let offset = offset as f32;
         let decay_offset = attack;
         let sustain_offset = attack + decay;
-        let release_offset = (release_offset.unwrap_or(u32::MAX) as f32).max(sustain_offset);
+        let release_offset = release_offset.unwrap_or(u32::MAX) as f32;
         let end_offset = release_offset + release;
 
-        let stage = {
-            let in_attack = offset < decay_offset;
-            let in_decay = !in_attack && offset < sustain_offset;
-            let in_sustain = !in_attack && !in_decay && offset < release_offset;
-            let in_release = !in_attack && !in_decay && !in_sustain && offset < end_offset;
+        let (stage, release_start_stage) = {
+            let in_release = offset >= release_offset && offset < end_offset;
+            let in_attack = !in_release && offset < decay_offset;
+            let in_decay = !in_release && !in_attack && offset < sustain_offset;
+            let in_sustain = !in_release && !in_attack && !in_decay && offset < release_offset;
 
-            if in_attack {
+            let stage = if in_attack {
                 AdsrStage::Attack
             } else if in_decay {
                 AdsrStage::Decay
@@ -50,7 +50,38 @@ impl Adsr {
                 AdsrStage::Release
             } else {
                 AdsrStage::End
+            };
+
+            let release_start_stage = if release_offset < decay_offset {
+                AdsrStage::Attack
+            } else if release_offset < sustain_offset {
+                AdsrStage::Decay
+            } else {
+                AdsrStage::Sustain
+            };
+
+            (stage, release_start_stage)
+        };
+
+        let sustain_start_sample = match release_start_stage {
+            AdsrStage::Attack => {
+                let rise = 1.0;
+                let run = attack;
+                let x_offset = release_offset;
+                let y_start = 0.0;
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
+                sample
             }
+            AdsrStage::Decay => {
+                let rise = sustain - 1.0;
+                let run = decay;
+                let x_offset = release_offset - decay_offset;
+                let y_start = 1.0;
+                let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
+                sample
+            }
+            AdsrStage::Sustain => sustain,
+            _ => panic!(),
         };
 
         match stage {
@@ -75,7 +106,7 @@ impl Adsr {
                 let rise = -sustain;
                 let run = release;
                 let x_offset = offset - release_offset;
-                let y_start = sustain;
+                let y_start = sustain_start_sample;
                 let sample = line_y_value_with_y_offset(rise, run, x_offset, y_start);
                 Unipolar::<1>::assert_from(sample)
             }
