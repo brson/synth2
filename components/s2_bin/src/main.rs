@@ -163,27 +163,7 @@ fn run_synth(
                 loop {
                     match midi_rx.try_recv() {
                         Ok(midi_msg) => {
-                            use muddy2::message::{Message, ChannelMessage, ChannelMessageType, ChannelVoiceMessage};
-
-                            let midi_msg = parse_midi_message(&midi_msg);
-                            match midi_msg {
-                                Some(Message::Channel(ch_msg)) => {
-                                    match ch_msg.message {
-                                        ChannelMessageType::ChannelVoice(
-                                            ChannelVoiceMessage::NoteOn(note_on)
-                                        ) => {
-                                                todo!()
-                                        }
-                                        ChannelMessageType::ChannelVoice(
-                                            ChannelVoiceMessage::NoteOff(note_off)
-                                        ) => {
-                                                todo!()
-                                        }
-                                        _ => { }
-                                    }
-                                }
-                                _ => { }
-                            }
+                            apply_middi(&midi_msg, &mut synth);
                         }
                         Err(_) => {
                             break;
@@ -212,4 +192,32 @@ fn run_synth(
     drop(audio_player_channels);
 
     log::info!("synth thread exiting");
+}
+
+fn apply_middi(midi_msg: &[u8], synth: &mut synth::Synth) {
+    use muddy2::message::{Message, ChannelMessage, ChannelMessageType, ChannelVoiceMessage};
+    use s2_lib::try3::units::Unipolar;
+
+    let midi_msg = parse_midi_message(&midi_msg);
+    match midi_msg {
+        Some(Message::Channel(ch_msg)) => {
+            match ch_msg.message {
+                ChannelMessageType::ChannelVoice(
+                    ChannelVoiceMessage::NoteOn(note_on)
+                ) => {
+                    let note = synth::Note(u8::from(note_on.note_number.0));
+                    let velocity = synth::Velocity(Unipolar(f32::from(u8::from(note_on.velocity.0)) / 127.0));
+                    synth.note_on(note, velocity);
+                }
+                ChannelMessageType::ChannelVoice(
+                    ChannelVoiceMessage::NoteOff(note_off)
+                ) => {
+                    let note = synth::Note(u8::from(note_off.note_number.0));
+                    synth.note_off(note);
+                }
+                _ => { }
+            }
+        }
+        _ => { }
+    }
 }
