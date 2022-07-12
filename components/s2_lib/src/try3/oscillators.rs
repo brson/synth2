@@ -105,5 +105,9 @@ mod phased {
     }
 }
 
+/// Stateful oscillators that can be frequency modulated.
+///
+/// They always resume sampling at the same phase as the previous sample, even
+/// if the frequency has changed.
 mod phase_accumulating {
 }
