@@ -109,5 +109,8 @@ mod phased {
 ///
 /// They always resume sampling at the same phase as the previous sample, even
 /// if the frequency has changed.
+///
+/// - <https://dsp.stackexchange.com/questions/2349/help-with-algorithm-for-modulating-oscillator-pitch-using-lfo>
+/// - <https://dsp.stackexchange.com/questions/971/how-to-create-a-sine-wave-generator-that-can-smoothly-transition-between-frequen>
 mod phase_accumulating {
 }
