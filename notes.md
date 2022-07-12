@@ -20,3 +20,5 @@ https://sotrh.github.io/learn-wgpu/showcase/windowless
 https://cytomic.com/technical-papers/
 https://musicnotation.org/systems/
 https://clairnote.org/
+https://dsp.stackexchange.com/questions/2349/help-with-algorithm-for-modulating-oscillator-pitch-using-lfo
+https://dsp.stackexchange.com/questions/971/how-to-create-a-sine-wave-generator-that-can-smoothly-transition-between-frequen
