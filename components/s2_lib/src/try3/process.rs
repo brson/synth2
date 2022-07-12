@@ -67,10 +67,10 @@ fn sample_envelope(
 fn modulate_freq_unipolar(
     freq: Hz,
     modulation_sample: Unipolar<1>,
-    modulation_amount: Bipolar<5>,
+    modulation_amount: Bipolar<10>,
 ) -> Hz {
-    let modulation_amount = modulation_sample.0 * modulation_amount.0;
-    let freq = 2_f32.powf(modulation_amount) * freq.0;
+    let modulation_amount_ = modulation_sample.0 * modulation_amount.0;
+    let freq = 2_f32.powf(modulation_amount_) * freq.0;
     Hz(freq)
 }
 

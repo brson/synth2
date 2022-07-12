@@ -11,8 +11,8 @@ pub struct Layer {
 
 #[derive(Copy, Clone)]
 pub struct Modulations {
-    pub mod_env_to_osc_freq: Bipolar<5>,
-    pub mod_env_to_lpf_freq: Bipolar<5>,
+    pub mod_env_to_osc_freq: Bipolar<10>,
+    pub mod_env_to_lpf_freq: Bipolar<10>,
 }
 
 #[derive(Copy, Clone)]
