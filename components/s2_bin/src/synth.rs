@@ -124,10 +124,10 @@ impl Synth {
                 freq: Hz(500.0),
             },
             amp_env: sc::Adsr {
-                attack: Ms(100.0),
-                decay: Ms(100.0),
-                sustain: Unipolar(0.5),
-                release: Ms(100.0)
+                attack: Ms(1000.0),
+                decay: Ms(1000.0),
+                sustain: Unipolar(0.1),
+                release: Ms(1000.0)
             },
             mod_env: sc::Adsr {
                 attack: Ms(0.0),

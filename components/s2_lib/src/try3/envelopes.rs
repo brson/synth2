@@ -9,6 +9,7 @@ pub struct Adsr {
     pub release: SampleOffset,
 }
 
+#[derive(Debug)]
 enum AdsrStage {
     Attack,
     Decay,
@@ -36,9 +37,10 @@ impl Adsr {
 
         let (stage, release_start_stage) = {
             let in_release = offset >= release_offset && offset < end_offset;
-            let in_attack = !in_release && offset < decay_offset;
-            let in_decay = !in_release && !in_attack && offset < sustain_offset;
-            let in_sustain = !in_release && !in_attack && !in_decay && offset < release_offset;
+            let in_end = offset >= end_offset;
+            let in_attack = !in_release && !in_end && offset < decay_offset;
+            let in_decay = !in_release && !in_end && !in_attack && offset < sustain_offset;
+            let in_sustain = !in_release && !in_end && !in_attack && !in_decay && offset < release_offset;
 
             let stage = if in_attack {
                 AdsrStage::Attack
@@ -124,7 +126,7 @@ impl Adsr {
                 }
             }
             AdsrStage::Release => {
-                let rise = -sustain;
+                let rise = -release_start_sample;
                 let run = release;
                 let x_offset = offset - release_offset;
                 let y_start = release_start_sample;
