@@ -151,4 +151,38 @@ mod phased {
 /// - <https://dsp.stackexchange.com/questions/2349/help-with-algorithm-for-modulating-oscillator-pitch-using-lfo>
 /// - <https://dsp.stackexchange.com/questions/971/how-to-create-a-sine-wave-generator-that-can-smoothly-transition-between-frequen>
 mod phase_accumulating {
+    use super::super::units::*;
+    use super::phased;
+
+    pub struct OscillatorState {
+        pub phase_accum: Option<Unipolar<1>>,
+    }
+
+    pub struct SquareOscillator<'this> {
+        pub state: &'this mut OscillatorState,
+        pub period: SampleOffset,
+        pub phase: Unipolar<1>,
+    }
+
+    impl<'this> SquareOscillator<'this> {
+        pub fn sample(&mut self) -> Bipolar<1> {
+            let phase = if let Some(phase_accum) = self.state.phase_accum {
+                phase_accum
+            } else {
+                self.phase
+            };
+
+            let phased_osc = phased::SquareOscillator {
+                period: self.period,
+                phase,
+            };
+            let sample = phased_osc.sample(SampleOffset(0.0));
+
+            let phase_delta = 1.0 / self.period.0;
+            let new_phase = (phase.0 + phase_delta) % 1.0;
+            self.state.phase_accum = Some(Unipolar(new_phase));
+
+            sample
+        }
+    }
 }
