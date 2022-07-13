@@ -92,6 +92,7 @@ pub mod basic {
 
 mod phased {
     use super::super::units::*;
+    use super::basic;
 
     pub struct SquareOscillator {
         pub period: SampleOffset,
@@ -100,7 +101,44 @@ mod phased {
 
     impl SquareOscillator {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            todo!()
+            let phase_offset = self.period.0 * self.phase.0;
+            let offset = SampleOffset(offset.0 + phase_offset);
+            let basic_osc = basic::SquareOscillator {
+                period: self.period,
+            };
+            basic_osc.sample(offset)
+        }
+    }
+
+    pub struct SawOscillator {
+        pub period: SampleOffset,
+        pub phase: Unipolar<1>,
+    }
+
+    impl SawOscillator {
+        pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
+            let phase_offset = self.period.0 * self.phase.0;
+            let offset = SampleOffset(offset.0 + phase_offset);
+            let basic_osc = basic::SawOscillator {
+                period: self.period,
+            };
+            basic_osc.sample(offset)
+        }
+    }
+
+    pub struct TriangleOscillator {
+        pub period: SampleOffset,
+        pub phase: Unipolar<1>,
+    }
+
+    impl TriangleOscillator {
+        pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
+            let phase_offset = self.period.0 * self.phase.0;
+            let offset = SampleOffset(offset.0 + phase_offset);
+            let basic_osc = basic::TriangleOscillator {
+                period: self.period,
+            };
+            basic_osc.sample(offset)
         }
     }
 }
