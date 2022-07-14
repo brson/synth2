@@ -160,6 +160,22 @@ pub mod phase_accumulating {
         pub phase_accum: Option<Unipolar<1>>,
     }
 
+    pub enum Oscillator<'this> {
+        Square(SquareOscillator<'this>),
+        Saw(SawOscillator<'this>),
+        Triangle(TriangleOscillator<'this>),
+    }
+
+    impl<'this> Oscillator<'this> {
+        pub fn sample(&mut self) -> Bipolar<1> {
+            match self {
+                Oscillator::Square(osc) => osc.sample(),
+                Oscillator::Triangle(osc) => osc.sample(),
+                Oscillator::Saw(osc) => osc.sample(),
+            }
+        }
+    }
+
     pub struct SquareOscillator<'this> {
         pub state: &'this mut OscillatorState,
         pub period: SampleOffset,

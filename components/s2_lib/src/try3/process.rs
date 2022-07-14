@@ -81,16 +81,22 @@ pub fn sample_voice(
     release_offset: Option<u32>,
 ) -> f32 {
     use super::filters::*;
-    use super::oscillators::*;
-    let osc = match dynamic_config.osc.kind {
+    use super::oscillators::phase_accumulating::*;
+    let mut osc = match dynamic_config.osc.kind {
         dc::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
+            state: &mut state.osc,
             period: dynamic_config.osc.period,
+            phase: Unipolar(0.0),
         }),
         dc::OscillatorKind::Saw => Oscillator::Saw(SawOscillator {
+            state: &mut state.osc,
             period: dynamic_config.osc.period,
+            phase: Unipolar(0.0),
         }),
         dc::OscillatorKind::Triangle => Oscillator::Triangle(TriangleOscillator {
+            state: &mut state.osc,
             period: dynamic_config.osc.period,
+            phase: Unipolar(0.0),
         }),
     };
     let mut lpf = LowPassFilter {
@@ -99,7 +105,7 @@ pub fn sample_voice(
         freq: dynamic_config.lpf.freq,
     };
     let offset = SampleOffset(offset as f32);
-    let sample = osc.sample(offset);
+    let sample = osc.sample();
     let sample = lpf.process(sample.0);
     let sample = sample * dynamic_config.gain.0;
     sample

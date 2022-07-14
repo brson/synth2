@@ -136,7 +136,7 @@ impl Synth {
                 release: Ms(10.0)
             },
             modulations: sc::Modulations {
-                mod_env_to_osc_freq: Bipolar(0.0),
+                mod_env_to_osc_freq: Bipolar(1.0),
                 mod_env_to_lpf_freq: Bipolar(0.0),
             },
         }
