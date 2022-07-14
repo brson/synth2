@@ -12,7 +12,7 @@ pub fn process_layer(
     release_offset: Option<u32>,
 ) -> f32 {
     let dynamic_config = prepare_frame(static_config, pitch, sample_rate, offset, release_offset);
-    let sample = sample_voice(&dynamic_config, state, offset, release_offset);
+    let sample = sample_voice(&dynamic_config, state);
     sample
 }
 
@@ -77,8 +77,6 @@ fn modulate_freq_unipolar(
 pub fn sample_voice(
     dynamic_config: &dc::Layer,
     state: &mut st::Layer,
-    offset: u32,
-    release_offset: Option<u32>,
 ) -> f32 {
     use super::filters::*;
     use super::oscillators::phase_accumulating::*;
@@ -104,7 +102,6 @@ pub fn sample_voice(
         sample_rate: dynamic_config.lpf.sample_rate,
         freq: dynamic_config.lpf.freq,
     };
-    let offset = SampleOffset(offset as f32);
     let sample = osc.sample();
     let sample = lpf.process(sample.0);
     let sample = sample * dynamic_config.gain.0;
