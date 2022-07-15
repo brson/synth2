@@ -4,12 +4,6 @@ pub mod basic {
     use super::super::math::*;
     use super::super::units::*;
 
-    pub enum Oscillator {
-        Square(SquareOscillator),
-        Saw(SawOscillator),
-        Triangle(TriangleOscillator),
-    }
-
     pub struct SquareOscillator {
         pub period: SampleOffset,
     }
@@ -20,16 +14,6 @@ pub mod basic {
 
     pub struct TriangleOscillator {
         pub period: SampleOffset,
-    }
-
-    impl Oscillator {
-        pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            match self {
-                Oscillator::Square(osc) => osc.sample(offset),
-                Oscillator::Triangle(osc) => osc.sample(offset),
-                Oscillator::Saw(osc) => osc.sample(offset),
-            }
-        }
     }
 
     impl SquareOscillator {
