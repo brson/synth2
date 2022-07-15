@@ -1,8 +1,16 @@
-use super::state as st;
+use soa_derive::StructOfArray;
+
 use super::units::*;
 
+#[derive(StructOfArray)]
+#[derive(Default)]
+#[derive(Copy, Clone)]
+pub struct LowPassFilterState {
+    pub last: f32,
+}
+
 pub struct LowPassFilter<'this> {
-    pub state: &'this mut st::LowPassFilter,
+    pub state: &'this mut LowPassFilterState,
     pub sample_rate: SampleRateKhz,
     pub freq: Hz,
 }
