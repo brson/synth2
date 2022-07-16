@@ -23,3 +23,4 @@ https://clairnote.org/
 https://dsp.stackexchange.com/questions/2349/help-with-algorithm-for-modulating-oscillator-pitch-using-lfo
 https://dsp.stackexchange.com/questions/971/how-to-create-a-sine-wave-generator-that-can-smoothly-transition-between-frequen
 https://www.reddit.com/r/DSP/comments/vkpw0z/butterworthchebyshev_filters_resources/
+https://github.com/MikeCurrington/mkfilter
