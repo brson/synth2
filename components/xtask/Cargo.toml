@@ -1,0 +1,8 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.nih_plug_xtask]
+git = "https://github.com/robbert-vdh/nih-plug.git"
+rev = "ba7b5a3b32e34664498aa51ab844a8adc8ef1d82"
