@@ -1,0 +1,21 @@
+[package]
+name = "s2_nih"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+s2_lib = { path = "../s2_lib" }
+
+[dependencies.nih_plug]
+git = "https://github.com/robbert-vdh/nih-plug.git"
+rev = "ba7b5a3b32e34664498aa51ab844a8adc8ef1d82"
+features = ["assert_process_allocs", "standalone"]
+
+[dependencies.nih_plug_vizia]
+git = "https://github.com/robbert-vdh/nih-plug.git"
+rev = "ba7b5a3b32e34664498aa51ab844a8adc8ef1d82"
+
+
