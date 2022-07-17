@@ -1,5 +1,11 @@
 [target.x86_64-unknown-linux-gnu]
-rustflags = ["-C", "target-feature=+sse3,+avx,+avx2,+fma"]
+rustflags = ["-C", "target-cpu=haswell", "-C", "target-feature=+sse3,+avx,+avx2,+fma"]
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-cpu=haswell", "-C", "target-feature=+sse3,+avx,+avx2,+fma"]
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "target-cpu=haswell", "-C", "target-feature=+sse3,+avx,+avx2,+fma"]
 
 [alias]
 xtask = "run -p xtask --release --"

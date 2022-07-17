@@ -8,6 +8,7 @@ crate-type = ["cdylib", "lib"]
 
 [dependencies]
 s2_lib = { path = "../s2_lib" }
+atomic_float = "0.1"
 
 [dependencies.nih_plug]
 git = "https://github.com/robbert-vdh/nih-plug.git"

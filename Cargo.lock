@@ -1587,7 +1587,6 @@ dependencies = [
 [[package]]
 name = "nih_plug_xtask"
 version = "0.1.0"
-source = "git+https://github.com/robbert-vdh/nih-plug.git?rev=ba7b5a3b32e34664498aa51ab844a8adc8ef1d82#ba7b5a3b32e34664498aa51ab844a8adc8ef1d82"
 dependencies = [
  "anyhow",
  "goblin",
@@ -2233,6 +2232,7 @@ dependencies = [
 name = "s2_nih"
 version = "0.1.0"
 dependencies = [
+ "atomic_float",
  "nih_plug",
  "nih_plug_vizia",
  "s2_lib",
