@@ -16,6 +16,11 @@ pub mod basic {
         pub period: SampleOffset,
     }
 
+    pub struct TableOscillator<'this> {
+        pub table: &'this [f32],
+        pub period: SampleOffset,
+    }
+
     impl SquareOscillator {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
             let period = self.period.0;
@@ -70,6 +75,12 @@ pub mod basic {
             };
 
             Bipolar(sample)
+        }
+    }
+
+    impl<'this> TableOscillator<'this> {
+        pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
+            todo!()
         }
     }
 }
