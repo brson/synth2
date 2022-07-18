@@ -40,12 +40,12 @@ pub mod basic {
             let offset = offset.0;
             let offset = offset % period;
 
-            let x_rise = -2.0;
+            let y_rise = -2.0;
             let x_run = period;
             let x_value = offset;
             let y_offset = 1.0;
 
-            let sample = line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset);
+            let sample = line_y_value_with_y_offset(y_rise, x_run, x_value, y_offset);
 
             Bipolar(sample)
         }
@@ -59,19 +59,19 @@ pub mod basic {
 
             let half_period = period / 2.0;
             let sample = if offset < half_period {
-                let x_rise = -2.0;
+                let y_rise = -2.0;
                 let x_run = half_period;
                 let x_value = offset;
                 let y_offset = 1.0;
 
-                line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
+                line_y_value_with_y_offset(y_rise, x_run, x_value, y_offset)
             } else {
-                let x_rise = 2.0;
+                let y_rise = 2.0;
                 let x_run = half_period;
                 let x_value = offset - half_period;
                 let y_offset = -1.0;
 
-                line_y_value_with_y_offset(x_rise, x_run, x_value, y_offset)
+                line_y_value_with_y_offset(y_rise, x_run, x_value, y_offset)
             };
 
             Bipolar(sample)
@@ -80,7 +80,29 @@ pub mod basic {
 
     impl<'this> TableOscillator<'this> {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            todo!()
+            let period = self.period.0;
+            let offset = offset.0;
+            let offset = offset % period;
+
+            let table_length = self.table.len() as f32;
+            let table_offset = offset * table_length / period;
+            let table_offset_low = table_offset.floor();
+            let table_idx1 = table_offset_low as usize;
+            let table_idx2 = (table_idx1 + 1) % self.table.len();
+
+            let sample1 = self.table[table_idx1];
+            let sample2 = self.table[table_idx2];
+
+            {
+                let y_rise = sample2 - sample1;
+                let x_run = 1.0;
+                let x_value = table_offset - table_offset_low;
+                let y_offset = sample1;
+
+                let sample = line_y_value_with_y_offset(y_rise, x_run, x_value, y_offset);
+
+                Bipolar(sample)
+            }
         }
     }
 }
