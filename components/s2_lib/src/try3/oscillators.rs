@@ -158,6 +158,24 @@ pub mod phased {
             basic_osc.sample(offset)
         }
     }
+
+    pub struct TableOscillator<'this> {
+        pub table: &'this [f32],
+        pub period: SampleOffset,
+        pub phase: Unipolar<1>,
+    }
+
+    impl<'this> TableOscillator<'this> {
+        pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
+            let phase_offset = self.period.0 * self.phase.0;
+            let offset = SampleOffset(offset.0 + phase_offset);
+            let basic_osc = basic::TableOscillator {
+                table: self.table,
+                period: self.period,
+            };
+            basic_osc.sample(offset)
+        }
+    }
 }
 
 /// Stateful oscillators that can be frequency modulated.
