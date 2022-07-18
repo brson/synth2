@@ -5,6 +5,7 @@ mod plotting;
 //mod threads;
 mod audio_player;
 mod synth;
+mod tables;
 
 use anyhow::{Result, anyhow};
 use clap::Parser;
@@ -13,6 +14,7 @@ use std::sync::mpsc;
 #[derive(Parser)]
 enum Command {
     Midi,
+    BuildTables,
 }
 
 fn main() -> Result<()> {
@@ -26,6 +28,9 @@ fn main() -> Result<()> {
     match opts {
         Command::Midi => {
             do_midi()?;
+        }
+        Command::BuildTables => {
+            tables::build()?;
         }
     }
 
