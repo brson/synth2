@@ -25,3 +25,4 @@ https://dsp.stackexchange.com/questions/971/how-to-create-a-sine-wave-generator-
 https://www.reddit.com/r/DSP/comments/vkpw0z/butterworthchebyshev_filters_resources/
 https://github.com/MikeCurrington/mkfilter
 https://ccrma.stanford.edu/~jos/sasp/sasp.html
+https://dspguru.com/dsp/books/
