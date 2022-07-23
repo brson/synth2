@@ -26,3 +26,5 @@ https://www.reddit.com/r/DSP/comments/vkpw0z/butterworthchebyshev_filters_resour
 https://github.com/MikeCurrington/mkfilter
 https://ccrma.stanford.edu/~jos/sasp/sasp.html
 https://dspguru.com/dsp/books/
+https://github.com/airwindows/airwindows
+
