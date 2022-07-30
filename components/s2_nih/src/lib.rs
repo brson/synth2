@@ -62,10 +62,10 @@ impl Default for GainParams {
 }
 
 impl Plugin for Gain {
-    const NAME: &'static str = "Gain GUI (VIZIA)";
-    const VENDOR: &'static str = "Moist Plugins GmbH";
-    const URL: &'static str = "https://youtu.be/dQw4w9WgXcQ";
-    const EMAIL: &'static str = "info@example.com";
+    const NAME: &'static str = "Synth2";
+    const VENDOR: &'static str = "Brian Anderson";
+    const URL: &'static str = "https://github.com/brson/synth2";
+    const EMAIL: &'static str = "andersrb@gmail.com";
 
     const VERSION: &'static str = "0.0.1";
 
@@ -141,8 +141,8 @@ impl Plugin for Gain {
 }
 
 impl ClapPlugin for Gain {
-    const CLAP_ID: &'static str = "com.moist-plugins-gmbh.gain-gui-vizia";
-    const CLAP_DESCRIPTION: Option<&'static str> = Some("A smoothed gain parameter example plugin");
+    const CLAP_ID: &'static str = "com.example.synth2";
+    const CLAP_DESCRIPTION: Option<&'static str> = Some("A synthesizer");
     const CLAP_MANUAL_URL: Option<&'static str> = Some(Self::URL);
     const CLAP_SUPPORT_URL: Option<&'static str> = None;
     const CLAP_FEATURES: &'static [ClapFeature] = &[
@@ -154,8 +154,8 @@ impl ClapPlugin for Gain {
 }
 
 impl Vst3Plugin for Gain {
-    const VST3_CLASS_ID: [u8; 16] = *b"GainGuiVIIIZIAAA";
-    const VST3_CATEGORIES: &'static str = "Fx|Dynamics";
+    const VST3_CLASS_ID: [u8; 16] = *b"BASynth2XXXXXXXX";
+    const VST3_CATEGORIES: &'static str = "Instrument|Synth";
 }
 
 nih_export_clap!(Gain);
