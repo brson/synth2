@@ -12,11 +12,11 @@ atomic_float = "0.1"
 
 [dependencies.nih_plug]
 git = "https://github.com/robbert-vdh/nih-plug.git"
-rev = "6e89d3737ba4ecf266330bec9af3866c9cb16c97"
+rev = "f557707b097201f175c429d9b41c9860fab71f44"
 features = ["assert_process_allocs", "standalone"]
 
 [dependencies.nih_plug_vizia]
 git = "https://github.com/robbert-vdh/nih-plug.git"
-rev = "6e89d3737ba4ecf266330bec9af3866c9cb16c97"
+rev = "f557707b097201f175c429d9b41c9860fab71f44"
 
 
