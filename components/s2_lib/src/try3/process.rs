@@ -78,7 +78,29 @@ fn prepare_frame_x16(
         mod_env_samples,
         layer.modulations.mod_env_to_lpf_freq,
     );
+    /*rp::Layer {
+        osc: rp::Oscillator {
+            period: modulated_osc_freq.as_samples(sample_rate),
+            kind: match layer.osc {
+                sc::Oscillator::Square => rp::OscillatorKind::Square,
+                sc::Oscillator::Saw => rp::OscillatorKind::Saw,
+                sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
+            },
+        },
+        lpf: rp::LowPassFilter {
+            freq: modulated_lpf_freq,
+            sample_rate,
+        },
+        gain: amp_env_sample,
+}*/
     todo!()
+}
+
+fn zip3<A, B, C, const N: usize>(a: [A; N], b: [B; N], c: [C; N]) -> [(A, B, C); N] {
+    let a_b = a.zip(b);
+    let a_b_c = a_b.zip(c);
+    let a_b_c = a_b_c.map(|((a, b), c)| (a, b, c));
+    a_b_c
 }
 
 fn sample_envelope(
