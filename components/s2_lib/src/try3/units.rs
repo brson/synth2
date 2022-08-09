@@ -25,6 +25,22 @@ impl Hz {
     }
 }
 
+pub trait HzX16 {
+    fn as_samples(&self, sample_rate: SampleRateKhz) -> [SampleOffset; 16];
+}
+
+impl HzX16 for [Hz; 16] {
+    fn as_samples(&self, sample_rate: SampleRateKhz) -> [SampleOffset; 16] {
+        use std::simd::f32x16;
+
+        let sample_rate = f32x16::splat(sample_rate.0 as f32);
+        let hz = f32x16::from_array(self.map(|hz| hz.0));
+        let samples = sample_rate / hz;
+        let samples = samples.to_array();
+        samples.map(|s| SampleOffset(s))
+    }
+}
+
 impl Ms {
     /// Get the time as samples
     pub fn as_samples(&self, sample_rate: SampleRateKhz) -> SampleOffset {

@@ -80,20 +80,23 @@ fn prepare_frame_x16(
         layer.modulations.mod_env_to_lpf_freq,
     );
 
+    use super::units::HzX16;
+    let modulated_osc_periods = modulated_osc_freqs.as_samples(sample_rate);
+
     let samples = math::zip3(
         amp_env_samples,
-        modulated_osc_freqs,
+        modulated_osc_periods,
         modulated_lpf_freqs,
     );
 
     samples.map(|(
         amp_env_sample,
-        modulated_osc_freq,
+        modulated_osc_period,
         modulated_lpf_freq,
     )| {
         rp::Layer {
             osc: rp::Oscillator {
-                period: modulated_osc_freq.as_samples(sample_rate),
+                period: modulated_osc_period,
                 kind: match layer.osc {
                     sc::Oscillator::Square => rp::OscillatorKind::Square,
                     sc::Oscillator::Saw => rp::OscillatorKind::Saw,
