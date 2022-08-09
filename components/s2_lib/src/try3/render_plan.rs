@@ -17,6 +17,7 @@ pub struct Oscillator {
     pub kind: OscillatorKind,
 }
 
+#[derive(Copy, Clone)]
 pub enum OscillatorKind {
     Square,
     Saw,
@@ -24,6 +25,7 @@ pub enum OscillatorKind {
 }
 
 #[derive(StructOfArray)]
+#[derive(Copy, Clone)]
 pub struct LowPassFilter {
     pub freq: Hz,
     pub sample_rate: SampleRateKhz,

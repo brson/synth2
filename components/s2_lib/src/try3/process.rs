@@ -26,7 +26,7 @@ pub fn process_layer_x16(
     release_offset: Option<u32>,
 ) -> [f32; 16] {
     let render_plan = prepare_frame_x16(static_config, pitch, sample_rate, offset, release_offset);
-    let sample = sample_voice_x16(&render_plan, state);
+    let sample = sample_voice_x16(render_plan, state);
     sample
 }
 
@@ -225,11 +225,62 @@ pub fn sample_voice(
 }
 
 pub fn sample_voice_x16(
-    render_plan: &[rp::Layer; 16],
+    render_plan: [rp::Layer; 16],
     state: &mut st::Layer,
 ) -> [f32; 16] {
     // todo these layers are all going to have the same
     // kind of oscillator. refactor rp::Layer to have
     // a single oscillator kind, and simplify the simd oscillators
+
+    use super::filters::*;
+    use super::oscillators::phase_accumulating::*;
+    use std::simd::{Simd, f32x16};
+
+    let samples = match render_plan[0].osc.kind {
+        rp::OscillatorKind::Square => {
+            render_plan.map(|rp| {
+                Oscillator::Square(SquareOscillator {
+                    state: &mut state.osc,
+                    period: rp.osc.period,
+                    phase: Unipolar(0.0),
+                }).sample()
+            })
+        },
+        rp::OscillatorKind::Saw => {
+            render_plan.map(|rp| {
+                Oscillator::Saw(SawOscillator {
+                    state: &mut state.osc,
+                    period: rp.osc.period,
+                    phase: Unipolar(0.0),
+                }).sample()
+            })
+        },
+        rp::OscillatorKind::Triangle => {
+            render_plan.map(|rp| {
+                Oscillator::Triangle(TriangleOscillator {
+                    state: &mut state.osc,
+                    period: rp.osc.period,
+                    phase: Unipolar(0.0),
+                }).sample()
+            })
+        },
+    };
+
+    let samples = samples.map(|s| s.0);
+
+    /*
+    let mut lpf = LowPassFilter {
+        state: &mut state.lpf,
+        sample_rate: render_plan[0].lpf.sample_rate,
+        freq: render_plan[0].lpf.freq,
+    };
+
+    let samples = samples.map(|s| lpf.process(s));
+
+    let samples = f32x16::from_array(samples);
+    let gain = f32x16::from_array(render_plan.map(|rp| rp.gain));
+    let samples = samples * gain;
+
+    samples*/
     todo!()
 }
