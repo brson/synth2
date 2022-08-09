@@ -222,11 +222,7 @@ pub mod phase_accumulating {
 
     impl<'this> SquareOscillator<'this> {
         pub fn sample(&mut self) -> Bipolar<1> {
-            let phase = if let Some(phase_accum) = self.state.phase_accum {
-                phase_accum
-            } else {
-                self.phase
-            };
+            let phase = self.state.phase_accum.unwrap_or(self.phase);
 
             let phased_osc = phased::SquareOscillator {
                 period: self.period,
@@ -250,11 +246,7 @@ pub mod phase_accumulating {
 
     impl<'this> SawOscillator<'this> {
         pub fn sample(&mut self) -> Bipolar<1> {
-            let phase = if let Some(phase_accum) = self.state.phase_accum {
-                phase_accum
-            } else {
-                self.phase
-            };
+            let phase = self.state.phase_accum.unwrap_or(self.phase);
 
             let phased_osc = phased::SawOscillator {
                 period: self.period,
@@ -278,11 +270,7 @@ pub mod phase_accumulating {
 
     impl<'this> TriangleOscillator<'this> {
         pub fn sample(&mut self) -> Bipolar<1> {
-            let phase = if let Some(phase_accum) = self.state.phase_accum {
-                phase_accum
-            } else {
-                self.phase
-            };
+            let phase = self.state.phase_accum.unwrap_or(self.phase);
 
             let phased_osc = phased::TriangleOscillator {
                 period: self.period,
