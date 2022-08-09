@@ -1,46 +1,7 @@
-use super::lowered_config as lc;
 use super::render_plan as rp;
 use super::state as st;
 use super::static_config as sc;
 use super::units::*;
-
-pub fn lower_config_layer(
-    static_config: &sc::Layer,
-    sample_rat: SampleRateKhz,
-) -> lc::Layer {
-    todo!()
-}
-
-pub fn render_layer(
-    lowered_config: &lc::Layer,
-    state: &mut st::Layer,
-    pitch: Hz,
-    offset: u32,
-    release_offset: Option<u32>,
-) -> f32 {
-    let render_plan = create_render_plan_for_layer(
-        lowered_config,
-        pitch,
-        offset,
-        release_offset);
-    render_layer_from_render_plan(&render_plan, state)
-}
-
-fn create_render_plan_for_layer(
-    lowered_config: &lc::Layer,
-    pitch: Hz,
-    offset: u32,
-    release_offset: Option<u32>,
-) -> rp::Layer {
-    todo!()
-}
-
-fn render_layer_from_render_plan(
-    render_plan: &rp::Layer,
-    state: &mut st::Layer,
-) -> f32 {
-    sample_voice(render_plan, state)
-}
 
 pub fn process_layer(
     static_config: &sc::Layer,
