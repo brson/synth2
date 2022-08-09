@@ -79,22 +79,34 @@ fn prepare_frame_x16(
         mod_env_samples,
         layer.modulations.mod_env_to_lpf_freq,
     );
-    /*rp::Layer {
-        osc: rp::Oscillator {
-            period: modulated_osc_freq.as_samples(sample_rate),
-            kind: match layer.osc {
-                sc::Oscillator::Square => rp::OscillatorKind::Square,
-                sc::Oscillator::Saw => rp::OscillatorKind::Saw,
-                sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
+
+    let samples = math::zip3(
+        amp_env_samples,
+        modulated_osc_freqs,
+        modulated_lpf_freqs,
+    );
+
+    samples.map(|(
+        amp_env_sample,
+        modulated_osc_freq,
+        modulated_lpf_freq,
+    )| {
+        rp::Layer {
+            osc: rp::Oscillator {
+                period: modulated_osc_freq.as_samples(sample_rate),
+                kind: match layer.osc {
+                    sc::Oscillator::Square => rp::OscillatorKind::Square,
+                    sc::Oscillator::Saw => rp::OscillatorKind::Saw,
+                    sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
+                },
             },
-        },
-        lpf: rp::LowPassFilter {
-            freq: modulated_lpf_freq,
-            sample_rate,
-        },
-        gain: amp_env_sample,
-}*/
-    todo!()
+            lpf: rp::LowPassFilter {
+                freq: modulated_lpf_freq,
+                sample_rate,
+            },
+            gain: amp_env_sample,
+        }
+    })
 }
 
 fn sample_envelope(
