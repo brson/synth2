@@ -492,7 +492,7 @@ dependencies = [
 [[package]]
 name = "core_simd"
 version = "0.1.0"
-source = "git+https://github.com/rust-lang/portable-simd#691c8b29e619d0e7f19b519bb6a9768345615200"
+source = "git+https://github.com/rust-lang/portable-simd?rev=7145dc5a412877ff11340702b88f37f92c98eb15#7145dc5a412877ff11340702b88f37f92c98eb15"
 
 [[package]]
 name = "coreaudio-rs"
