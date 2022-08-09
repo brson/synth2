@@ -754,6 +754,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 
 [[package]]
+name = "doubled"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "915ff59a16efb877bc011834c12107933acfb0a3aff79db0edf71a7e20c3c98b"
+
+[[package]]
 name = "dtoa"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2208,6 +2214,7 @@ dependencies = [
  "rand_pcg 0.3.1",
  "serde",
  "serde_json",
+ "sleef",
  "soa_derive",
 ]
 
@@ -2336,6 +2343,15 @@ name = "siphasher"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
+
+[[package]]
+name = "sleef"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32f4d0e293169e2d79e4f8dc3dbfb6bd8381deba5877146e99298973d5912b31"
+dependencies = [
+ "doubled",
+]
 
 [[package]]
 name = "slotmap"

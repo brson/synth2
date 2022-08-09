@@ -144,6 +144,7 @@ fn modulate_freq_unipolar_x16(
 ) -> [Hz; 16] {
     use crate::old::simdtest;
     use std::simd::{Simd, u32x16, f32x16};
+    use sleef::Sleef; // pow
 
     let freq = f32x16::splat(freq.0);
     let modulation_sample = modulation_sample.map(|s| s.0);
@@ -153,13 +154,12 @@ fn modulate_freq_unipolar_x16(
     let two = f32x16::splat(2.0);
 
     let modulation_amount_ = modulation_sample * modulation_amount;
-    /*let freq = two.powf(modulation_amount_) * freq;
+    let freq = two.pow(modulation_amount_) * freq;
 
     let freq = freq.to_array();
     let freq = freq.map(|f| Hz(f));
 
-    freq*/
-    todo!()
+    freq
 }
 
 pub fn sample_voice(
