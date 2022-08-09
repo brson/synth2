@@ -16,6 +16,19 @@ pub fn process_layer(
     sample
 }
 
+pub fn process_layer_x16(
+    static_config: &sc::Layer,
+    state: &mut st::Layer,
+    pitch: Hz,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>,
+) -> [f32; 16] {
+    let render_plan = prepare_frame_x16(static_config, pitch, sample_rate, offset, release_offset);
+    let sample = sample_voice_x16(&render_plan, state);
+    sample
+}
+
 fn prepare_frame(
     layer: &sc::Layer,
     pitch: Hz,
@@ -47,6 +60,16 @@ fn prepare_frame(
         },
         gain: amp_env_sample,
     }
+}
+
+fn prepare_frame_x16(
+    layer: &sc::Layer,
+    pitch: Hz,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>,
+) -> [rp::Layer; 16] {
+    todo!()
 }
 
 fn sample_envelope(
@@ -106,4 +129,11 @@ pub fn sample_voice(
     let sample = lpf.process(sample.0);
     let sample = sample * render_plan.gain.0;
     sample
+}
+
+pub fn sample_voice_x16(
+    render_plan: &[rp::Layer; 16],
+    state: &mut st::Layer,
+) -> [f32; 16] {
+    todo!()
 }
