@@ -96,7 +96,7 @@ fn sample_envelope_x16(
     release_offset: Option<u32>,
 ) -> [Unipolar<1>; 16] {
     use crate::old::simdtest;
-    use core_simd::{Simd, u32x16, f32x16};
+    use std::simd::{Simd, u32x16, f32x16};
 
     let adsr = simdtest::AdsrX16 {
         attack: f32x16::splat(adsr_config.attack.as_samples(sample_rate).0),
@@ -143,7 +143,7 @@ fn modulate_freq_unipolar_x16(
     modulation_amount: Bipolar<10>,
 ) -> [Hz; 16] {
     use crate::old::simdtest;
-    use core_simd::{Simd, u32x16, f32x16};
+    use std::simd::{Simd, u32x16, f32x16};
 
     let freq = f32x16::splat(freq.0);
     let modulation_sample = modulation_sample.map(|s| s.0);

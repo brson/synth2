@@ -490,11 +490,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "core_simd"
-version = "0.1.0"
-source = "git+https://github.com/rust-lang/portable-simd?rev=7145dc5a412877ff11340702b88f37f92c98eb15#7145dc5a412877ff11340702b88f37f92c98eb15"
-
-[[package]]
 name = "coreaudio-rs"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2207,7 +2202,6 @@ name = "s2_lib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "core_simd",
  "fxhash",
  "log",
  "rand 0.8.5",

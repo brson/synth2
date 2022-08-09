@@ -1,5 +1,5 @@
-use core_simd::{f32x4, mask32x4, u32x4, u8x4, f32x16, u32x16};
-use core_simd::{Mask, SimdFloat, SimdPartialEq, SimdPartialOrd};
+use std::simd::{f32x4, mask32x4, u32x4, u8x4, f32x16, u32x16};
+use std::simd::{Mask, SimdFloat, SimdPartialEq, SimdPartialOrd};
 
 pub struct OscillatorX4 {
     kind: u8x4,
