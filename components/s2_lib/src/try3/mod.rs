@@ -1,10 +1,14 @@
-mod dynamic_config;
+pub mod process;
+
+pub mod static_config;
+mod render_plan;
+
 mod envelopes;
 mod filters;
 mod math;
 mod oscillators;
-pub mod process;
+
 pub mod state;
-pub mod static_config;
-pub mod units;
+
 mod tables;
+pub mod units;

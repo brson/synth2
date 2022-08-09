@@ -1,4 +1,4 @@
-use super::dynamic_config as dc;
+use super::render_plan as rp;
 use super::state as st;
 use super::static_config as sc;
 use super::units::*;
@@ -22,7 +22,7 @@ fn prepare_frame(
     sample_rate: SampleRateKhz,
     offset: u32,
     release_offset: Option<u32>,
-) -> dc::Layer {
+) -> rp::Layer {
     let amp_env_sample = sample_envelope(layer.amp_env, sample_rate, offset, release_offset);
     let mod_env_sample = sample_envelope(layer.mod_env, sample_rate, offset, release_offset);
     let modulated_osc_freq =
@@ -32,16 +32,16 @@ fn prepare_frame(
         mod_env_sample,
         layer.modulations.mod_env_to_lpf_freq,
     );
-    dc::Layer {
-        osc: dc::Oscillator {
+    rp::Layer {
+        osc: rp::Oscillator {
             period: modulated_osc_freq.as_samples(sample_rate),
             kind: match layer.osc {
-                sc::Oscillator::Square => dc::OscillatorKind::Square,
-                sc::Oscillator::Saw => dc::OscillatorKind::Saw,
-                sc::Oscillator::Triangle => dc::OscillatorKind::Triangle,
+                sc::Oscillator::Square => rp::OscillatorKind::Square,
+                sc::Oscillator::Saw => rp::OscillatorKind::Saw,
+                sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
             },
         },
-        lpf: dc::LowPassFilter {
+        lpf: rp::LowPassFilter {
             freq: modulated_lpf_freq,
             sample_rate,
         },
@@ -75,23 +75,23 @@ fn modulate_freq_unipolar(
 }
 
 pub fn sample_voice(
-    dynamic_config: &dc::Layer,
+    dynamic_config: &rp::Layer,
     state: &mut st::Layer,
 ) -> f32 {
     use super::filters::*;
     use super::oscillators::phase_accumulating::*;
     let mut osc = match dynamic_config.osc.kind {
-        dc::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
+        rp::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
             state: &mut state.osc,
             period: dynamic_config.osc.period,
             phase: Unipolar(0.0),
         }),
-        dc::OscillatorKind::Saw => Oscillator::Saw(SawOscillator {
+        rp::OscillatorKind::Saw => Oscillator::Saw(SawOscillator {
             state: &mut state.osc,
             period: dynamic_config.osc.period,
             phase: Unipolar(0.0),
         }),
-        dc::OscillatorKind::Triangle => Oscillator::Triangle(TriangleOscillator {
+        rp::OscillatorKind::Triangle => Oscillator::Triangle(TriangleOscillator {
             state: &mut state.osc,
             period: dynamic_config.osc.period,
             phase: Unipolar(0.0),
