@@ -228,5 +228,8 @@ pub fn sample_voice_x16(
     render_plan: &[rp::Layer; 16],
     state: &mut st::Layer,
 ) -> [f32; 16] {
+    // todo these layers are all going to have the same
+    // kind of oscillator. refactor rp::Layer to have
+    // a single oscillator kind, and simplify the simd oscillators
     todo!()
 }
