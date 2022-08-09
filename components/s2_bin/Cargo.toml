@@ -7,12 +7,12 @@ edition = "2021"
 s2_lib = { path = "../s2_lib" }
 muddy2 = { path = "../../../muddy2" }
 
-anyhow = "1.0.57"
+anyhow = "1.0.60"
 env_logger = "0.9.0"
 log = "0.4.17"
 #termion = "1.5.6"
-tungstenite = "0.17.2"
+tungstenite = "0.17.3"
 charts = "0.3.0"
-clap = { version = "3.2.6", features = ["derive"] }
+clap = { version = "3.2.16", features = ["derive"] }
 midir = "0.8.0"
 cpal = "0.13.5"
