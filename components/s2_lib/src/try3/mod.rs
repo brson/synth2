@@ -1,6 +1,7 @@
 pub mod process;
 
 pub mod static_config;
+pub mod lowered_config;
 mod render_plan;
 
 mod envelopes;

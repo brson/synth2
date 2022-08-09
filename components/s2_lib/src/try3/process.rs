@@ -1,7 +1,46 @@
+use super::lowered_config as lc;
 use super::render_plan as rp;
 use super::state as st;
 use super::static_config as sc;
 use super::units::*;
+
+pub fn lower_config_layer(
+    static_config: &sc::Layer,
+    sample_rat: SampleRateKhz,
+) -> lc::Layer {
+    todo!()
+}
+
+pub fn render_layer(
+    lowered_config: &lc::Layer,
+    state: &mut st::Layer,
+    pitch: Hz,
+    offset: u32,
+    release_offset: Option<u32>,
+) -> f32 {
+    let render_plan = create_render_plan_for_layer(
+        lowered_config,
+        pitch,
+        offset,
+        release_offset);
+    render_layer_from_render_plan(&render_plan, state)
+}
+
+fn create_render_plan_for_layer(
+    lowered_config: &lc::Layer,
+    pitch: Hz,
+    offset: u32,
+    release_offset: Option<u32>,
+) -> rp::Layer {
+    todo!()
+}
+
+fn render_layer_from_render_plan(
+    render_plan: &rp::Layer,
+    state: &mut st::Layer,
+) -> f32 {
+    sample_voice(render_plan, state)
+}
 
 pub fn process_layer(
     static_config: &sc::Layer,
@@ -11,8 +50,8 @@ pub fn process_layer(
     offset: u32,
     release_offset: Option<u32>,
 ) -> f32 {
-    let dynamic_config = prepare_frame(static_config, pitch, sample_rate, offset, release_offset);
-    let sample = sample_voice(&dynamic_config, state);
+    let render_plan = prepare_frame(static_config, pitch, sample_rate, offset, release_offset);
+    let sample = sample_voice(&render_plan, state);
     sample
 }
 
@@ -75,35 +114,35 @@ fn modulate_freq_unipolar(
 }
 
 pub fn sample_voice(
-    dynamic_config: &rp::Layer,
+    render_plan: &rp::Layer,
     state: &mut st::Layer,
 ) -> f32 {
     use super::filters::*;
     use super::oscillators::phase_accumulating::*;
-    let mut osc = match dynamic_config.osc.kind {
+    let mut osc = match render_plan.osc.kind {
         rp::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
             state: &mut state.osc,
-            period: dynamic_config.osc.period,
+            period: render_plan.osc.period,
             phase: Unipolar(0.0),
         }),
         rp::OscillatorKind::Saw => Oscillator::Saw(SawOscillator {
             state: &mut state.osc,
-            period: dynamic_config.osc.period,
+            period: render_plan.osc.period,
             phase: Unipolar(0.0),
         }),
         rp::OscillatorKind::Triangle => Oscillator::Triangle(TriangleOscillator {
             state: &mut state.osc,
-            period: dynamic_config.osc.period,
+            period: render_plan.osc.period,
             phase: Unipolar(0.0),
         }),
     };
     let mut lpf = LowPassFilter {
         state: &mut state.lpf,
-        sample_rate: dynamic_config.lpf.sample_rate,
-        freq: dynamic_config.lpf.freq,
+        sample_rate: render_plan.lpf.sample_rate,
+        freq: render_plan.lpf.freq,
     };
     let sample = osc.sample();
     let sample = lpf.process(sample.0);
-    let sample = sample * dynamic_config.gain.0;
+    let sample = sample * render_plan.gain.0;
     sample
 }
