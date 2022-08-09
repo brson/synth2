@@ -3,6 +3,7 @@ use soa_derive::StructOfArray;
 use super::units::*;
 
 #[derive(StructOfArray)]
+#[derive(Copy, Clone)]
 pub struct Layer {
     #[nested_soa]
     pub osc: Oscillator,
@@ -12,6 +13,7 @@ pub struct Layer {
 }
 
 #[derive(StructOfArray)]
+#[derive(Copy, Clone)]
 pub struct Oscillator {
     pub period: SampleOffset,
     pub kind: OscillatorKind,

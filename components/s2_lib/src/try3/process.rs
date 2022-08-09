@@ -236,6 +236,7 @@ pub fn sample_voice_x16(
     use super::oscillators::phase_accumulating::*;
     use std::simd::{Simd, f32x16};
 
+    // todo simd oscillators
     let samples = match render_plan[0].osc.kind {
         rp::OscillatorKind::Square => {
             render_plan.map(|rp| {
@@ -266,21 +267,22 @@ pub fn sample_voice_x16(
         },
     };
 
+    let sample_rate = render_plan[0].lpf.sample_rate;
     let samples = samples.map(|s| s.0);
+    let lpf_freqs = render_plan.map(|rp| rp.lpf.freq);
 
-    /*
-    let mut lpf = LowPassFilter {
-        state: &mut state.lpf,
-        sample_rate: render_plan[0].lpf.sample_rate,
-        freq: render_plan[0].lpf.freq,
-    };
-
-    let samples = samples.map(|s| lpf.process(s));
+    let samples = samples.zip(lpf_freqs).map(|(sample, lpf_freq)| {
+        let mut lpf = LowPassFilter {
+            state: &mut state.lpf,
+            sample_rate: sample_rate,
+            freq: lpf_freq,
+        };
+        lpf.process(sample)
+    });
 
     let samples = f32x16::from_array(samples);
-    let gain = f32x16::from_array(render_plan.map(|rp| rp.gain));
+    let gain = f32x16::from_array(render_plan.map(|rp| rp.gain.0));
     let samples = samples * gain;
 
-    samples*/
-    todo!()
+    samples.to_array()
 }
