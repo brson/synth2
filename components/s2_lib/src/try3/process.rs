@@ -71,6 +71,13 @@ fn prepare_frame_x16(
 ) -> [rp::Layer; 16] {
     let amp_env_samples = sample_envelope_x16(layer.amp_env, sample_rate, offset, release_offset);
     let mod_env_samples = sample_envelope_x16(layer.mod_env, sample_rate, offset, release_offset);
+    let modulated_osc_freqs =
+        modulate_freq_unipolar_x16(pitch, mod_env_samples, layer.modulations.mod_env_to_osc_freq);
+    let modulated_lpf_freqs = modulate_freq_unipolar_x16(
+        layer.lpf.freq,
+        mod_env_samples,
+        layer.modulations.mod_env_to_lpf_freq,
+    );
     todo!()
 }
 
