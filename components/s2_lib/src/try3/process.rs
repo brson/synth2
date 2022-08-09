@@ -2,6 +2,7 @@ use super::render_plan as rp;
 use super::state as st;
 use super::static_config as sc;
 use super::units::*;
+use super::math;
 
 pub fn process_layer(
     static_config: &sc::Layer,
@@ -96,13 +97,6 @@ fn prepare_frame_x16(
     todo!()
 }
 
-fn zip3<A, B, C, const N: usize>(a: [A; N], b: [B; N], c: [C; N]) -> [(A, B, C); N] {
-    let a_b = a.zip(b);
-    let a_b_c = a_b.zip(c);
-    let a_b_c = a_b_c.map(|((a, b), c)| (a, b, c));
-    a_b_c
-}
-
 fn sample_envelope(
     adsr_config: sc::Adsr,
     sample_rate: SampleRateKhz,
@@ -134,7 +128,7 @@ fn sample_envelope_x16(
         release: f32x16::splat(adsr_config.release.as_samples(sample_rate).0),
     };
 
-    let indexes = indexes_u32::<16>();
+    let indexes = math::indexes_u32::<16>();
     let indexes = u32x16::from_array(indexes);
     let offsets = u32x16::splat(0);
     let offsets = offsets + indexes;
@@ -144,16 +138,6 @@ fn sample_envelope_x16(
     let samples = samples.map(|s| Unipolar(s));
 
     samples
-}
-
-const fn indexes_u32<const N: usize>() -> [u32; N] {
-    let mut indexes = [0; N];
-    let mut index = 0;
-    while index < N {
-        indexes[index] = index as u32;
-        index += 1;
-    }
-    indexes
 }
 
 fn modulate_freq_unipolar(
