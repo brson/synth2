@@ -69,6 +69,8 @@ fn prepare_frame_x16(
     offset: u32,
     release_offset: Option<u32>,
 ) -> [rp::Layer; 16] {
+    let amp_env_samples = sample_envelope_x16(layer.amp_env, sample_rate, offset, release_offset);
+    let mod_env_samples = sample_envelope_x16(layer.mod_env, sample_rate, offset, release_offset);
     todo!()
 }
 
