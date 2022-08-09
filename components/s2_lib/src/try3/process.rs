@@ -137,6 +137,31 @@ fn modulate_freq_unipolar(
     Hz(freq)
 }
 
+fn modulate_freq_unipolar_x16(
+    freq: Hz,
+    modulation_sample: [Unipolar<1>; 16],
+    modulation_amount: Bipolar<10>,
+) -> [Hz; 16] {
+    use crate::old::simdtest;
+    use core_simd::{Simd, u32x16, f32x16};
+
+    let freq = f32x16::splat(freq.0);
+    let modulation_sample = modulation_sample.map(|s| s.0);
+    let modulation_sample = f32x16::from_array(modulation_sample);
+    let modulation_amount = f32x16::splat(modulation_amount.0);
+
+    let two = f32x16::splat(2.0);
+
+    let modulation_amount_ = modulation_sample * modulation_amount;
+    /*let freq = two.powf(modulation_amount_) * freq;
+
+    let freq = freq.to_array();
+    let freq = freq.map(|f| Hz(f));
+
+    freq*/
+    todo!()
+}
+
 pub fn sample_voice(
     render_plan: &rp::Layer,
     state: &mut st::Layer,
