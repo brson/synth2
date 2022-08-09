@@ -77,7 +77,7 @@ fn do_midi() -> Result<()> {
                         }
                     },
                     ()
-                )?;
+                ).map_err(|e| anyhow!("{}", e))?;
                 (Some(midi), midi_rx)
             }
             None => {
