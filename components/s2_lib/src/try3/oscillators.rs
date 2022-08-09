@@ -230,9 +230,7 @@ pub mod phase_accumulating {
             };
             let sample = phased_osc.sample(SampleOffset(0.0));
 
-            let phase_delta = 1.0 / self.period.0;
-            let new_phase = (phase.0 + phase_delta) % 1.0;
-            self.state.phase_accum = Some(Unipolar(new_phase));
+            self.state.phase_accum = Some(accum_phase(phase, self.period));
 
             sample
         }
@@ -254,9 +252,7 @@ pub mod phase_accumulating {
             };
             let sample = phased_osc.sample(SampleOffset(0.0));
 
-            let phase_delta = 1.0 / self.period.0;
-            let new_phase = (phase.0 + phase_delta) % 1.0;
-            self.state.phase_accum = Some(Unipolar(new_phase));
+            self.state.phase_accum = Some(accum_phase(phase, self.period));
 
             sample
         }
@@ -278,12 +274,15 @@ pub mod phase_accumulating {
             };
             let sample = phased_osc.sample(SampleOffset(0.0));
 
-            let phase_delta = 1.0 / self.period.0;
-            let new_phase = (phase.0 + phase_delta) % 1.0;
-            self.state.phase_accum = Some(Unipolar(new_phase));
+            self.state.phase_accum = Some(accum_phase(phase, self.period));
 
             sample
         }
     }
 
+    fn accum_phase(phase: Unipolar<1>, period: SampleOffset) -> Unipolar<1> {
+        let phase_delta = 1.0 / period.0;
+        let new_phase = (phase.0 + phase_delta) % 1.0;
+        Unipolar(new_phase)
+    }
 }
