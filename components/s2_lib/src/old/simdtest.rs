@@ -1,4 +1,4 @@
-use core_simd::{f32x4, mask32x4, u32x4, u8x4};
+use core_simd::{f32x4, mask32x4, u32x4, u8x4, f32x16, u32x16};
 use core_simd::{Mask, SimdFloat, SimdPartialEq, SimdPartialOrd};
 
 pub struct OscillatorX4 {
@@ -158,6 +158,92 @@ impl AdsrX4 {
         let end_sample = { f32x4::splat(0.0) };
 
         let sample = f32x4::splat(0.0);
+        let sample = in_attack.select(attack_sample, sample);
+        let sample = in_decay.select(decay_sample, sample);
+        let sample = in_sustain.select(sustain_sample, sample);
+        let sample = in_release.select(release_sample, sample);
+        let sample = in_end.select(end_sample, sample);
+
+        sample
+    }
+}
+
+pub fn line_y_value_x16(y_rise: f32x16, x_run: f32x16, x_value: f32x16) -> f32x16 {
+    let slope = y_rise / x_run;
+    let y_value = slope * x_value;
+    y_value
+}
+
+pub fn line_y_value_with_y_offset_x16(
+    y_rise: f32x16,
+    x_run: f32x16,
+    x_value: f32x16,
+    y_offset: f32x16,
+) -> f32x16 {
+    let y_value = line_y_value_x16(y_rise, x_run, x_value);
+    y_value + y_offset
+}
+
+pub struct AdsrX16 {
+    pub attack: f32x16,  // +samples
+    pub decay: f32x16,   // +samples
+    pub sustain: f32x16, // [0, 1]
+    pub release: f32x16, // +samples
+}
+
+impl AdsrX16 {
+    pub fn sample(&self, offset: u32x16, release_offset: Option<u32>) -> f32x16 {
+        let attack = self.attack;
+        let decay = self.decay;
+        let sustain = self.sustain;
+        let release = self.release;
+
+        let offset = offset.to_array();
+        let offset = offset.map(|v| v as f32);
+        let offset = f32x16::from_array(offset);
+
+        let decay_offset = attack;
+        let sustain_offset = attack + decay;
+        let release_offset = release_offset.unwrap_or(u32::MAX) as f32;
+        let release_offset = f32x16::splat(release_offset);
+        let release_offset = release_offset.simd_max(sustain_offset);
+        let end_offset = release_offset + release;
+
+        let in_attack = offset.simd_lt(decay_offset);
+        let in_decay = !in_attack & offset.simd_lt(sustain_offset);
+        let in_sustain = !in_attack & !in_decay & offset.simd_lt(release_offset);
+        let in_release = !in_attack & !in_decay & !in_sustain & offset.simd_lt(end_offset);
+        let in_end = !in_attack & !in_decay & !in_sustain & !in_release;
+
+        let attack_sample = {
+            let rise = f32x16::splat(1.0);
+            let run = attack;
+            let x_offset = offset;
+            let y_start = f32x16::splat(0.0);
+            line_y_value_with_y_offset_x16(rise, run, x_offset, y_start)
+        };
+
+        let decay_sample = {
+            let rise = sustain - f32x16::splat(1.0);
+            let run = decay;
+            let x_offset = offset - decay_offset;
+            let y_start = f32x16::splat(1.0);
+            line_y_value_with_y_offset_x16(rise, run, x_offset, y_start)
+        };
+
+        let sustain_sample = { sustain };
+
+        let release_sample = {
+            let rise = -sustain;
+            let run = release;
+            let x_offset = offset - release_offset;
+            let y_start = sustain;
+            line_y_value_with_y_offset_x16(rise, run, x_offset, y_start)
+        };
+
+        let end_sample = { f32x16::splat(0.0) };
+
+        let sample = f32x16::splat(0.0);
         let sample = in_attack.select(attack_sample, sample);
         let sample = in_decay.select(decay_sample, sample);
         let sample = in_sustain.select(sustain_sample, sample);

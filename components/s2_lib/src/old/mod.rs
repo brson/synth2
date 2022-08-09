@@ -4,6 +4,6 @@ mod filters;
 pub mod math;
 mod oscillators;
 mod seq;
-mod simdtest;
+pub mod simdtest;
 mod synth;
 mod synth2;

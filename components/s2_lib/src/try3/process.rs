@@ -87,6 +87,44 @@ fn sample_envelope(
     adsr.sample(offset, release_offset)
 }
 
+fn sample_envelope_x16(
+    adsr_config: sc::Adsr,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>,
+) -> [Unipolar<1>; 16] {
+    use crate::old::simdtest;
+    use core_simd::{Simd, u32x16, f32x16};
+
+    let adsr = simdtest::AdsrX16 {
+        attack: f32x16::splat(adsr_config.attack.as_samples(sample_rate).0),
+        decay: f32x16::splat(adsr_config.decay.as_samples(sample_rate).0),
+        sustain: f32x16::splat(adsr_config.sustain.0),
+        release: f32x16::splat(adsr_config.release.as_samples(sample_rate).0),
+    };
+
+    let indexes = indexes_u32::<16>();
+    let indexes = u32x16::from_array(indexes);
+    let offsets = u32x16::splat(0);
+    let offsets = offsets + indexes;
+
+    let samples = adsr.sample(offsets, release_offset);
+    let samples = samples.to_array();
+    let samples = samples.map(|s| Unipolar(s));
+
+    samples
+}
+
+const fn indexes_u32<const N: usize>() -> [u32; N] {
+    let mut indexes = [0; N];
+    let mut index = 0;
+    while index < N {
+        indexes[index] = index as u32;
+        index += 1;
+    }
+    indexes
+}
+
 fn modulate_freq_unipolar(
     freq: Hz,
     modulation_sample: Unipolar<1>,
