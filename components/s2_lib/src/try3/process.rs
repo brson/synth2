@@ -130,55 +130,6 @@ fn prepare_frame_x16(
     sample_rate: SampleRateKhz,
     offset: u32,
     release_offset: Option<u32>,
-) -> [rp::Layer; 16] {
-    let amp_env_samples = sample_envelope_x16(layer.amp_env, sample_rate, offset, release_offset);
-    let mod_env_samples = sample_envelope_x16(layer.mod_env, sample_rate, offset, release_offset);
-    let modulated_osc_freqs =
-        modulate_freq_unipolar_x16(pitch, mod_env_samples, layer.modulations.mod_env_to_osc_freq);
-    let modulated_lpf_freqs = modulate_freq_unipolar_x16(
-        layer.lpf.freq,
-        mod_env_samples,
-        layer.modulations.mod_env_to_lpf_freq,
-    );
-
-    use super::units::HzX16;
-    let modulated_osc_periods = modulated_osc_freqs.as_samples(sample_rate);
-
-    let samples = math::zip3(
-        amp_env_samples,
-        modulated_osc_periods,
-        modulated_lpf_freqs,
-    );
-
-    samples.map(|(
-        amp_env_sample,
-        modulated_osc_period,
-        modulated_lpf_freq,
-    )| {
-        rp::Layer {
-            osc: rp::Oscillator {
-                period: modulated_osc_period,
-                kind: match layer.osc {
-                    sc::Oscillator::Square => rp::OscillatorKind::Square,
-                    sc::Oscillator::Saw => rp::OscillatorKind::Saw,
-                    sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
-                },
-            },
-            lpf: rp::LowPassFilter {
-                freq: modulated_lpf_freq,
-                sample_rate,
-            },
-            gain: amp_env_sample,
-        }
-    })
-}
-
-fn prepare_frame_x16_2(
-    layer: &sc::Layer,
-    pitch: Hz,
-    sample_rate: SampleRateKhz,
-    offset: u32,
-    release_offset: Option<u32>,
 ) -> rp::LayerX<16> {
     let amp_env_samples = sample_envelope_x16(layer.amp_env, sample_rate, offset, release_offset);
     let mod_env_samples = sample_envelope_x16(layer.mod_env, sample_rate, offset, release_offset);
@@ -323,69 +274,6 @@ pub fn sample_voice(
 }
 
 pub fn sample_voice_x16(
-    render_plan: [rp::Layer; 16],
-    state: &mut st::Layer,
-) -> [f32; 16] {
-    // todo these layers are all going to have the same
-    // kind of oscillator. refactor rp::Layer to have
-    // a single oscillator kind, and simplify the simd oscillators
-
-    use super::filters::*;
-    use super::oscillators::phase_accumulating::*;
-    use std::simd::{Simd, f32x16};
-
-    // todo simd oscillators
-    let samples = match render_plan[0].osc.kind {
-        rp::OscillatorKind::Square => {
-            render_plan.map(|rp| {
-                Oscillator::Square(SquareOscillator {
-                    state: &mut state.osc,
-                    period: rp.osc.period,
-                    phase: Unipolar(0.0),
-                }).sample()
-            })
-        },
-        rp::OscillatorKind::Saw => {
-            render_plan.map(|rp| {
-                Oscillator::Saw(SawOscillator {
-                    state: &mut state.osc,
-                    period: rp.osc.period,
-                    phase: Unipolar(0.0),
-                }).sample()
-            })
-        },
-        rp::OscillatorKind::Triangle => {
-            render_plan.map(|rp| {
-                Oscillator::Triangle(TriangleOscillator {
-                    state: &mut state.osc,
-                    period: rp.osc.period,
-                    phase: Unipolar(0.0),
-                }).sample()
-            })
-        },
-    };
-
-    let sample_rate = render_plan[0].lpf.sample_rate;
-    let samples = samples.map(|s| s.0);
-    let lpf_freqs = render_plan.map(|rp| rp.lpf.freq);
-
-    let samples = samples.zip(lpf_freqs).map(|(sample, lpf_freq)| {
-        let mut lpf = LowPassFilter {
-            state: &mut state.lpf,
-            sample_rate: sample_rate,
-            freq: lpf_freq,
-        };
-        lpf.process(sample)
-    });
-
-    let samples = f32x16::from_array(samples);
-    let gain = f32x16::from_array(render_plan.map(|rp| rp.gain.0));
-    let samples = samples * gain;
-
-    samples.to_array()
-}
-
-pub fn sample_voice_x16_2(
     render_plan: rp::LayerX<16>,
     state: &mut st::Layer,
 ) -> [f32; 16] {
