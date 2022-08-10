@@ -173,6 +173,43 @@ fn prepare_frame_x16(
     })
 }
 
+fn prepare_frame_x16_2(
+    layer: &sc::Layer,
+    pitch: Hz,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>,
+) -> rp::LayerX<16> {
+    let amp_env_samples = sample_envelope_x16(layer.amp_env, sample_rate, offset, release_offset);
+    let mod_env_samples = sample_envelope_x16(layer.mod_env, sample_rate, offset, release_offset);
+    let modulated_osc_freqs =
+        modulate_freq_unipolar_x16(pitch, mod_env_samples, layer.modulations.mod_env_to_osc_freq);
+    let modulated_lpf_freqs = modulate_freq_unipolar_x16(
+        layer.lpf.freq,
+        mod_env_samples,
+        layer.modulations.mod_env_to_lpf_freq,
+    );
+
+    use super::units::HzX16;
+    let modulated_osc_periods = modulated_osc_freqs.as_samples(sample_rate);
+
+    rp::LayerX {
+        osc: rp::OscillatorX {
+            kind: match layer.osc {
+                sc::Oscillator::Square => rp::OscillatorKind::Square,
+                sc::Oscillator::Saw => rp::OscillatorKind::Saw,
+                sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
+            },
+            periods: modulated_osc_periods,
+        },
+        lpf: rp::LowPassFilterX {
+            sample_rate,
+            freqs: modulated_lpf_freqs,
+        },
+        gains: amp_env_samples,
+    }
+}
+
 fn sample_envelope(
     adsr_config: sc::Adsr,
     sample_rate: SampleRateKhz,
@@ -344,6 +381,66 @@ pub fn sample_voice_x16(
     let samples = f32x16::from_array(samples);
     let gain = f32x16::from_array(render_plan.map(|rp| rp.gain.0));
     let samples = samples * gain;
+
+    samples.to_array()
+}
+
+pub fn sample_voice_x16_2(
+    render_plan: rp::LayerX<16>,
+    state: &mut st::Layer,
+) -> [f32; 16] {
+    use super::filters::*;
+    use super::oscillators::phase_accumulating::*;
+    use std::simd::{Simd, f32x16};
+
+    // todo simd oscillators
+    let samples = match render_plan.osc.kind {
+        rp::OscillatorKind::Square => {
+            render_plan.osc.periods.map(|period| {
+                Oscillator::Square(SquareOscillator {
+                    state: &mut state.osc,
+                    period: period,
+                    phase: Unipolar(0.0),
+                }).sample()
+            })
+        },
+        rp::OscillatorKind::Saw => {
+            render_plan.osc.periods.map(|period| {
+                Oscillator::Saw(SawOscillator {
+                    state: &mut state.osc,
+                    period: period,
+                    phase: Unipolar(0.0),
+                }).sample()
+            })
+        },
+        rp::OscillatorKind::Triangle => {
+            render_plan.osc.periods.map(|period| {
+                Oscillator::Triangle(TriangleOscillator {
+                    state: &mut state.osc,
+                    period: period,
+                    phase: Unipolar(0.0),
+                }).sample()
+            })
+        },
+    };
+
+    let sample_rate = render_plan.lpf.sample_rate;
+    let samples = samples.map(|s| s.0);
+    let lpf_freqs = render_plan.lpf.freqs;
+
+    let samples = samples.zip(lpf_freqs).map(|(sample, lpf_freq)| {
+        let mut lpf = LowPassFilter {
+            state: &mut state.lpf,
+            sample_rate: sample_rate,
+            freq: lpf_freq,
+        };
+        lpf.process(sample)
+    });
+
+    let samples = f32x16::from_array(samples);
+    let gains = render_plan.gains.map(|g| g.0);
+    let gains = f32x16::from_array(gains);
+    let samples = samples * gains;
 
     samples.to_array()
 }
