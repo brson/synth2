@@ -27,4 +27,7 @@ https://github.com/MikeCurrington/mkfilter
 https://ccrma.stanford.edu/~jos/sasp/sasp.html
 https://dspguru.com/dsp/books/
 https://github.com/airwindows/airwindows
+https://www.reddit.com/r/DSP/comments/wl7dn9/single_pole_iir_more_efficient_than_moving/
+  - https://www.wavewalkerdsp.com/2022/08/10/single-pole-iir-filter-substitute-for-moving-average-filter/
+https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf
 
