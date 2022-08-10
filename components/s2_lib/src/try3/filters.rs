@@ -1,8 +1,5 @@
-use soa_derive::StructOfArray;
-
 use super::units::*;
 
-#[derive(StructOfArray)]
 #[derive(Default)]
 #[derive(Copy, Clone)]
 pub struct LowPassFilterState {

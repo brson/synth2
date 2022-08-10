@@ -186,12 +186,9 @@ pub mod phased {
 /// - <https://dsp.stackexchange.com/questions/2349/help-with-algorithm-for-modulating-oscillator-pitch-using-lfo>
 /// - <https://dsp.stackexchange.com/questions/971/how-to-create-a-sine-wave-generator-that-can-smoothly-transition-between-frequen>
 pub mod phase_accumulating {
-    use soa_derive::StructOfArray;
-
     use super::super::units::*;
     use super::phased;
 
-    #[derive(StructOfArray)]
     #[derive(Default)]
     #[derive(Copy, Clone)]
     pub struct OscillatorState {
