@@ -4,6 +4,67 @@ use super::static_config as sc;
 use super::units::*;
 use super::math;
 
+pub fn process_layer_buf_simd(
+    static_config: &sc::Layer,
+    state: &mut st::Layer,
+    pitch: Hz,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>,
+    buf: &mut [f32],
+) {
+    let mut offset = offset;
+
+    let mut chunks = buf.array_chunks_mut::<16>();
+
+    while let Some(chunk) = chunks.next() {
+        *chunk = process_layer_x16(
+            static_config,
+            state,
+            pitch,
+            sample_rate,
+            offset,
+            release_offset
+        );
+        offset = offset.checked_add(16).expect("overflow");
+    }
+
+    let remainder = chunks.into_remainder();
+    process_layer_buf_sisd(
+        static_config,
+        state,
+        pitch,
+        sample_rate,
+        offset,
+        release_offset,
+        remainder,
+    );
+}
+
+pub fn process_layer_buf_sisd(
+    static_config: &sc::Layer,
+    state: &mut st::Layer,
+    pitch: Hz,
+    sample_rate: SampleRateKhz,
+    offset: u32,
+    release_offset: Option<u32>,
+    buf: &mut [f32],
+) {
+    let mut offset = offset;
+
+    for byte in buf {
+        *byte = process_layer(
+            static_config,
+            state,
+            pitch,
+            sample_rate,
+            offset,
+            release_offset,
+        );
+        offset = offset.checked_add(1).expect("overflow");
+    }
+}
+
 pub fn process_layer(
     static_config: &sc::Layer,
     state: &mut st::Layer,
