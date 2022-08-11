@@ -17,8 +17,16 @@ pub mod basic {
         pub period: SampleOffset,
     }
 
+    pub struct SawOscillatorX16 {
+        pub period: [SampleOffset; 16],
+    }
+
     pub struct TriangleOscillator {
         pub period: SampleOffset,
+    }
+
+    pub struct TriangleOscillatorX16 {
+        pub period: [SampleOffset; 16],
     }
 
     pub struct TableOscillator<'this> {
@@ -78,6 +86,28 @@ pub mod basic {
         }
     }
 
+    impl SawOscillatorX16 {
+        pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
+            let period = self.period.map(|p| p.0);
+            let period = f32x16::from_array(period);
+            let offset = offset.map(|o| o.0);
+            let offset = f32x16::from_array(offset);
+            let offset = offset % period;
+
+            let y_rise = f32x16::splat(-2.0);
+            let x_run = period;
+            let x_value = offset;
+            let y_offset = f32x16::splat(1.0);
+
+            let sample = line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset);
+
+            let sample = sample.to_array();
+            let sample = sample.map(|s| Bipolar(s));
+
+            sample
+        }
+    }
+
     impl TriangleOscillator {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
             let period = self.period.0;
@@ -102,6 +132,43 @@ pub mod basic {
             };
 
             Bipolar(sample)
+        }
+    }
+
+    impl TriangleOscillatorX16 {
+        pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
+            let period = self.period.map(|p| p.0);
+            let period = f32x16::from_array(period);
+            let offset = offset.map(|o| o.0);
+            let offset = f32x16::from_array(offset);
+            let offset = offset % period;
+
+            let two = f32x16::splat(2.0);
+            let half_period = period / two;
+            let sample_first_half = {
+                let y_rise = f32x16::splat(-2.0);
+                let x_run = half_period;
+                let x_value = offset;
+                let y_offset = f32x16::splat(1.0);
+
+                line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset)
+            };
+            let sample_second_half = {
+                let y_rise = f32x16::splat(2.0);
+                let x_run = half_period;
+                let x_value = offset - half_period;
+                let y_offset = f32x16::splat(-1.0);
+
+                line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset)
+            };
+            let offset_lt_half_period = offset.simd_lt(half_period);
+
+            let sample = offset_lt_half_period.select(sample_first_half, sample_second_half);
+
+            let sample = sample.to_array();
+            let sample = sample.map(|s| Bipolar(s));
+
+            sample
         }
     }
 
