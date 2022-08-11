@@ -464,6 +464,29 @@ pub mod phase_accumulating {
         }
     }
 
+    pub struct SquareOscillatorX16<'this> {
+        pub state: &'this mut OscillatorState,
+        pub period: [SampleOffset; 16],
+        pub phase: Unipolar<1>,
+    }        
+
+    impl<'this> SquareOscillatorX16<'this> {
+        pub fn sample(&mut self) -> [Bipolar<1>; 16] {
+            let init_phase = self.state.phase_accum.unwrap_or(self.phase);
+            let (phase, phase_accum) = accum_phase_x16(init_phase, self.period);
+
+            let phased_osc = phased::SquareOscillatorX16 {
+                period: self.period,
+                phase,
+            };
+            let sample = phased_osc.sample([SampleOffset(0.0); 16]);
+
+            self.state.phase_accum = Some(phase_accum);
+
+            sample
+        }
+    }
+
     pub struct SawOscillator<'this> {
         pub state: &'this mut OscillatorState,
         pub period: SampleOffset,
@@ -512,5 +535,22 @@ pub mod phase_accumulating {
         let phase_delta = 1.0 / period.0;
         let new_phase = (phase.0 + phase_delta) % 1.0;
         Unipolar(new_phase)
+    }
+
+    /// Accumalate the phase for 16 consecutive frames, plus the next frame.
+    ///
+    /// This operates slightly differently than `accum_phase` since the phases
+    /// for all lanes in the phase-accumulating oscillators need to be
+    /// calculated prior to calling the stateless simd oscillators underlying
+    /// them.
+    fn accum_phase_x16(phase: Unipolar<1>, period: [SampleOffset; 16]) -> ([Unipolar<1>; 16], Unipolar<1>) {
+        let mut phase_accum = phase;
+        let mut phase = [phase; 16];
+        for i in 1..16 {
+            phase_accum = accum_phase(phase_accum, period[i - 1]);
+            phase[i] = phase_accum;
+        }
+        phase_accum = accum_phase(phase_accum, period[15]);
+        (phase, phase_accum)
     }
 }
