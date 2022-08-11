@@ -177,68 +177,17 @@ pub mod basic {
 
     impl<'this> TableOscillator<'this> {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            let period = self.period.0;
-            let offset = offset.0;
-            let offset = offset % period;
-
-            let table_length = self.table.len() as f32;
-            let table_offset = offset * table_length / period;
-            let table_offset_low = table_offset.floor();
-            let table_idx1 = table_offset_low as usize;
-            let table_idx2 = (table_idx1 + 1) % self.table.len();
-
-            let sample1 = self.table[table_idx1];
-            let sample2 = self.table[table_idx2];
-
-            {
-                let y_rise = sample2 - sample1;
-                let x_run = 1.0;
-                let x_value = table_offset - table_offset_low;
-                let y_offset = sample1;
-
-                let sample = line_y_value_with_y_offset(y_rise, x_run, x_value, y_offset);
-
-                Bipolar(sample)
-            }
+            Bipolar(table_lookup(self.table, offset.0, self.period.0))
         }
     }
 
     impl<'this> TableOscillatorX16<'this> {
         pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
-            let period = self.period.map(|p| p.0);
-            let period = f32x16::from_array(period);
-            let offset = offset.map(|o| o.0);
-            let offset = f32x16::from_array(offset);
-            let offset = offset % period;
-
-            let table_length_u32 = self.table.len() as u32;
-            let table_length_u32 = u32x16::splat(table_length_u32);
-            let table_length = self.table.len() as f32;
-            let table_length = f32x16::splat(table_length);
-            let table_offset = offset * table_length / period;
-            let table_offset_low = table_offset.floor();
-            let one = u32x16::splat(1);
-            let table_idx1 = table_offset_low.cast::<u32>();
-            let table_idx2 = (table_idx1 + one) % table_length_u32;
-            let table_idx1 = table_idx1.cast::<usize>();
-            let table_idx2 = table_idx2.cast::<usize>();
-
-            let sample1 = f32x16::gather_or_default(self.table, table_idx1);
-            let sample2 = f32x16::gather_or_default(self.table, table_idx2);
-
-            {
-                let y_rise = sample2 - sample1;
-                let x_run = f32x16::splat(1.0);
-                let x_value = table_offset - table_offset_low;
-                let y_offset = sample1;
-
-                let sample = line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset);
-
-                let sample = sample.to_array();
-                let sample = sample.map(|s| Bipolar(s));
-
-                sample
-            }
+            table_lookup_x16(
+                self.table,
+                offset.map(|o| o.0),
+                self.period.map(|p| p.0)
+            ).map(|s| Bipolar(s))
         }
     }
 }
