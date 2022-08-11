@@ -1,5 +1,3 @@
-pub use basic::*;
-
 pub mod basic {
     use std::simd::{f32x16, u32x16, SimdPartialOrd, StdFloat};
     use super::super::math::*;
