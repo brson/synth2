@@ -23,7 +23,11 @@ impl<'this> LowPassFilter<'this> {
         let a0 = 1.0 - x;
         let b1 = -x;
 
-        let out = a0 * input - b1 * self.state.last;
+        let out = if !cfg!(feature = "fma") {
+            a0 * input - b1 * self.state.last
+        } else {
+            a0.mul_add(input, -b1 * self.state.last)
+        };
         self.state.last = out;
         out
     }
