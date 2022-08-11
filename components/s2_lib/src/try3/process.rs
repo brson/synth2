@@ -245,29 +245,34 @@ pub fn sample_voice(
 ) -> f32 {
     use super::filters::*;
     use super::oscillators::phase_accumulating::*;
-    let mut osc = match render_plan.osc.kind {
-        rp::OscillatorKind::Square => Oscillator::Square(SquareOscillator {
-            state: &mut state.osc,
-            period: render_plan.osc.period,
-            phase: Unipolar(0.0),
-        }),
-        rp::OscillatorKind::Saw => Oscillator::Saw(SawOscillator {
-            state: &mut state.osc,
-            period: render_plan.osc.period,
-            phase: Unipolar(0.0),
-        }),
-        rp::OscillatorKind::Triangle => Oscillator::Triangle(TriangleOscillator {
-            state: &mut state.osc,
-            period: render_plan.osc.period,
-            phase: Unipolar(0.0),
-        }),
+    let sample = match render_plan.osc.kind {
+        rp::OscillatorKind::Square => {
+            SquareOscillator {
+                state: &mut state.osc,
+                period: render_plan.osc.period,
+                phase: Unipolar(0.0),
+            }.sample()
+        },
+        rp::OscillatorKind::Saw => {
+            SawOscillator {
+                state: &mut state.osc,
+                period: render_plan.osc.period,
+                phase: Unipolar(0.0),
+            }.sample()
+        },
+        rp::OscillatorKind::Triangle => {
+            TriangleOscillator {
+                state: &mut state.osc,
+                period: render_plan.osc.period,
+                phase: Unipolar(0.0),
+            }.sample()
+        },
     };
     let mut lpf = LowPassFilter {
         state: &mut state.lpf,
         sample_rate: render_plan.lpf.sample_rate,
         freq: render_plan.lpf.freq,
     };
-    let sample = osc.sample();
     let sample = lpf.process(sample.0);
     let sample = sample * render_plan.gain.0;
     sample
