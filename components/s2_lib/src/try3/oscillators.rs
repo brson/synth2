@@ -1,11 +1,16 @@
 pub use basic::*;
 
 pub mod basic {
+    use std::simd::{f32x16, SimdPartialOrd};
     use super::super::math::*;
     use super::super::units::*;
 
     pub struct SquareOscillator {
         pub period: SampleOffset,
+    }
+
+    pub struct SquareOscillatorX16 {
+        pub period: [SampleOffset; 16],
     }
 
     pub struct SawOscillator {
@@ -31,6 +36,28 @@ pub mod basic {
             let sample = if offset < half_period { 1.0 } else { -1.0 };
 
             Bipolar(sample)
+        }
+    }
+
+    impl SquareOscillatorX16 {
+        pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
+            let period = self.period.map(|p| p.0);
+            let period = f32x16::from_array(period);
+            let offset = offset.map(|o| o.0);
+            let offset = f32x16::from_array(offset);
+            let offset = offset % period;
+
+            let two = f32x16::splat(2.0);
+            let half_period = period / two;
+            let one = f32x16::splat(1.0);
+            let n_one = f32x16::splat(-1.0);
+            let offset_lt_half_period = offset.simd_lt(half_period);
+            let sample = offset_lt_half_period.select(one, n_one);
+
+            let sample = sample.to_array();
+            let sample = sample.map(|s| Bipolar(s));
+
+            sample
         }
     }
 
