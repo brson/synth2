@@ -248,6 +248,7 @@ pub mod basic {
 pub mod phased {
     use super::super::units::*;
     use super::basic;
+    use std::simd::{f32x16, StdFloat};
 
     fn phased_offset(period: SampleOffset, phase: Unipolar<1>, offset: SampleOffset) -> SampleOffset {
         if !cfg!(feature = "fma") {
@@ -256,6 +257,30 @@ pub mod phased {
         } else {
             let offset = period.0.mul_add(phase.0, offset.0);
             SampleOffset(offset)
+        }
+    }
+
+    fn phased_offset_x16(
+        period: [SampleOffset; 16],
+        phase: [Unipolar<1>; 16],
+        offset: [SampleOffset; 16],
+    ) -> [SampleOffset; 16] {
+        let period = period.map(|p| p.0);
+        let period = f32x16::from_array(period);
+        let phase = phase.map(|p| p.0);
+        let phase = f32x16::from_array(phase);
+        let offset = offset.map(|o| o.0);
+        let offset = f32x16::from_array(offset);
+
+        if !cfg!(feature = "fma") {
+            let phase_offset = period * phase;
+            let new_offset = offset + phase_offset;
+            let new_offset = new_offset.to_array();
+            new_offset.map(|o| SampleOffset(o))
+        } else {
+            let new_offset = period.mul_add(phase, offset);
+            let new_offset = new_offset.to_array();
+            new_offset.map(|o| SampleOffset(o))
         }
     }
 
@@ -268,6 +293,21 @@ pub mod phased {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
             let offset = phased_offset(self.period, self.phase, offset);
             let basic_osc = basic::SquareOscillator {
+                period: self.period,
+            };
+            basic_osc.sample(offset)
+        }
+    }
+
+    pub struct SquareOscillatorX16 {
+        pub period: [SampleOffset; 16],
+        pub phase: [Unipolar<1>; 16],
+    }
+
+    impl SquareOscillatorX16 {
+        pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
+            let offset = phased_offset_x16(self.period, self.phase, offset);
+            let basic_osc = basic::SquareOscillatorX16 {
                 period: self.period,
             };
             basic_osc.sample(offset)
@@ -289,6 +329,21 @@ pub mod phased {
         }
     }
 
+    pub struct SawOscillatorX16 {
+        pub period: [SampleOffset; 16],
+        pub phase: [Unipolar<1>; 16],
+    }
+
+    impl SawOscillatorX16 {
+        pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
+            let offset = phased_offset_x16(self.period, self.phase, offset);
+            let basic_osc = basic::SawOscillatorX16 {
+                period: self.period,
+            };
+            basic_osc.sample(offset)
+        }
+    }
+
     pub struct TriangleOscillator {
         pub period: SampleOffset,
         pub phase: Unipolar<1>,
@@ -298,6 +353,21 @@ pub mod phased {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
             let offset = phased_offset(self.period, self.phase, offset);
             let basic_osc = basic::TriangleOscillator {
+                period: self.period,
+            };
+            basic_osc.sample(offset)
+        }
+    }
+
+    pub struct TriangleOscillatorX16 {
+        pub period: [SampleOffset; 16],
+        pub phase: [Unipolar<1>; 16],
+    }
+
+    impl TriangleOscillatorX16 {
+        pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
+            let offset = phased_offset_x16(self.period, self.phase, offset);
+            let basic_osc = basic::TriangleOscillatorX16 {
                 period: self.period,
             };
             basic_osc.sample(offset)
@@ -314,6 +384,23 @@ pub mod phased {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
             let offset = phased_offset(self.period, self.phase, offset);
             let basic_osc = basic::TableOscillator {
+                table: self.table,
+                period: self.period,
+            };
+            basic_osc.sample(offset)
+        }
+    }
+
+    pub struct TableOscillatorX16<'this> {
+        pub table: &'this [f32],
+        pub period: [SampleOffset; 16],
+        pub phase: [Unipolar<1>; 16],
+    }
+
+    impl<'this> TableOscillatorX16<'this> {
+        pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
+            let offset = phased_offset_x16(self.period, self.phase, offset);
+            let basic_osc = basic::TableOscillatorX16 {
                 table: self.table,
                 period: self.period,
             };
