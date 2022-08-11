@@ -531,6 +531,30 @@ pub mod phase_accumulating {
         }
     }
 
+    pub struct TableOscillator<'this> {
+        pub state: &'this mut OscillatorState,
+        pub table: &'this [f32],
+        pub period: SampleOffset,
+        pub phase: Unipolar<1>,
+    }
+
+    impl<'this> TableOscillator<'this> {
+        pub fn sample(&mut self) -> Bipolar<1> {
+            let phase = self.state.phase_accum.unwrap_or(self.phase);
+
+            let phased_osc = phased::TableOscillator {
+                table: self.table,
+                period: self.period,
+                phase,
+            };
+            let sample = phased_osc.sample(SampleOffset(0.0));
+
+            self.state.phase_accum = Some(accum_phase(phase, self.period));
+
+            sample
+        }
+    }
+
     fn accum_phase(phase: Unipolar<1>, period: SampleOffset) -> Unipolar<1> {
         let phase_delta = 1.0 / period.0;
         let new_phase = (phase.0 + phase_delta) % 1.0;
