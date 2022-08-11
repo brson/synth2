@@ -281,34 +281,27 @@ pub fn sample_voice_x16(
     use super::oscillators::phase_accumulating::*;
     use std::simd::{Simd, f32x16};
 
-    // todo simd oscillators
     let samples = match render_plan.osc.kind {
         rp::OscillatorKind::Square => {
-            render_plan.osc.periods.map(|period| {
-                Oscillator::Square(SquareOscillator {
-                    state: &mut state.osc,
-                    period: period,
-                    phase: Unipolar(0.0),
-                }).sample()
-            })
+            SquareOscillatorX16 {
+                state: &mut state.osc,
+                period: render_plan.osc.periods,
+                phase: Unipolar(0.0)
+            }.sample()
         },
         rp::OscillatorKind::Saw => {
-            render_plan.osc.periods.map(|period| {
-                Oscillator::Saw(SawOscillator {
-                    state: &mut state.osc,
-                    period: period,
-                    phase: Unipolar(0.0),
-                }).sample()
-            })
+            SawOscillatorX16 {
+                state: &mut state.osc,
+                period: render_plan.osc.periods,
+                phase: Unipolar(0.0)
+            }.sample()
         },
         rp::OscillatorKind::Triangle => {
-            render_plan.osc.periods.map(|period| {
-                Oscillator::Triangle(TriangleOscillator {
-                    state: &mut state.osc,
-                    period: period,
-                    phase: Unipolar(0.0),
-                }).sample()
-            })
+            TriangleOscillatorX16 {
+                state: &mut state.osc,
+                period: render_plan.osc.periods,
+                phase: Unipolar(0.0)
+            }.sample()
         },
     };
 
