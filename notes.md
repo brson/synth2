@@ -1,3 +1,5 @@
+# sources
+
 https://www.musicdsp.org/
 https://www.dspguide.com/
 https://juce.com/
@@ -31,3 +33,7 @@ https://www.reddit.com/r/DSP/comments/wl7dn9/single_pole_iir_more_efficient_than
   - https://www.wavewalkerdsp.com/2022/08/10/single-pole-iir-filter-substitute-for-moving-average-filter/
 https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf
 
+# ideas
+
+- more fma
+- cheaper approximate powf
