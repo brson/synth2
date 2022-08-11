@@ -509,6 +509,29 @@ pub mod phase_accumulating {
         }
     }
 
+    pub struct SawOscillatorX16<'this> {
+        pub state: &'this mut OscillatorState,
+        pub period: [SampleOffset; 16],
+        pub phase: Unipolar<1>,
+    }
+
+    impl<'this> SawOscillatorX16<'this> {
+        pub fn sample(&mut self) -> [Bipolar<1>; 16] {
+            let init_phase = self.state.phase_accum.unwrap_or(self.phase);
+            let (phase, phase_accum) = accum_phase_x16(init_phase, self.period);
+
+            let phased_osc = phased::SawOscillatorX16 {
+                period: self.period,
+                phase,
+            };
+            let sample = phased_osc.sample([SampleOffset(0.0); 16]);
+
+            self.state.phase_accum = Some(phase_accum);
+
+            sample
+        }
+    }
+
     pub struct TriangleOscillator<'this> {
         pub state: &'this mut OscillatorState,
         pub period: SampleOffset,
@@ -531,9 +554,32 @@ pub mod phase_accumulating {
         }
     }
 
-    pub struct TableOscillator<'this> {
+    pub struct TriangleOscillatorX16<'this> {
         pub state: &'this mut OscillatorState,
+        pub period: [SampleOffset; 16],
+        pub phase: Unipolar<1>,
+    }
+
+    impl<'this> TriangleOscillatorX16<'this> {
+        pub fn sample(&mut self) -> [Bipolar<1>; 16] {
+            let init_phase = self.state.phase_accum.unwrap_or(self.phase);
+            let (phase, phase_accum) = accum_phase_x16(init_phase, self.period);
+
+            let phased_osc = phased::TriangleOscillatorX16 {
+                period: self.period,
+                phase,
+            };
+            let sample = phased_osc.sample([SampleOffset(0.0); 16]);
+
+            self.state.phase_accum = Some(phase_accum);
+
+            sample
+        }
+    }
+
+    pub struct TableOscillator<'this> {
         pub table: &'this [f32],
+        pub state: &'this mut OscillatorState,
         pub period: SampleOffset,
         pub phase: Unipolar<1>,
     }
@@ -550,6 +596,31 @@ pub mod phase_accumulating {
             let sample = phased_osc.sample(SampleOffset(0.0));
 
             self.state.phase_accum = Some(accum_phase(phase, self.period));
+
+            sample
+        }
+    }
+
+    pub struct TableOscillatorX16<'this> {
+        pub table: &'this [f32],
+        pub state: &'this mut OscillatorState,
+        pub period: [SampleOffset; 16],
+        pub phase: Unipolar<1>,
+    }
+
+    impl<'this> TableOscillatorX16<'this> {
+        pub fn sample(&mut self) -> [Bipolar<1>; 16] {
+            let init_phase = self.state.phase_accum.unwrap_or(self.phase);
+            let (phase, phase_accum) = accum_phase_x16(init_phase, self.period);
+
+            let phased_osc = phased::TableOscillatorX16 {
+                table: self.table,
+                period: self.period,
+                phase,
+            };
+            let sample = phased_osc.sample([SampleOffset(0.0); 16]);
+
+            self.state.phase_accum = Some(phase_accum);
 
             sample
         }
