@@ -36,4 +36,4 @@ https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesi
 # ideas
 
 - more fma
-- cheaper approximate powf
+- cheaper approximate powf, exp
