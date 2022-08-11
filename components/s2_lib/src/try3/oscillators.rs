@@ -249,6 +249,16 @@ pub mod phased {
     use super::super::units::*;
     use super::basic;
 
+    fn phased_offset(period: SampleOffset, phase: Unipolar<1>, offset: SampleOffset) -> SampleOffset {
+        if !cfg!(feature = "fma") {
+            let phase_offset = period.0 * phase.0;
+            SampleOffset(offset.0 + phase_offset)
+        } else {
+            let offset = period.0.mul_add(phase.0, offset.0);
+            SampleOffset(offset)
+        }
+    }
+
     pub struct SquareOscillator {
         pub period: SampleOffset,
         pub phase: Unipolar<1>,
@@ -256,8 +266,7 @@ pub mod phased {
 
     impl SquareOscillator {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            let phase_offset = self.period.0 * self.phase.0;
-            let offset = SampleOffset(offset.0 + phase_offset);
+            let offset = phased_offset(self.period, self.phase, offset);
             let basic_osc = basic::SquareOscillator {
                 period: self.period,
             };
@@ -272,8 +281,7 @@ pub mod phased {
 
     impl SawOscillator {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            let phase_offset = self.period.0 * self.phase.0;
-            let offset = SampleOffset(offset.0 + phase_offset);
+            let offset = phased_offset(self.period, self.phase, offset);
             let basic_osc = basic::SawOscillator {
                 period: self.period,
             };
@@ -288,8 +296,7 @@ pub mod phased {
 
     impl TriangleOscillator {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            let phase_offset = self.period.0 * self.phase.0;
-            let offset = SampleOffset(offset.0 + phase_offset);
+            let offset = phased_offset(self.period, self.phase, offset);
             let basic_osc = basic::TriangleOscillator {
                 period: self.period,
             };
@@ -305,8 +312,7 @@ pub mod phased {
 
     impl<'this> TableOscillator<'this> {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            let phase_offset = self.period.0 * self.phase.0;
-            let offset = SampleOffset(offset.0 + phase_offset);
+            let offset = phased_offset(self.period, self.phase, offset);
             let basic_osc = basic::TableOscillator {
                 table: self.table,
                 period: self.period,
