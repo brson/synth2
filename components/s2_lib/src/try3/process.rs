@@ -194,7 +194,7 @@ fn sample_envelope_x16(
 
     let indexes = math::indexes_u32::<16>();
     let indexes = u32x16::from_array(indexes);
-    let offsets = u32x16::splat(0);
+    let offsets = u32x16::splat(offset);
     let offsets = offsets + indexes;
 
     let samples = adsr.sample(offsets, release_offset);
