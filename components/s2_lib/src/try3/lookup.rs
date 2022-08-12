@@ -20,11 +20,12 @@ pub fn table_lookup_exclusive(
     let table_length_u32 = table.len() as u32;
     let table_length = table.len() as f32;
     let table_value = value * table_length / range;
-    let table_value_low = table_value.floor();
-    let table_idx1 = table_value_low as u32;
+    let table_value_low = table_value as u32;
+    let table_idx1 = table_value_low;
     let table_idx2 = (table_idx1 + 1) % table_length_u32;
     let table_idx1 = table_idx1 as usize;
     let table_idx2 = table_idx2 as usize;
+    let table_value_low = table_value_low as f32;
 
     let sample1 = table[table_idx1];
     let sample2 = table[table_idx2];
@@ -59,12 +60,13 @@ pub fn table_lookup_exclusive_x16(
     let table_length = table.len() as f32;
     let table_length = f32x16::splat(table_length);
     let table_value = value * table_length / range;
-    let table_value_low = table_value.floor();
+    let table_value_low = table_value.cast::<u32>();
     let one = u32x16::splat(1);
-    let table_idx1 = table_value_low.cast::<u32>();;
+    let table_idx1 = table_value_low;
     let table_idx2 = (table_idx1 + one) % table_length_u32;
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
+    let table_value_low = table_value_low.cast::<f32>();
 
     let sample1 = f32x16::gather_or_default(table, table_idx1);
     let sample2 = f32x16::gather_or_default(table, table_idx2);
@@ -105,11 +107,12 @@ pub fn table_lookup_inclusive(
     let table_length_u32 = table_length as u32;
     let table_length = table_length as f32;
     let table_value = value * table_length / range;
-    let table_value_low = table_value.floor();
-    let table_idx1 = table_value_low as u32;
+    let table_value_low = table_value as u32;
+    let table_idx1 = table_value_low;
     let table_idx2 = (table_idx1 + 1);
     let table_idx1 = table_idx1 as usize;
     let table_idx2 = table_idx2 as usize;
+    let table_value_low = table_value_low as f32;
 
     let sample1 = table[table_idx1];
     let sample2 = table[table_idx2];
@@ -145,12 +148,13 @@ pub fn table_lookup_inclusive_x16(
     let table_length = table_length as f32;
     let table_length = f32x16::splat(table_length);
     let table_value = value * table_length / range;
-    let table_value_low = table_value.floor();
+    let table_value_low = table_value.cast::<u32>();
     let one = u32x16::splat(1);
-    let table_idx1 = table_value_low.cast::<u32>();;
+    let table_idx1 = table_value_low;
     let table_idx2 = (table_idx1 + one);
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
+    let table_value_low = table_value_low.cast::<f32>();
 
     let sample1 = f32x16::gather_or_default(table, table_idx1);
     let sample2 = f32x16::gather_or_default(table, table_idx2);

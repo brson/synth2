@@ -36,4 +36,7 @@ https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesi
 # ideas
 
 - more fma
-- cheaper approximate powf, exp
+- cheaper approximate powf, expf
+- faster fmodf? inline fmodf?
+- why isn't fmaf being lowered to machine code?
+- simd floor / trunc?
