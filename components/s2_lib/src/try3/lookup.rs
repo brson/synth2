@@ -67,7 +67,8 @@ pub fn table_lookup_exclusive_x16(
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
-
+    todo!() // miscompilation
+    /*
     let sample1 = f32x16::gather_or_default(table, table_idx1);
     let sample2 = f32x16::gather_or_default(table, table_idx2);
 
@@ -80,7 +81,7 @@ pub fn table_lookup_exclusive_x16(
         let sample = math::line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset);
 
         sample.to_array()
-    }
+    }*/
 }
 
 /// Linear-interpolated table lookup in range `[0, range]`.
@@ -155,7 +156,8 @@ pub fn table_lookup_inclusive_x16(
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
-
+    todo!() // miscompilation
+/*
     let sample1 = f32x16::gather_or_default(table, table_idx1);
     let sample2 = f32x16::gather_or_default(table, table_idx2);
 
@@ -168,7 +170,7 @@ pub fn table_lookup_inclusive_x16(
         let sample = math::line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset);
 
         sample.to_array()
-    }
+    }*/
 }
 
 /// Linear-interpolated table lookup in range `[0, range)` with modulus.
@@ -241,4 +243,15 @@ pub fn bipolar_table_lookup_x16<const N: u16>(
 
     let lookup = value.is_sign_positive().select(pos_lookup, neg_lookup);
     lookup.to_array()
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_table_lookup() {
+        let table = &[0.0, 1.0, 2.0, 3.0];
+        let v = table_lookup_exclusive(table, 0.0, 4.0);
+        assert_eq!(v, 0.0);
+    }
 }
