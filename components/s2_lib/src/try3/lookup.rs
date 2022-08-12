@@ -1,4 +1,4 @@
-use std::simd::{f32x16, u32x16, StdFloat, SimdFloat};
+use std::simd::{f32x16, u32x16, StdFloat, SimdFloat, SimdPartialOrd};
 use super::units::{Unipolar, Bipolar};
 use super::math;
 
@@ -12,6 +12,11 @@ pub fn table_lookup_exclusive(
     value: f32,
     range: f32,
 ) -> f32 {
+    debug_assert!(table.len() > 1);
+    debug_assert!(value >= 0.0);
+    debug_assert!(value < range);
+    debug_assert!(range > 0.0);
+
     let table_length_u32 = table.len() as u32;
     let table_length = table.len() as f32;
     let table_value = value * table_length / range;
@@ -43,6 +48,11 @@ pub fn table_lookup_exclusive_x16(
 ) -> [f32; 16] {
     let range = f32x16::from_array(range);
     let value = f32x16::from_array(value);
+
+    debug_assert!(table.len() > 1);
+    debug_assert!(value.simd_ge(f32x16::splat(0.0)).all());
+    debug_assert!(value.simd_lt(range).all());
+    debug_assert!(range.simd_gt(f32x16::splat(0.0)).all());
 
     let table_length_u32 = table.len() as u32;
     let table_length_u32 = u32x16::splat(table_length_u32);
@@ -81,7 +91,39 @@ pub fn table_lookup_inclusive(
     value: f32,
     range: f32,
 ) -> f32 {
-    todo!()
+    debug_assert!(table.len() > 1);
+    debug_assert!(value >= 0.0);
+    debug_assert!(value <= range);
+    debug_assert!(range > 0.0);
+
+    // The only differences between this and the "exclusive" calculation is
+    //
+    // - discard the final table element in calculations based on length
+    // - don't modulus table_idx2 by the table length
+
+    let table_length = table.len().saturating_sub(1);
+    let table_length_u32 = table_length as u32;
+    let table_length = table_length as f32;
+    let table_value = value * table_length / range;
+    let table_value_low = table_value.floor();
+    let table_idx1 = table_value_low as u32;
+    let table_idx2 = (table_idx1 + 1);
+    let table_idx1 = table_idx1 as usize;
+    let table_idx2 = table_idx2 as usize;
+
+    let sample1 = table[table_idx1];
+    let sample2 = table[table_idx2];
+
+    {
+        let y_rise = sample2 - sample1;
+        let x_run = 1.0;
+        let x_value = table_value - table_value_low;
+        let y_offset = sample1;
+
+        let sample = math::line_y_value_with_y_offset(y_rise, x_run, x_value, y_offset);
+
+        sample
+    }
 }
 
 pub fn table_lookup_inclusive_x16(
@@ -89,7 +131,40 @@ pub fn table_lookup_inclusive_x16(
     value: [f32; 16],
     range: [f32; 16],
 ) -> [f32; 16] {
-    todo!()
+    let range = f32x16::from_array(range);
+    let value = f32x16::from_array(value);
+
+    debug_assert!(table.len() > 1);
+    debug_assert!(value.simd_ge(f32x16::splat(0.0)).all());
+    debug_assert!(value.simd_le(range).all());
+    debug_assert!(range.simd_gt(f32x16::splat(0.0)).all());
+
+    let table_length = table.len().saturating_sub(1);
+    let table_length_u32 = table_length as u32;
+    let table_length_u32 = u32x16::splat(table_length_u32);
+    let table_length = table_length as f32;
+    let table_length = f32x16::splat(table_length);
+    let table_value = value * table_length / range;
+    let table_value_low = table_value.floor();
+    let one = u32x16::splat(1);
+    let table_idx1 = table_value_low.cast::<u32>();;
+    let table_idx2 = (table_idx1 + one);
+    let table_idx1 = table_idx1.cast::<usize>();
+    let table_idx2 = table_idx2.cast::<usize>();
+
+    let sample1 = f32x16::gather_or_default(table, table_idx1);
+    let sample2 = f32x16::gather_or_default(table, table_idx2);
+
+    {
+        let y_rise = sample2 - sample1;
+        let x_run = f32x16::splat(1.0);
+        let x_value = table_value - table_value_low;
+        let y_offset = sample1;
+
+        let sample = math::line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset);
+
+        sample.to_array()
+    }
 }
 
 /// Linear-interpolated table lookup in range `[0, range)` with modulus.
