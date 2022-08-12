@@ -11,4 +11,5 @@ mod oscillators;
 pub mod state;
 
 mod tables;
+mod lookup;
 pub mod units;

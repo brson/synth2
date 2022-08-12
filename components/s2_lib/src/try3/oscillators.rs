@@ -2,6 +2,7 @@ pub mod basic {
     use std::simd::{f32x16, u32x16, SimdPartialOrd, StdFloat};
     use super::super::math::*;
     use super::super::units::*;
+    use super::super::lookup;
 
     pub struct SquareOscillator {
         pub period: SampleOffset,
@@ -177,13 +178,13 @@ pub mod basic {
 
     impl<'this> TableOscillator<'this> {
         pub fn sample(&self, offset: SampleOffset) -> Bipolar<1> {
-            Bipolar(table_lookup(self.table, offset.0, self.period.0))
+            Bipolar(lookup::table_lookup_periodic(self.table, offset.0, self.period.0))
         }
     }
 
     impl<'this> TableOscillatorX16<'this> {
         pub fn sample(&self, offset: [SampleOffset; 16]) -> [Bipolar<1>; 16] {
-            table_lookup_x16(
+            lookup::table_lookup_periodic_x16(
                 self.table,
                 offset.map(|o| o.0),
                 self.period.map(|p| p.0)
