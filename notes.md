@@ -40,3 +40,4 @@ https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesi
 - faster fmodf? inline fmodf?
 - sleef has simd fmodf
 - simd floor / trunc?
+- use unsafe float->int casts?
