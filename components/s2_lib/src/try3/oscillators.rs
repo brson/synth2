@@ -570,6 +570,8 @@ pub mod phase_accumulating {
     /// for all lanes in the phase-accumulating oscillators need to be
     /// calculated prior to calling the stateless simd oscillators underlying
     /// them.
+    //
+    // TODO: the modulus from accum_phase can possibly be lifted out to simd
     fn accum_phase_x16(phase: Unipolar<1>, period: [SampleOffset; 16]) -> ([Unipolar<1>; 16], Unipolar<1>) {
         let mut phase_accum = phase;
         let mut phase = [phase; 16];

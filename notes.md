@@ -38,5 +38,5 @@ https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesi
 - more fma
 - cheaper approximate powf, expf
 - faster fmodf? inline fmodf?
-- why isn't fmaf being lowered to machine code?
+- sleef has simd fmodf
 - simd floor / trunc?
