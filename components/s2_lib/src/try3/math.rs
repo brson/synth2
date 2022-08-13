@@ -56,7 +56,13 @@ pub fn zip3<A, B, C, const N: usize>(a: [A; N], b: [B; N], c: [C; N]) -> [(A, B,
 }
 
 pub fn fast_fmodf(a: f32, b: f32) -> f32 {
-    todo!()
+    debug_assert!(a >= 0);
+    debug_assert!(b > 0);
+    if !cfg!(feature = "fma") {
+        a - (((a / b) as u32 as f32) * b)
+    } else {
+        -(((a / b) as u32 as f32).mul_add(b, -a)
+    }
 }
 
 pub fn fast_fmodf_x16(a: [f32; 16], b: [f32; 16]) -> [f32; 16] {
