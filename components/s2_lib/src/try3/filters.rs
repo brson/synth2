@@ -26,6 +26,7 @@ impl<'this> LowPassFilter<'this> {
         let out = if !cfg!(feature = "fma") {
             a0 * input - b1 * self.state.last
         } else {
+            // todo this has an extra subtraction. is in faster?
             a0.mul_add(input, -b1 * self.state.last)
         };
         self.state.last = out;
