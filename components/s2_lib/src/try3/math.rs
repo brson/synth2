@@ -55,10 +55,11 @@ pub fn zip3<A, B, C, const N: usize>(a: [A; N], b: [B; N], c: [C; N]) -> [(A, B,
     a_b_c
 }
 
+/// Remainder, for positive numbers.
 pub fn fast_fmodf(a: f32, b: f32) -> f32 {
     debug_assert!(a >= 0.0);
     debug_assert!(b > 0.0);
-    if !cfg!(feature = "fma") {
+    if cfg!(feature = "fma") {
         a - (((a / b) as u32 as f32) * b)
     } else {
         -((a / b) as u32 as f32).mul_add(b, -a)
@@ -67,4 +68,27 @@ pub fn fast_fmodf(a: f32, b: f32) -> f32 {
 
 pub fn fast_fmodf_x16(a: [f32; 16], b: [f32; 16]) -> [f32; 16] {
     todo!()
+}
+
+mod test {
+    use super::*;
+
+    fn fuzzy_eq(a: f32, b: f32) -> bool {
+        let epsilon = 0.000001;
+        a > b - epsilon && a < b + epsilon
+    }
+    
+    #[test]
+    fn test_fast_fmodf() {
+        assert!(fuzzy_eq(fast_fmodf(0.0, 10.0), 0.0));
+        assert!(fuzzy_eq(fast_fmodf(5.0, 10.0), 5.0));
+        assert!(fuzzy_eq(fast_fmodf(15.0, 10.0), 5.0));
+        assert!(fuzzy_eq(fast_fmodf(10.0, 10.0), 0.0));
+        assert!(fuzzy_eq(fast_fmodf(10.1, 10.0), 0.1));
+        assert!(fuzzy_eq(fast_fmodf(10.01, 10.0), 0.01));
+        assert!(fuzzy_eq(fast_fmodf(10.001, 10.0), 0.001));
+        assert!(fuzzy_eq(fast_fmodf(1001.0, 1000.0), 1.0));
+        assert!(fuzzy_eq(fast_fmodf(1000001.0, 10000.0), 1.0));
+        //assert!(fuzzy_eq(fast_fmodf(100000010.0, 10000.0), 10.0));
+    }
 }
