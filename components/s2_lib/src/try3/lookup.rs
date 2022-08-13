@@ -22,6 +22,7 @@ pub fn table_lookup_exclusive(
     let table_value = value * table_length / range;
     let table_value_low = table_value as u32;
     let table_idx1 = table_value_low;
+    // fixme is a comparison to table_length_u32 faster than % here?
     let table_idx2 = (table_idx1 + 1) % table_length_u32;
     let table_idx1 = table_idx1 as usize;
     let table_idx2 = table_idx2 as usize;
