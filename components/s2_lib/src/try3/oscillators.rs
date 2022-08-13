@@ -1,3 +1,9 @@
+// todo:
+//
+// - can remove % ops because phase-accumulating oscs
+//   always call the other oscs with offset 0. can
+//   just remove the offset parameter entirely.
+
 pub mod basic {
     use std::simd::{f32x16, u32x16, SimdPartialOrd, StdFloat};
     use super::super::math::*;
