@@ -62,6 +62,7 @@ pub fn fast_fmodf(a: f32, b: f32) -> f32 {
     if cfg!(feature = "fma") {
         a - (((a / b) as u32 as f32) * b)
     } else {
+        // todo this isn't obviously an optimization with the extra subtraction
         -((a / b) as u32 as f32).mul_add(b, -a)
     }
 }
