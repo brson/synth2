@@ -39,5 +39,5 @@ https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesi
 - cheaper approximate powf, expf
 - faster fmodf? inline fmodf?
 - sleef has simd fmodf
-- simd floor / trunc?
+- simd floor / trunc? just use float as int cast
 - use unsafe float->int casts?

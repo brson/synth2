@@ -54,3 +54,11 @@ pub fn zip3<A, B, C, const N: usize>(a: [A; N], b: [B; N], c: [C; N]) -> [(A, B,
     let a_b_c = a_b_c.map(|((a, b), c)| (a, b, c));
     a_b_c
 }
+
+pub fn fast_fmodf(a: f32, b: f32) -> f32 {
+    todo!()
+}
+
+pub fn fast_fmodf_x16(a: [f32; 16], b: [f32; 16]) -> [f32; 16] {
+    todo!()
+}
