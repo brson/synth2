@@ -67,7 +67,7 @@ pub fn table_lookup_exclusive_x16(
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
-    todo!() // miscompilation
+    todo!(); // rust-lang/rust#100474
     /*
     let sample1 = f32x16::gather_or_default(table, table_idx1);
     let sample2 = f32x16::gather_or_default(table, table_idx2);
@@ -156,8 +156,8 @@ pub fn table_lookup_inclusive_x16(
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
-    todo!() // miscompilation
-/*
+    todo!(); // rust-lang/rust#100474
+    /*
     let sample1 = f32x16::gather_or_default(table, table_idx1);
     let sample2 = f32x16::gather_or_default(table, table_idx2);
 
@@ -253,5 +253,6 @@ mod tests {
         let table = &[0.0, 1.0, 2.0, 3.0];
         let v = table_lookup_exclusive(table, 0.0, 4.0);
         assert_eq!(v, 0.0);
+        todo!()
     }
 }
