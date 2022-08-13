@@ -1,4 +1,4 @@
-use std::simd::{f32x16, u32x16, StdFloat, SimdFloat, SimdPartialOrd};
+use std::simd::{f32x16, u32x16, Simd, StdFloat, SimdFloat, SimdPartialOrd};
 use super::units::{Unipolar, Bipolar};
 use super::math;
 
@@ -67,10 +67,12 @@ pub fn table_lookup_exclusive_x16(
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
-    todo!(); // rust-lang/rust#100474
-    /*
-    let sample1 = f32x16::gather_or_default(table, table_idx1);
-    let sample2 = f32x16::gather_or_default(table, table_idx2);
+
+    // fixme: rust-lang/rust#100474
+    //let sample1 = f32x16::gather_or_default(table, table_idx1);
+    //let sample2 = f32x16::gather_or_default(table, table_idx2);
+    let sample1 = gather_or_default_hack_x16(table, table_idx1);
+    let sample2 = gather_or_default_hack_x16(table, table_idx2);
 
     {
         let y_rise = sample2 - sample1;
@@ -81,7 +83,21 @@ pub fn table_lookup_exclusive_x16(
         let sample = math::line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset);
 
         sample.to_array()
-    }*/
+    }
+}
+
+// fixme: rust-lang/rust#100474
+fn gather_or_default_hack_x16(table: &[f32], table_idx: Simd<usize, 16>) -> f32x16 {
+    let table_idx = table_idx.to_array();
+
+    let mut res = [0.0; 16];
+
+    for i in 0..16 {
+        let v = table.get(table_idx[i]).copied().unwrap_or_default();
+        res[i] = v;
+    }
+
+    f32x16::from_array(res)
 }
 
 /// Linear-interpolated table lookup in range `[0, range]`.
@@ -102,15 +118,14 @@ pub fn table_lookup_inclusive(
     // The only differences between this and the "exclusive" calculation is
     //
     // - discard the final table element in calculations based on length
-    // - don't modulus table_idx2 by the table length
 
-    let table_length = table.len().saturating_sub(1);
+    let table_length = table.len();
     let table_length_u32 = table_length as u32;
-    let table_length = table_length as f32;
+    let table_length = table_length_u32.saturating_sub(1) as f32;
     let table_value = value * table_length / range;
     let table_value_low = table_value as u32;
     let table_idx1 = table_value_low;
-    let table_idx2 = (table_idx1 + 1);
+    let table_idx2 = (table_idx1 + 1) % table_length_u32;
     let table_idx1 = table_idx1 as usize;
     let table_idx2 = table_idx2 as usize;
     let table_value_low = table_value_low as f32;
@@ -143,23 +158,25 @@ pub fn table_lookup_inclusive_x16(
     debug_assert!(value.simd_le(range).all());
     debug_assert!(range.simd_gt(f32x16::splat(0.0)).all());
 
-    let table_length = table.len().saturating_sub(1);
+    let table_length = table.len();
     let table_length_u32 = table_length as u32;
     let table_length_u32 = u32x16::splat(table_length_u32);
-    let table_length = table_length as f32;
+    let table_length = table_length.saturating_sub(1) as f32;
     let table_length = f32x16::splat(table_length);
     let table_value = value * table_length / range;
     let table_value_low = table_value.cast::<u32>();
     let one = u32x16::splat(1);
     let table_idx1 = table_value_low;
-    let table_idx2 = (table_idx1 + one);
+    let table_idx2 = (table_idx1 + one) % table_length_u32;
     let table_idx1 = table_idx1.cast::<usize>();
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
-    todo!(); // rust-lang/rust#100474
-    /*
-    let sample1 = f32x16::gather_or_default(table, table_idx1);
-    let sample2 = f32x16::gather_or_default(table, table_idx2);
+
+    // fixme: rust-lang/rust#100474
+    //let sample1 = f32x16::gather_or_default(table, table_idx1);
+    //let sample2 = f32x16::gather_or_default(table, table_idx2);
+    let sample1 = gather_or_default_hack_x16(table, table_idx1);
+    let sample2 = gather_or_default_hack_x16(table, table_idx2);
 
     {
         let y_rise = sample2 - sample1;
@@ -170,7 +187,7 @@ pub fn table_lookup_inclusive_x16(
         let sample = math::line_y_value_with_y_offset_x16(y_rise, x_run, x_value, y_offset);
 
         sample.to_array()
-    }*/
+    }
 }
 
 /// Linear-interpolated table lookup in range `[0, range)` with modulus.
@@ -247,12 +264,67 @@ pub fn bipolar_table_lookup_x16<const N: u16>(
 
 mod tests {
     use super::*;
+    use std::simd::f32x16;
 
     #[test]
     fn test_table_lookup() {
         let table = &[0.0, 1.0, 2.0, 3.0];
+        let v = table_lookup_exclusive_x16(table, [0.0; 16], [4.0; 16]);
+        assert_eq!(v, [0.0; 16]);
+
+        let table = &[0.0, 1.0, 2.0, 3.0];
+        let v = table_lookup_exclusive_x16(table, [0.5; 16], [4.0; 16]);
+        assert_eq!(v, [0.5; 16]);
+
+        let table = &[0.0, 1.0, 2.0, 3.0];
+        let v = table_lookup_exclusive_x16(table, [3.5; 16], [4.0; 16]);
+        assert_eq!(v, [1.5; 16]);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive_x16(table, [0.0; 16], [4.0; 16]);
+        assert_eq!(v, [0.0; 16]);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive_x16(table, [0.5; 16], [4.0; 16]);
+        assert_eq!(v, [0.5; 16]);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive_x16(table, [3.0; 16], [4.0; 16]);
+        assert_eq!(v, [3.0; 16]);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive_x16(table, [4.0; 16], [4.0; 16]);
+        assert_eq!(v, [4.0; 16]);
+    }
+
+    #[test]
+    fn test_table_lookup_x16() {
+        let table = &[0.0, 1.0, 2.0, 3.0];
         let v = table_lookup_exclusive(table, 0.0, 4.0);
         assert_eq!(v, 0.0);
-        todo!()
+
+        let table = &[0.0, 1.0, 2.0, 3.0];
+        let v = table_lookup_exclusive(table, 0.5, 4.0);
+        assert_eq!(v, 0.5);
+
+        let table = &[0.0, 1.0, 2.0, 3.0];
+        let v = table_lookup_exclusive(table, 3.5, 4.0);
+        assert_eq!(v, 1.5);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive(table, 0.0, 4.0);
+        assert_eq!(v, 0.0);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive(table, 0.5, 4.0);
+        assert_eq!(v, 0.5);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive(table, 3.0, 4.0);
+        assert_eq!(v, 3.0);
+
+        let table = &[0.0, 1.0, 2.0, 3.0, 4.0];
+        let v = table_lookup_inclusive(table, 4.0, 4.0);
+        assert_eq!(v, 4.0);
     }
 }
