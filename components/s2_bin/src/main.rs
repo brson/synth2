@@ -138,6 +138,8 @@ fn run_synth(
             match midi_rx.try_recv() {
                 Ok(midi_msg) => {
                     apply_middi(&midi_msg, synth);
+                    // fixme: send midi buffer back to avoid deallocating it
+                    // on the synth thread
                 }
                 Err(_) => {
                     break;
