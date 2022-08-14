@@ -1,3 +1,4 @@
+use std::simd::f32x16;
 use super::units::{Unipolar, Hz, Ms, Bipolar, SampleRateKhz};
 use super::static_config as sc;
 use super::state as st;
@@ -146,27 +147,70 @@ impl Synth {
     pub fn sample(&mut self,
                   buffer: &mut [f32],
                   sample_rate: SampleRateKhz) {
-        for index in 0..buffer.len() {
-            let mut sample_accum = 0.0;
+
+        let mut chunks = buffer.array_chunks_mut::<16>();
+
+        while let Some(chunk) = chunks.next() {
+            let mut accum = f32x16::splat(0.0);
             for voice in &mut self.voices {
                 if let Some(current_frame_offset) = voice.current_frame_offset {
                     let pitch = note_to_pitch(voice.note);
                     let offset = current_frame_offset.0;
                     let release_offset = voice.release_frame_offset.map(|v| v.0);
-                    let sample = process::process_layer(
+
+                    let mut buf = [0.0; 16];
+                    let sample = process::process_layer_buf_sisd(
                         &self.config,
                         &mut voice.state,
                         pitch,
                         sample_rate,
                         offset,
                         release_offset,
+                        &mut buf,
                     );
-                    sample_accum += sample;
-                    voice.current_frame_offset = Some(FrameOffset(current_frame_offset.0.saturating_add(1)));
+
+                    let buf = f32x16::from_array(buf);
+                    accum += buf;
+
+                    voice.current_frame_offset = Some(FrameOffset(current_frame_offset.0.saturating_add(16)));
                 }
             }
 
-            buffer[index] = sample_accum;
+            *chunk = accum.to_array();
+        }
+
+        let mut remainder = chunks.into_remainder();
+        debug_assert!(remainder.len() < 16);
+
+        {
+            let needed_frames = remainder.len();
+            let mut accum = f32x16::splat(0.0);
+            for voice in &mut self.voices {
+                if let Some(current_frame_offset) = voice.current_frame_offset {
+                    let pitch = note_to_pitch(voice.note);
+                    let offset = current_frame_offset.0;
+                    let release_offset = voice.release_frame_offset.map(|v| v.0);
+
+                    let mut buf = [0.0; 16];
+                    let sample = process::process_layer_buf_sisd(
+                        &self.config,
+                        &mut voice.state,
+                        pitch,
+                        sample_rate,
+                        offset,
+                        release_offset,
+                        &mut buf[..needed_frames],
+                    );
+
+                    let buf = f32x16::from_array(buf);
+                    accum += buf;
+
+                    voice.current_frame_offset = Some(FrameOffset(current_frame_offset.0.saturating_add(needed_frames as u32)));
+                }
+            }
+
+            let accum = accum.to_array();
+            remainder.copy_from_slice(&accum[..needed_frames]);
         }
     }
 }
