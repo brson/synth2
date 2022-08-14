@@ -130,25 +130,6 @@ fn run_synth(
         return;
     };
 
-    fn apply_all_midi_messages(
-        midi_rx: &mpsc::Receiver<Vec<u8>>,
-        synth: &mut synth::Synth,
-    ) {
-        loop {
-            match midi_rx.try_recv() {
-                Ok(midi_msg) => {
-                    apply_midi(&midi_msg, synth);
-                    // fixme: send midi buffer back to avoid deallocating it
-                    // on the synth thread.
-                    // or just do the midi parsing in the midi thread.
-                }
-                Err(_) => {
-                    break;
-                }
-            }
-        }
-    }
-
     let sample_rate = SampleRateKhz(audio_player_channels.sample_rate);
     let mut synth = synth::Synth::new();
 
@@ -185,6 +166,25 @@ fn run_synth(
     drop(audio_player_channels);
 
     log::info!("synth thread exiting");
+}
+
+fn apply_all_midi_messages(
+    midi_rx: &mpsc::Receiver<Vec<u8>>,
+    synth: &mut synth::Synth,
+) {
+    loop {
+        match midi_rx.try_recv() {
+            Ok(midi_msg) => {
+                apply_midi(&midi_msg, synth);
+                // fixme: send midi buffer back to avoid deallocating it
+                // on the synth thread.
+                // or just do the midi parsing in the midi thread.
+            }
+            Err(_) => {
+                break;
+            }
+        }
+    }
 }
 
 fn apply_midi(midi_msg: &[u8], synth: &mut synth::Synth) {
