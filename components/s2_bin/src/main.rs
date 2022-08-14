@@ -139,7 +139,8 @@ fn run_synth(
                 Ok(midi_msg) => {
                     apply_midi(&midi_msg, synth);
                     // fixme: send midi buffer back to avoid deallocating it
-                    // on the synth thread
+                    // on the synth thread.
+                    // or just do the midi parsing in the midi thread.
                 }
                 Err(_) => {
                     break;
