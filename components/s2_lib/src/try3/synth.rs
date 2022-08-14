@@ -1,6 +1,7 @@
-use s2_lib::try3::units::{Unipolar, Hz, Ms, Bipolar, SampleRateKhz};
-use s2_lib::try3::static_config as sc;
-use s2_lib::try3::state as st;
+use super::units::{Unipolar, Hz, Ms, Bipolar, SampleRateKhz};
+use super::static_config as sc;
+use super::state as st;
+use super::process;
 
 const NUM_VOICES: usize = 8;
 
@@ -152,7 +153,7 @@ impl Synth {
                     let pitch = note_to_pitch(voice.note);
                     let offset = current_frame_offset.0;
                     let release_offset = voice.release_frame_offset.map(|v| v.0);
-                    let sample = s2_lib::try3::process::process_layer(
+                    let sample = process::process_layer(
                         &self.config,
                         &mut voice.state,
                         pitch,

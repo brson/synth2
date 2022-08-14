@@ -1,3 +1,5 @@
+pub mod synth;
+
 pub mod process;
 
 pub mod static_config;

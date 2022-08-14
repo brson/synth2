@@ -4,12 +4,13 @@
 mod plotting;
 //mod threads;
 mod audio_player;
-mod synth;
 mod tables;
 
 use anyhow::{Result, anyhow};
 use clap::Parser;
 use std::sync::mpsc;
+
+use s2_lib::try3::synth;
 
 #[derive(Parser)]
 enum Command {
