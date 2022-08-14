@@ -140,6 +140,9 @@ where S: Sample
 
     let total_frames_to_write = buffer.len() / output_channels;
 
+    // todo we can probably cut BUFFER_FRAMES in half
+    // and make this total_frames_to_write > BUFFER_FRAMES * 2,
+    // make two attempts to recv.
     if total_frames_to_write > BUFFER_FRAMES {
         log::error!("audio device requesting {} frames, but buffer is only {} frames", total_frames_to_write, BUFFER_FRAMES);
     }
