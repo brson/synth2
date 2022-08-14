@@ -118,9 +118,10 @@ fn do_midi() -> Result<()> {
 }
 
 fn parse_midi_message(midi_msg: &[u8]) -> Option<muddy2::message::Message> {
-    log::debug!("midi msg bytes: {:?}", midi_msg);
+    log::trace!("midi msg bytes: {:?}", midi_msg);
 
     use muddy2::parser::{Parser, MessageParseOutcome, MessageParseOutcomeStatus};
+    use muddy2::message;
 
     let mut parser = Parser::new();
     let parse = parser.parse(&midi_msg);
@@ -130,7 +131,21 @@ fn parse_midi_message(midi_msg: &[u8]) -> Option<muddy2::message::Message> {
             if parse.bytes_consumed as usize != midi_msg.len() {
                 log::error!("did not consume entire midi message. len = {}, consumed = {}", midi_msg.len(), parse.bytes_consumed);
             }
-            log::debug!("midi msg: {:#?}", parse.status);
+            match parse.status {
+                MessageParseOutcomeStatus::Message(
+                    message::Message::System(
+                        message::SystemMessage::SystemRealTime(
+                            message::SystemRealTimeMessage::TimingClock
+                        )
+                    )
+                ) => {
+                    // these happen a lot
+                    log::trace!("midi msg: {:#?}", parse.status);
+                }
+                _ => {
+                    log::debug!("midi msg: {:#?}", parse.status);
+                }
+            }
             match parse.status {
                 MessageParseOutcomeStatus::Message(msg) => Some(msg),
                 _ => None,
@@ -207,18 +222,16 @@ fn apply_middi(midi_msg: &[u8], synth: &mut synth::Synth) {
     match midi_msg {
         Some(Message::Channel(ch_msg)) => {
             match ch_msg.message {
-                ChannelMessageType::ChannelVoice(
-                    ChannelVoiceMessage::NoteOn(note_on)
-                ) => {
-                    let note = synth::Note(u8::from(note_on.note_number.0));
-                    let velocity = synth::Velocity(Unipolar(f32::from(u8::from(note_on.velocity.0)) / 127.0));
-                    synth.note_on(note, velocity);
-                }
-                ChannelMessageType::ChannelVoice(
-                    ChannelVoiceMessage::NoteOff(note_off)
-                ) => {
-                    let note = synth::Note(u8::from(note_off.note_number.0));
-                    synth.note_off(note);
+                ChannelMessageType::ChannelVoice(cvm) => {
+                    if let Some((note_number, velocity)) = cvm.should_note_on() {
+                        let note = synth::Note(u8::from(note_number.0));
+                        let velocity = synth::Velocity(Unipolar(f32::from(u8::from(velocity.0)) / 127.0));
+                        synth.note_on(note, velocity);
+                    } else if let Some((note_number, velocity)) = cvm.should_note_off() {
+                        let note = synth::Note(u8::from(note_number.0));
+                        let _velocity = synth::Velocity(Unipolar(f32::from(u8::from(velocity.0)) / 127.0));
+                        synth.note_off(note);
+                    }
                 }
                 _ => { }
             }
