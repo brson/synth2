@@ -137,7 +137,7 @@ fn run_synth(
         loop {
             match midi_rx.try_recv() {
                 Ok(midi_msg) => {
-                    apply_middi(&midi_msg, synth);
+                    apply_midi(&midi_msg, synth);
                     // fixme: send midi buffer back to avoid deallocating it
                     // on the synth thread
                 }
@@ -186,7 +186,7 @@ fn run_synth(
     log::info!("synth thread exiting");
 }
 
-fn apply_middi(midi_msg: &[u8], synth: &mut synth::Synth) {
+fn apply_midi(midi_msg: &[u8], synth: &mut synth::Synth) {
     use muddy2::message::{Message, ChannelMessage, ChannelMessageType, ChannelVoiceMessage};
     use s2_lib::try3::units::Unipolar;
 
