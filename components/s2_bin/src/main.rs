@@ -1,4 +1,5 @@
 #![feature(let_else)]
+#![feature(array_chunks)]
 #![allow(unused)]
 
 mod plotting;
@@ -175,24 +176,38 @@ fn run_synth(
         return;
     };
 
+    fn apply_all_midi_messages(
+        midi_rx: &mpsc::Receiver<Vec<u8>>,
+        synth: &mut synth::Synth,
+    ) {
+        loop {
+            match midi_rx.try_recv() {
+                Ok(midi_msg) => {
+                    apply_middi(&midi_msg, synth);
+                }
+                Err(_) => {
+                    break;
+                }
+            }
+        }
+    }
+
     let sample_rate = SampleRateKhz(audio_player_channels.sample_rate);
     let mut synth = synth::Synth::new();
 
     loop {
         match audio_player_channels.buf_empty_rx.recv() {
             Ok(mut buffer) => {
-                loop {
-                    match midi_rx.try_recv() {
-                        Ok(midi_msg) => {
-                            apply_middi(&midi_msg, &mut synth);
-                        }
-                        Err(_) => {
-                            break;
-                        }
-                    }
+                let mut chunks = buffer.as_slice_mut().array_chunks_mut::<16>();
+
+                while let Some(chunk) = chunks.next() {
+                    apply_all_midi_messages(&midi_rx, &mut synth);
+                    synth.sample(chunk, sample_rate);
                 }
 
-                synth.sample(buffer.as_slice_mut(), sample_rate);
+                let mut remainder = chunks.into_remainder();
+                apply_all_midi_messages(&midi_rx, &mut synth);
+                synth.sample(remainder, sample_rate);
 
                 match audio_player_channels.buf_filled_tx.try_send(buffer) {
                     Ok(_) => { },
