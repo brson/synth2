@@ -182,7 +182,7 @@ impl Synth {
         let mut remainder = chunks.into_remainder();
         debug_assert!(remainder.len() < 16);
 
-        {
+        if remainder.len() > 0 {
             let needed_frames = remainder.len();
             let mut accum = f32x16::splat(0.0);
             for voice in &mut self.voices {
