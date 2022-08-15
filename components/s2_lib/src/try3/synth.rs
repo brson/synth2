@@ -200,6 +200,7 @@ impl Synth {
 
 }
 
+// todo lookup table
 fn note_to_pitch(note: Note) -> Hz {
     let note = note.0 as f32;
     let freq = 440.0 * 2_f32.powf((note - 69.0) / 12.0);
