@@ -243,7 +243,7 @@ fn apply_fast_fade(
         return;
     };
 
-    const FAST_FADE_TIME_MS: f32 = 5.0;
+    const FAST_FADE_TIME_MS: f32 = 10.0;
 
     let adsr = sc::Adsr {
         attack: Ms(0.0),
