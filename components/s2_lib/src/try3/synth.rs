@@ -34,7 +34,7 @@ impl Voice {
     ///
     /// There may be multiple voices for a single note making sound, but only one active.
     fn is_active(&self) -> bool {
-        self.current_frame_offset.is_some()
+        self.current_frame_offset.is_some() && self.release_frame_offset.is_none()
     }
 }
 
