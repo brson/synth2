@@ -177,7 +177,7 @@ impl Synth {
                 let release_offset = voice.release_frame_offset.map(|v| v.0);
 
                 let mut buf = [0.0; 16];
-                process::process_layer_buf_sisd(
+                process::process_layer_buf_simd(
                     &self.config,
                     &mut voice.state,
                     pitch,
