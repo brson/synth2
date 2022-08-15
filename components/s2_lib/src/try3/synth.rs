@@ -210,6 +210,8 @@ impl Synth {
                     &mut buf[..needed_frames],
                 );
 
+                apply_fast_fade(&mut buf, sample_rate, current_frame_offset, voice.fast_fade_frame_offset);
+
                 let buf = f32x16::from_array(buf);
                 accum += buf;
 
@@ -227,4 +229,37 @@ fn note_to_pitch(note: Note) -> Hz {
     let note = note.0 as f32;
     let freq = 440.0 * 2_f32.powf((note - 69.0) / 12.0);
     Hz(freq)
+}
+
+// todo: simd
+// todo: replace adsr envelope with simple release envelope
+fn apply_fast_fade(
+    buf: &mut [f32],
+    sample_rate: SampleRateKhz,
+    current_frame_offset: FrameOffset,
+    fast_fade_frame_offset: Option<FrameOffset>,
+) {
+    let Some(fast_fade_frame_offset) = fast_fade_frame_offset else {
+        return;
+    };
+
+    const FAST_FADE_TIME_MS: f32 = 5.0;
+
+    let adsr = sc::Adsr {
+        attack: Ms(0.0),
+        decay: Ms(0.0),
+        sustain: Unipolar(1.0),
+        release: Ms(FAST_FADE_TIME_MS),
+    };
+
+    for (offset, frame) in buf.iter_mut().enumerate() {
+        let offset = current_frame_offset.0.saturating_add(offset as u32);
+        let gain = process::sample_envelope(
+            adsr,
+            sample_rate,
+            offset,
+            Some(0),
+        );
+        *frame *= gain.0;
+    }
 }

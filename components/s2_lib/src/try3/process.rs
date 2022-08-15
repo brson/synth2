@@ -161,7 +161,7 @@ fn prepare_frame_x16(
     }
 }
 
-fn sample_envelope(
+pub fn sample_envelope(
     adsr_config: sc::Adsr,
     sample_rate: SampleRateKhz,
     offset: u32,
@@ -176,7 +176,7 @@ fn sample_envelope(
     adsr.sample(offset, release_offset)
 }
 
-fn sample_envelope_x16(
+pub fn sample_envelope_x16(
     adsr_config: sc::Adsr,
     sample_rate: SampleRateKhz,
     offset: u32,
