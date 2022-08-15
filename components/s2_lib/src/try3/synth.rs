@@ -24,9 +24,25 @@ pub struct FrameOffset(pub u32);
 pub struct Voice {
     note: Note,
     velocity: Velocity,
+    // todo: this shouldn't need to be an Option since as of now once it is some it is always some.
+    // either:
+    // - run all voices and default the current_frame_offset to a large number, the release_frame_offset to 0, and the fast_fade_frame_offset_to 0.
+    // - come up with a way to turn voices off so it is more useful for this to be option
     current_frame_offset: Option<FrameOffset>,
     release_frame_offset: Option<FrameOffset>,
+    /// Used to quickly fade out a voice when another voices is played with the
+    /// same note in polyphonic mode.
+    fast_fade_frame_offset: Option<FrameOffset>,
     state: st::Layer,
+}
+
+impl Voice {
+    /// The 'active' voice for a note is the one that is currently being played (no note-off has been recieved).
+    ///
+    /// There may be multiple voices for a single note making sound, but only one active.
+    fn is_active(&self) -> bool {
+        self.current_frame_offset.is_some() && self.fast_fade_frame_offset.is_none()
+    }
 }
 
 impl Default for Voice {
@@ -36,6 +52,7 @@ impl Default for Voice {
             velocity: Velocity(Unipolar(0.0)),
             current_frame_offset: None,
             release_frame_offset: None,
+            fast_fade_frame_offset: None,
             state: st::Layer::default(),
         }
     }
@@ -50,18 +67,20 @@ impl Synth {
     }
 
     pub fn note_on(&mut self, note: Note, velocity: Velocity) {
-        let voice = self.start_voice(note);
+        self.fade_existing_voices(note);
+        let voice = self.next_voice(note);
         *voice = Voice {
             note,
             velocity,
             current_frame_offset: Some(FrameOffset(0)),
             release_frame_offset: None,
+            fast_fade_frame_offset: None,
             state: st::Layer::default(),
         };
     }
 
     pub fn note_off(&mut self, note: Note) {
-        if let Some(voice) = self.find_voice(note) {
+        if let Some(voice) = self.find_active_voice(note) {
             if voice.release_frame_offset.is_none() {
                 voice.release_frame_offset = voice.current_frame_offset;
             } else {
@@ -70,32 +89,26 @@ impl Synth {
         }
     }
 
-    fn start_voice(&mut self, note: Note) -> &mut Voice {
-        if let Some(index) = self.find_voice_index(note) {
-            log::debug!("using existing voice index {} for note {}", index, note.0);
-            &mut self.voices[index]
-        } else {
-            self.add_voice(note)
-        }
-    }
-
-    fn find_voice_index(&self, note: Note) -> Option<usize> {
+    fn find_active_voice_index(&self, note: Note) -> Option<usize> {
         let mut found = None;
         for (index, voice) in self.voices.iter().enumerate() {
-            if voice.note == note {
+            if voice.note == note && voice.is_active() {
                 found = Some(index);
             }
         }
         found
     }
 
-    fn find_voice(&mut self, note: Note) -> Option<&mut Voice> {
-        self.find_voice_index(note).map(|index| {
+    fn find_active_voice(&mut self, note: Note) -> Option<&mut Voice> {
+        self.find_active_voice_index(note).map(|index| {
             &mut self.voices[index]
         })
     }
 
-    fn add_voice(&mut self, note: Note) -> &mut Voice {
+    /// Returns the preferred voice for the next note, without modifying it.
+    ///
+    /// Just picks the oldest voice.
+    fn next_voice(&mut self, note: Note) -> &mut Voice {
         let mut oldest: Option<&mut Voice> = None;
         let mut oldest_index = 0;
         for (index, voice) in self.voices.iter_mut().enumerate() {
@@ -114,6 +127,19 @@ impl Synth {
         }
         log::debug!("using new voice index {} for note {}", oldest_index, note.0);
         oldest.unwrap()
+    }
+
+    fn fade_existing_voices(&mut self, note: Note) {
+        for voice in &mut self.voices {
+            if voice.note == note {
+                match (voice.current_frame_offset, voice.fast_fade_frame_offset) {
+                    (Some(current_frame_offset), None) => {
+                        voice.fast_fade_frame_offset = Some(current_frame_offset);
+                    }
+                    _ => { }
+                }
+            }
+        }
     }
 }
 
