@@ -32,6 +32,8 @@ pub struct Voice {
     release_frame_offset: Option<FrameOffset>,
     /// Used to quickly fade out a voice when another voices is played with the
     /// same note in polyphonic mode.
+    ///
+    /// todo: figure out how other synths handle this.
     fast_fade_frame_offset: Option<FrameOffset>,
     state: st::Layer,
 }
@@ -149,13 +151,13 @@ impl Synth {
         sc::Layer {
             osc: sc::Oscillator::Saw,
             lpf: sc::LowPassFilter {
-                freq: Hz(100.0),
+                freq: Hz(400.0),
             },
             amp_env: sc::Adsr {
-                attack: Ms(200.0),
-                decay: Ms(200.0),
+                attack: Ms(1000.0),
+                decay: Ms(1000.0),
                 sustain: Unipolar(0.5),
-                release: Ms(600.0)
+                release: Ms(1000.0)
             },
             mod_env: sc::Adsr {
                 attack: Ms(800.0),
@@ -243,7 +245,7 @@ fn apply_fast_fade(
         return;
     };
 
-    const FAST_FADE_TIME_MS: f32 = 10.0;
+    const FAST_FADE_TIME_MS: f32 = 20.0;
 
     let adsr = sc::Adsr {
         attack: Ms(0.0),
@@ -258,7 +260,7 @@ fn apply_fast_fade(
             adsr,
             sample_rate,
             offset,
-            Some(0),
+            Some(fast_fade_frame_offset.0),
         );
         *frame *= gain.0;
     }
