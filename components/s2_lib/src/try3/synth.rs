@@ -126,7 +126,7 @@ impl Synth {
         sc::Layer {
             osc: sc::Oscillator::Saw,
             lpf: sc::LowPassFilter {
-                freq: Hz(100.0),
+                freq: Hz(200.0),
             },
             amp_env: sc::Adsr {
                 attack: Ms(100.0),
@@ -136,7 +136,7 @@ impl Synth {
             },
             mod_env: sc::Adsr {
                 attack: Ms(0.0),
-                decay: Ms(400.0),
+                decay: Ms(200.0),
                 sustain: Unipolar(0.0),
                 release: Ms(0.0)
             },
