@@ -24,17 +24,8 @@ pub struct FrameOffset(pub u32);
 pub struct Voice {
     note: Note,
     velocity: Velocity,
-    // todo: this shouldn't need to be an Option since as of now once it is some it is always some.
-    // either:
-    // - run all voices and default the current_frame_offset to a large number, the release_frame_offset to 0, and the fast_fade_frame_offset_to 0.
-    // - come up with a way to turn voices off so it is more useful for this to be option
     current_frame_offset: Option<FrameOffset>,
     release_frame_offset: Option<FrameOffset>,
-    /// Used to quickly fade out a voice when another voices is played with the
-    /// same note in polyphonic mode.
-    ///
-    /// todo: figure out how other synths handle this.
-    fast_fade_frame_offset: Option<FrameOffset>,
     state: st::Layer,
 }
 
@@ -43,7 +34,7 @@ impl Voice {
     ///
     /// There may be multiple voices for a single note making sound, but only one active.
     fn is_active(&self) -> bool {
-        self.current_frame_offset.is_some() && self.fast_fade_frame_offset.is_none()
+        self.current_frame_offset.is_some()
     }
 }
 
@@ -54,7 +45,6 @@ impl Default for Voice {
             velocity: Velocity(Unipolar(0.0)),
             current_frame_offset: None,
             release_frame_offset: None,
-            fast_fade_frame_offset: None,
             state: st::Layer::default(),
         }
     }
@@ -69,14 +59,12 @@ impl Synth {
     }
 
     pub fn note_on(&mut self, note: Note, velocity: Velocity) {
-        self.fade_existing_voices(note);
         let voice = self.next_voice(note);
         *voice = Voice {
             note,
             velocity,
             current_frame_offset: Some(FrameOffset(0)),
             release_frame_offset: None,
-            fast_fade_frame_offset: None,
             state: st::Layer::default(),
         };
     }
@@ -129,19 +117,6 @@ impl Synth {
         }
         log::debug!("using new voice index {} for note {}", oldest_index, note.0);
         oldest.unwrap()
-    }
-
-    fn fade_existing_voices(&mut self, note: Note) {
-        for voice in &mut self.voices {
-            if voice.note == note {
-                match (voice.current_frame_offset, voice.fast_fade_frame_offset) {
-                    (Some(current_frame_offset), None) => {
-                        voice.fast_fade_frame_offset = Some(current_frame_offset);
-                    }
-                    _ => { }
-                }
-            }
-        }
     }
 }
 
@@ -212,8 +187,6 @@ impl Synth {
                     &mut buf[..needed_frames],
                 );
 
-                apply_fast_fade(&mut buf, sample_rate, current_frame_offset, voice.fast_fade_frame_offset);
-
                 let buf = f32x16::from_array(buf);
                 accum += buf;
 
@@ -231,37 +204,4 @@ fn note_to_pitch(note: Note) -> Hz {
     let note = note.0 as f32;
     let freq = 440.0 * 2_f32.powf((note - 69.0) / 12.0);
     Hz(freq)
-}
-
-// todo: simd
-// todo: replace adsr envelope with simple release envelope
-fn apply_fast_fade(
-    buf: &mut [f32],
-    sample_rate: SampleRateKhz,
-    current_frame_offset: FrameOffset,
-    fast_fade_frame_offset: Option<FrameOffset>,
-) {
-    let Some(fast_fade_frame_offset) = fast_fade_frame_offset else {
-        return;
-    };
-
-    const FAST_FADE_TIME_MS: f32 = 20.0;
-
-    let adsr = sc::Adsr {
-        attack: Ms(0.0),
-        decay: Ms(0.0),
-        sustain: Unipolar(1.0),
-        release: Ms(FAST_FADE_TIME_MS),
-    };
-
-    for (offset, frame) in buf.iter_mut().enumerate() {
-        let offset = current_frame_offset.0.saturating_add(offset as u32);
-        let gain = process::sample_envelope(
-            adsr,
-            sample_rate,
-            offset,
-            Some(fast_fade_frame_offset.0),
-        );
-        *frame *= gain.0;
-    }
 }
