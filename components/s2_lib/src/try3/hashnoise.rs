@@ -20,6 +20,7 @@ impl HashNoise {
         let value = value as f32;
         let u16_max = u16::max_value() as f32;
         // todo: lift this * 2.0 out to an integer op
+        // todo: fma
         let sample = value / u16_max * 2.0 - 1.0;
         Bipolar(sample)
     }
