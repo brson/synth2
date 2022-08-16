@@ -9,6 +9,7 @@ mod envelopes;
 mod filters;
 mod math;
 mod oscillators;
+mod hashnoise;
 
 pub mod state;
 
