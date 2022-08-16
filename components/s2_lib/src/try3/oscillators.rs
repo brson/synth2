@@ -374,6 +374,31 @@ pub mod phase_accumulating {
     use super::super::units::*;
     use super::phased;
 
+    fn accum_phase(phase: Unipolar<1>, period: SampleOffset) -> Unipolar<1> {
+        let phase_delta = 1.0 / period.0;
+        let new_phase = (phase.0 + phase_delta) % 1.0;
+        Unipolar(new_phase)
+    }
+
+    /// Accumalate the phase for 16 consecutive frames, plus the next frame.
+    ///
+    /// This operates slightly differently than `accum_phase` since the phases
+    /// for all lanes in the phase-accumulating oscillators need to be
+    /// calculated prior to calling the stateless simd oscillators underlying
+    /// them.
+    //
+    // TODO: the modulus from accum_phase can possibly be lifted out to simd
+    fn accum_phase_x16(phase: Unipolar<1>, period: [SampleOffset; 16]) -> ([Unipolar<1>; 16], Unipolar<1>) {
+        let mut phase_accum = phase;
+        let mut phase = [phase; 16];
+        for i in 1..16 {
+            phase_accum = accum_phase(phase_accum, period[i - 1]);
+            phase[i] = phase_accum;
+        }
+        phase_accum = accum_phase(phase_accum, period[15]);
+        (phase, phase_accum)
+    }
+
     #[derive(Default)]
     #[derive(Copy, Clone)]
     pub struct OscillatorState {
@@ -564,28 +589,37 @@ pub mod phase_accumulating {
         }
     }
 
-    fn accum_phase(phase: Unipolar<1>, period: SampleOffset) -> Unipolar<1> {
-        let phase_delta = 1.0 / period.0;
-        let new_phase = (phase.0 + phase_delta) % 1.0;
-        Unipolar(new_phase)
+    pub struct SineOscillator<'this> {
+        pub state: &'this mut OscillatorState,
+        pub period: SampleOffset,
+        pub phase: Unipolar<1>,
     }
 
-    /// Accumalate the phase for 16 consecutive frames, plus the next frame.
-    ///
-    /// This operates slightly differently than `accum_phase` since the phases
-    /// for all lanes in the phase-accumulating oscillators need to be
-    /// calculated prior to calling the stateless simd oscillators underlying
-    /// them.
-    //
-    // TODO: the modulus from accum_phase can possibly be lifted out to simd
-    fn accum_phase_x16(phase: Unipolar<1>, period: [SampleOffset; 16]) -> ([Unipolar<1>; 16], Unipolar<1>) {
-        let mut phase_accum = phase;
-        let mut phase = [phase; 16];
-        for i in 1..16 {
-            phase_accum = accum_phase(phase_accum, period[i - 1]);
-            phase[i] = phase_accum;
+    impl<'this> SineOscillator<'this> {
+        pub fn sample(&mut self) -> Bipolar<1> {
+            TableOscillator {
+                table: &super::super::tables::SIN_TABLE,
+                state: self.state,
+                period: self.period,
+                phase: self.phase,
+            }.sample()
         }
-        phase_accum = accum_phase(phase_accum, period[15]);
-        (phase, phase_accum)
+    }
+
+    pub struct SineOscillatorX16<'this> {
+        pub state: &'this mut OscillatorState,
+        pub period: [SampleOffset; 16],
+        pub phase: Unipolar<1>,
+    }
+
+    impl<'this> SineOscillatorX16<'this> {
+        pub fn sample(&mut self) -> [Bipolar<1>; 16] {
+            TableOscillatorX16 {
+                table: &super::super::tables::SIN_TABLE,
+                state: self.state,
+                period: self.period,
+                phase: self.phase,
+            }.sample()
+        }
     }
 }
