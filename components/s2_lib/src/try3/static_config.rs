@@ -3,6 +3,7 @@ use super::units::*;
 #[derive(Copy, Clone)]
 pub struct Layer {
     pub osc: Oscillator,
+    pub noise: Unipolar<1>,
     pub lpf: LowPassFilter,
     pub amp_env: Adsr,
     pub mod_env: Adsr,

@@ -1,8 +1,15 @@
+use crate::old::simdtest;
+use std::simd::{Simd, u32x16, f32x16};
+use sleef::Sleef; // pow
+use super::filters::*;
+use super::oscillators::phase_accumulating::*;
+use super::hashnoise::*;
 use super::render_plan as rp;
 use super::state as st;
 use super::static_config as sc;
 use super::units::*;
 use super::math;
+use super::envelopes;
 
 pub fn process_layer_buf_simd(
     static_config: &sc::Layer,
@@ -74,7 +81,7 @@ pub fn process_layer(
     release_offset: Option<u32>,
 ) -> f32 {
     let render_plan = prepare_frame(static_config, pitch, sample_rate, offset, release_offset);
-    let sample = sample_voice(&render_plan, state);
+    let sample = sample_voice(&render_plan, state, offset);
     sample
 }
 
@@ -87,7 +94,7 @@ pub fn process_layer_x16(
     release_offset: Option<u32>,
 ) -> [f32; 16] {
     let render_plan = prepare_frame_x16(static_config, pitch, sample_rate, offset, release_offset);
-    let sample = sample_voice_x16(render_plan, state);
+    let sample = sample_voice_x16(render_plan, state, offset);
     sample
 }
 
@@ -117,6 +124,7 @@ fn prepare_frame(
                 sc::Oscillator::Sine => rp::OscillatorKind::Sine,
             },
         },
+        noise: layer.noise,
         lpf: rp::LowPassFilter {
             freq: modulated_lpf_freq,
             sample_rate,
@@ -142,7 +150,6 @@ fn prepare_frame_x16(
         layer.modulations.mod_env_to_lpf_freq,
     );
 
-    use super::units::HzX16;
     let modulated_osc_periods = modulated_osc_freqs.as_samples(sample_rate);
 
     rp::LayerX {
@@ -155,6 +162,7 @@ fn prepare_frame_x16(
             },
             periods: modulated_osc_periods,
         },
+        noise: layer.noise,
         lpf: rp::LowPassFilterX {
             sample_rate,
             freqs: modulated_lpf_freqs,
@@ -169,7 +177,7 @@ pub fn sample_envelope(
     offset: u32,
     release_offset: Option<u32>,
 ) -> Unipolar<1> {
-    let adsr = super::envelopes::Adsr {
+    let adsr = envelopes::Adsr {
         attack: adsr_config.attack.as_samples(sample_rate),
         decay: adsr_config.decay.as_samples(sample_rate),
         sustain: adsr_config.sustain,
@@ -184,9 +192,6 @@ pub fn sample_envelope_x16(
     offset: u32,
     release_offset: Option<u32>,
 ) -> [Unipolar<1>; 16] {
-    use crate::old::simdtest;
-    use std::simd::{Simd, u32x16, f32x16};
-
     let adsr = simdtest::AdsrX16 {
         attack: f32x16::splat(adsr_config.attack.as_samples(sample_rate).0),
         decay: f32x16::splat(adsr_config.decay.as_samples(sample_rate).0),
@@ -194,16 +199,21 @@ pub fn sample_envelope_x16(
         release: f32x16::splat(adsr_config.release.as_samples(sample_rate).0),
     };
 
-    let indexes = math::indexes_u32::<16>();
-    let indexes = u32x16::from_array(indexes);
-    let offsets = u32x16::splat(offset);
-    let offsets = offsets + indexes;
+    let offsets = u32x16::from_array(offsets_x16(offset));
 
     let samples = adsr.sample(offsets, release_offset);
     let samples = samples.to_array();
     let samples = samples.map(|s| Unipolar(s));
 
     samples
+}
+
+fn offsets_x16(offset: u32) -> [u32; 16] {
+    let indexes = math::indexes_u32::<16>();
+    let indexes = u32x16::from_array(indexes);
+    let offsets = u32x16::splat(offset);
+    let offsets = offsets + indexes;
+    offsets.to_array()
 }
 
 fn modulate_freq_unipolar(
@@ -221,10 +231,6 @@ fn modulate_freq_unipolar_x16(
     modulation_sample: [Unipolar<1>; 16],
     modulation_amount: Bipolar<10>,
 ) -> [Hz; 16] {
-    use crate::old::simdtest;
-    use std::simd::{Simd, u32x16, f32x16};
-    use sleef::Sleef; // pow
-
     let freq = f32x16::splat(freq.0);
     let modulation_sample = modulation_sample.map(|s| s.0);
     let modulation_sample = f32x16::from_array(modulation_sample);
@@ -244,10 +250,9 @@ fn modulate_freq_unipolar_x16(
 pub fn sample_voice(
     render_plan: &rp::Layer,
     state: &mut st::Layer,
+    offset: u32,
 ) -> f32 {
-    use super::filters::*;
-    use super::oscillators::phase_accumulating::*;
-    let sample = match render_plan.osc.kind {
+    let osc_sample = match render_plan.osc.kind {
         rp::OscillatorKind::Square => {
             SquareOscillator {
                 state: &mut state.osc,
@@ -277,12 +282,18 @@ pub fn sample_voice(
             }.sample()
         },
     };
+    let noise_sample = HashNoise {
+        seed: state.noise.seed,
+    }.sample(SampleOffset(offset as f32));
+
+    let sample = osc_sample.0 + noise_sample.0;
+
     let mut lpf = LowPassFilter {
         state: &mut state.lpf,
         sample_rate: render_plan.lpf.sample_rate,
         freq: render_plan.lpf.freq,
     };
-    let sample = lpf.process(sample.0);
+    let sample = lpf.process(sample);
     let sample = sample * render_plan.gain.0;
     sample
 }
@@ -290,12 +301,9 @@ pub fn sample_voice(
 pub fn sample_voice_x16(
     render_plan: rp::LayerX<16>,
     state: &mut st::Layer,
+    offset: u32,
 ) -> [f32; 16] {
-    use super::filters::*;
-    use super::oscillators::phase_accumulating::*;
-    use std::simd::{Simd, f32x16};
-
-    let samples = match render_plan.osc.kind {
+    let osc_samples = match render_plan.osc.kind {
         rp::OscillatorKind::Square => {
             SquareOscillatorX16 {
                 state: &mut state.osc,
@@ -326,8 +334,20 @@ pub fn sample_voice_x16(
         },
     };
 
+    let offsets = offsets_x16(offset);
+    let offsets = offsets.map(|o| SampleOffset(o as f32));
+    let noise_samples = HashNoiseX16 {
+        seed: state.noise.seed,
+    }.sample(offsets);
+
+    let osc_samples = osc_samples.map(|s| s.0);
+    let noise_samples = noise_samples.map(|s| s.0);
+    let samples = {
+        f32x16::from_array(osc_samples)
+            + f32x16::from_array(noise_samples)
+    }.to_array();
+
     let sample_rate = render_plan.lpf.sample_rate;
-    let samples = samples.map(|s| s.0);
     let lpf_freqs = render_plan.lpf.freqs;
 
     let samples = samples.zip(lpf_freqs).map(|(sample, lpf_freq)| {

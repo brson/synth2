@@ -3,6 +3,7 @@ use super::units::*;
 #[derive(Copy, Clone)]
 pub struct Layer {
     pub osc: Oscillator,
+    pub noise: Unipolar<1>,
     pub lpf: LowPassFilter,
     pub gain: Unipolar<1>,
 }
@@ -30,6 +31,7 @@ pub struct LowPassFilter {
 #[derive(Copy, Clone)]
 pub struct LayerX<const N: usize> {
     pub osc: OscillatorX<N>,
+    pub noise: Unipolar<1>,
     pub lpf: LowPassFilterX<N>,
     pub gains: [Unipolar<1>; N],
 }
