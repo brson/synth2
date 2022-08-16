@@ -124,7 +124,10 @@ impl Synth {
 
     fn default_config() -> sc::Layer {
         sc::Layer {
-            osc: sc::Oscillator::Saw,
+            osc: sc::Oscillator {
+                kind: sc::OscillatorKind::Saw,
+                gain: Unipolar(1.0),
+            },
             noise: Unipolar(0.0),
             lpf: sc::LowPassFilter {
                 freq: Hz(200.0),

@@ -12,6 +12,7 @@ pub struct Layer {
 pub struct Oscillator {
     pub period: SampleOffset,
     pub kind: OscillatorKind,
+    pub gain: Unipolar<1>,
 }
 
 #[derive(Copy, Clone)]
@@ -40,6 +41,7 @@ pub struct LayerX<const N: usize> {
 pub struct OscillatorX<const N: usize> {
     pub kind: OscillatorKind,
     pub periods: [SampleOffset; N],
+    pub gain: Unipolar<1>,
 }
 
 #[derive(Copy, Clone)]

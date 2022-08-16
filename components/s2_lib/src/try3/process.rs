@@ -117,12 +117,13 @@ fn prepare_frame(
     rp::Layer {
         osc: rp::Oscillator {
             period: modulated_osc_freq.as_samples(sample_rate),
-            kind: match layer.osc {
-                sc::Oscillator::Square => rp::OscillatorKind::Square,
-                sc::Oscillator::Saw => rp::OscillatorKind::Saw,
-                sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
-                sc::Oscillator::Sine => rp::OscillatorKind::Sine,
+            kind: match layer.osc.kind {
+                sc::OscillatorKind::Square => rp::OscillatorKind::Square,
+                sc::OscillatorKind::Saw => rp::OscillatorKind::Saw,
+                sc::OscillatorKind::Triangle => rp::OscillatorKind::Triangle,
+                sc::OscillatorKind::Sine => rp::OscillatorKind::Sine,
             },
+            gain: layer.osc.gain,
         },
         noise: layer.noise,
         lpf: rp::LowPassFilter {
@@ -154,13 +155,14 @@ fn prepare_frame_x16(
 
     rp::LayerX {
         osc: rp::OscillatorX {
-            kind: match layer.osc {
-                sc::Oscillator::Square => rp::OscillatorKind::Square,
-                sc::Oscillator::Saw => rp::OscillatorKind::Saw,
-                sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
-                sc::Oscillator::Sine => rp::OscillatorKind::Sine,
+            kind: match layer.osc.kind {
+                sc::OscillatorKind::Square => rp::OscillatorKind::Square,
+                sc::OscillatorKind::Saw => rp::OscillatorKind::Saw,
+                sc::OscillatorKind::Triangle => rp::OscillatorKind::Triangle,
+                sc::OscillatorKind::Sine => rp::OscillatorKind::Sine,
             },
             periods: modulated_osc_periods,
+            gain: layer.osc.gain,
         },
         noise: layer.noise,
         lpf: rp::LowPassFilterX {
@@ -282,11 +284,14 @@ pub fn sample_voice(
             }.sample()
         },
     };
+    let osc_sample = osc_sample.0 * render_plan.osc.gain.0;
+
     let noise_sample = HashNoise {
         seed: state.noise.seed,
     }.sample(SampleOffset(offset as f32));
+    let noise_sample = noise_sample.0 * render_plan.noise.0;
 
-    let sample = osc_sample.0 + noise_sample.0;
+    let sample = osc_sample + noise_sample;
 
     let mut lpf = LowPassFilter {
         state: &mut state.lpf,
@@ -333,19 +338,24 @@ pub fn sample_voice_x16(
             }.sample()
         },
     };
+    let osc_samples = osc_samples.map(|s| s.0);
+    let osc_samples = {
+        f32x16::from_array(osc_samples)
+            + f32x16::splat(render_plan.osc.gain.0)
+    };
 
     let offsets = offsets_x16(offset);
     let offsets = offsets.map(|o| SampleOffset(o as f32));
     let noise_samples = HashNoiseX16 {
         seed: state.noise.seed,
     }.sample(offsets);
-
-    let osc_samples = osc_samples.map(|s| s.0);
     let noise_samples = noise_samples.map(|s| s.0);
-    let samples = {
-        f32x16::from_array(osc_samples)
-            + f32x16::from_array(noise_samples)
-    }.to_array();
+    let noise_samples = {
+        f32x16::from_array(noise_samples)
+            + f32x16::splat(render_plan.noise.0)
+    };
+
+    let samples = (osc_samples + noise_samples).to_array();
 
     let sample_rate = render_plan.lpf.sample_rate;
     let lpf_freqs = render_plan.lpf.freqs;

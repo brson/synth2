@@ -17,7 +17,13 @@ pub struct Modulations {
 }
 
 #[derive(Copy, Clone)]
-pub enum Oscillator {
+pub struct Oscillator {
+    pub kind: OscillatorKind,
+    pub gain: Unipolar<1>,
+}
+
+#[derive(Copy, Clone)]
+pub enum OscillatorKind {
     Square,
     Saw,
     Triangle,
