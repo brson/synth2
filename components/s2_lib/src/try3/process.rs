@@ -114,6 +114,7 @@ fn prepare_frame(
                 sc::Oscillator::Square => rp::OscillatorKind::Square,
                 sc::Oscillator::Saw => rp::OscillatorKind::Saw,
                 sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
+                sc::Oscillator::Sine => rp::OscillatorKind::Sine,
             },
         },
         lpf: rp::LowPassFilter {
@@ -150,6 +151,7 @@ fn prepare_frame_x16(
                 sc::Oscillator::Square => rp::OscillatorKind::Square,
                 sc::Oscillator::Saw => rp::OscillatorKind::Saw,
                 sc::Oscillator::Triangle => rp::OscillatorKind::Triangle,
+                sc::Oscillator::Sine => rp::OscillatorKind::Sine,
             },
             periods: modulated_osc_periods,
         },
@@ -267,6 +269,13 @@ pub fn sample_voice(
                 phase: Unipolar(0.0),
             }.sample()
         },
+        rp::OscillatorKind::Sine => {
+            SineOscillator {
+                state: &mut state.osc,
+                period: render_plan.osc.period,
+                phase: Unipolar(0.0),
+            }.sample()
+        },
     };
     let mut lpf = LowPassFilter {
         state: &mut state.lpf,
@@ -303,6 +312,13 @@ pub fn sample_voice_x16(
         },
         rp::OscillatorKind::Triangle => {
             TriangleOscillatorX16 {
+                state: &mut state.osc,
+                period: render_plan.osc.periods,
+                phase: Unipolar(0.0)
+            }.sample()
+        },
+        rp::OscillatorKind::Sine => {
+            SineOscillatorX16 {
                 state: &mut state.osc,
                 period: render_plan.osc.periods,
                 phase: Unipolar(0.0)

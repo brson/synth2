@@ -18,6 +18,7 @@ pub enum OscillatorKind {
     Square,
     Saw,
     Triangle,
+    Sine,
 }
 
 #[derive(Copy, Clone)]
