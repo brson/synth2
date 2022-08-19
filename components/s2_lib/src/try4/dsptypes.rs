@@ -1,10 +1,14 @@
-use std::simd::{f32x16, u32x16, StdFloat, SimdFloat, Simd, SimdPartialOrd};
+use std::simd::{f32x16, u32x16, StdFloat, SimdFloat, Simd, SimdPartialOrd, SimdPartialEq};
+use std::simd::{mask32x16, Mask};
 use std::simd::{LaneCount, SupportedLaneCount};
 use std::ops::{Div, Mul, Add, Sub, Rem};
 use std::marker::PhantomData;
 
 #[allow(non_camel_case_types)]
 pub type f32x1 = Simd<f32, 1>;
+
+#[allow(non_camel_case_types)]
+pub type mask32x1 = Mask<i32, 1>;
 
 #[derive(Copy, Clone)]
 #[derive(Debug)]
@@ -37,18 +41,56 @@ impl DspFloat for f32x16 {
     }
 }
 
+pub trait DspMask<DspFloat>: Sized
+{
+    fn select(
+        self,
+        true_values: DspFloat,
+        false_values: DspFloat,
+    ) -> DspFloat;
+}
+
+impl DspMask<f32x1> for mask32x1 {
+    fn select(
+        self,
+        true_values: f32x1,
+        false_values: f32x1,
+    ) -> f32x1 {
+        Mask::select(self, true_values, false_values)
+    }
+}
+
+impl DspMask<f32x16> for mask32x16 {
+    fn select(
+        self,
+        true_values: f32x16,
+        false_values: f32x16,
+    ) -> f32x16 {
+        Mask::select(self, true_values, false_values)
+    }
+}
+
 pub trait DspType: Sized
     + Add<Output = Self>
     + Sub<Output = Self>
     + Mul<Output = Self>
     + Div<Output = Self>
     + Rem<Output = Self>
+    + SimdPartialOrd
+    + SimdPartialEq<Mask = Self::DspMask>
     + StdFloat
     + DspFloat
-{ }
+{
+    type DspMask: DspMask<Self>;
+}
 
-impl DspType for f32x1 { }
-impl DspType for f32x16 { }
+impl DspType for f32x1 {
+    type DspMask = mask32x1;
+}
+
+impl DspType for f32x16 {
+    type DspMask = mask32x16;
+}
 
 
 
@@ -220,19 +262,19 @@ fn phased_offset_assertions() {
     assert_eq!(r, [SampleOffset(0.0); 16]);
 }
 
-pub struct SquareOscillator<Dsp, Like>
+pub struct SquareOscillator<Dsp, LikeSampleOffset>
 where Dsp: DspType,
-      Like: DspLike<SampleOffset, Dsp>,
+      LikeSampleOffset: DspLike<SampleOffset, Dsp>,
 {
     pub dsp: PhantomData<Dsp>,
-    pub period: Like,
+    pub period: LikeSampleOffset,
 }
 
-impl<Dsp, Like> SquareOscillator<Dsp, Like>
+impl<Dsp, LikeSampleOffset> SquareOscillator<Dsp, LikeSampleOffset>
 where Dsp: DspType,
-      Like: DspLike<SampleOffset, Dsp>,
+      LikeSampleOffset: DspLike<SampleOffset, Dsp>,
 {
-    pub fn sample<Return>(&self, offset: Like) -> Return
+    pub fn sample<Return>(&self, offset: LikeSampleOffset) -> Return
         where Return: DspLike<Bipolar<1>, Dsp>
     {
         let period = self.period.to_dsp();
@@ -241,16 +283,12 @@ where Dsp: DspType,
 
         let two = Dsp::splat(2.0);
         let half_period = period / two;
-        todo!()
-        
-        /*let period = self.period.0;
-        let offset = offset.0;
-        let offset = offset % period;
+        let offset_lt_half_period = offset.simd_lt(half_period);
+        let one = Dsp::splat(1.0);
+        let n_one = Dsp::splat(-1.0);
+        let sample = offset_lt_half_period.select(one, n_one);
 
-        let half_period = period / 2.0;
-        let sample = if offset < half_period { 1.0 } else { -1.0 };
-
-        Bipolar(sample)*/
+        Return::from_dsp(sample)
     }
 }
 
