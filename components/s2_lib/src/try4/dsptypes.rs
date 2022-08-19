@@ -3,12 +3,18 @@ use std::simd::{LaneCount, SupportedLaneCount};
 use std::ops::{Div, Mul, Add, Sub};
 
 #[derive(Copy, Clone)]
+#[derive(Debug)]
+#[derive(PartialEq, PartialOrd)]
 pub struct SampleOffset(pub f32);
 
 #[derive(Copy, Clone)]
+#[derive(Debug)]
+#[derive(PartialEq, PartialOrd)]
 pub struct Bipolar<const N: u16>(pub f32);
 
 #[derive(Copy, Clone)]
+#[derive(Debug)]
+#[derive(PartialEq, PartialOrd)]
 pub struct Unipolar<const N: u16>(pub f32);
 
 pub trait DspFloat {
@@ -38,13 +44,12 @@ pub trait DspType: Sized
 impl DspType for f32 { }
 impl DspType for f32x16 { }
 
-pub trait DspTypeWrapper: Sized {
-    type Dsp: DspType;
-
-    fn to_dsp(&self) -> Self::Dsp;
-
-    fn from_dsp(value: Self::Dsp) -> Self;
-
+pub trait DspLike<T, D>
+where Self: Sized + Copy + Clone,
+      D: DspType,
+{
+    fn to_dsp(self) -> D;
+    fn from_dsp(other: D) -> Self;
     fn validate(&self);
 
     fn debug_validate(&self) {
@@ -54,15 +59,13 @@ pub trait DspTypeWrapper: Sized {
     }
 }
 
-impl DspTypeWrapper for SampleOffset {
-    type Dsp = f32;
-
-    fn to_dsp(&self) -> Self::Dsp {
+impl DspLike<SampleOffset, f32> for SampleOffset {
+    fn to_dsp(self) -> f32 {
         self.0
     }
 
-    fn from_dsp(value: Self::Dsp) -> Self {
-        Self(value)
+    fn from_dsp(other: f32) -> Self {
+        Self(other)
     }
 
     fn validate(&self) {
@@ -70,15 +73,13 @@ impl DspTypeWrapper for SampleOffset {
     }
 }
 
-impl DspTypeWrapper for [SampleOffset; 16] {
-    type Dsp = f32x16;
-
-    fn to_dsp(&self) -> Self::Dsp {
+impl DspLike<SampleOffset, f32x16> for [SampleOffset; 16] {
+    fn to_dsp(self) -> f32x16 {
         f32x16::from_array(self.map(|s| s.0))
     }
 
-    fn from_dsp(value: Self::Dsp) -> Self {
-        value.to_array().map(|s| SampleOffset(s))
+    fn from_dsp(other: f32x16) -> Self {
+        other.to_array().map(|s| SampleOffset(s))
     }
 
     fn validate(&self) {
@@ -90,15 +91,13 @@ impl DspTypeWrapper for [SampleOffset; 16] {
     }
 }
 
-impl<const N: u16> DspTypeWrapper for Unipolar<N> {
-    type Dsp = f32;
-
-    fn to_dsp(&self) -> Self::Dsp {
+impl DspLike<Unipolar<1>, f32> for Unipolar<1> {
+    fn to_dsp(self) -> f32 {
         self.0
     }
 
-    fn from_dsp(value: Self::Dsp) -> Self {
-        Self(value)
+    fn from_dsp(other: f32) -> Self {
+        Self(other)
     }
 
     fn validate(&self) {
@@ -106,15 +105,13 @@ impl<const N: u16> DspTypeWrapper for Unipolar<N> {
     }
 }
 
-impl<const N: u16> DspTypeWrapper for [Unipolar<N>; 16] {
-    type Dsp = f32x16;
-
-    fn to_dsp(&self) -> Self::Dsp {
+impl DspLike<Unipolar<1>, f32x16> for [Unipolar<1>; 16] {
+    fn to_dsp(self) -> f32x16 {
         f32x16::from_array(self.map(|s| s.0))
     }
 
-    fn from_dsp(value: Self::Dsp) -> Self {
-        value.to_array().map(|s| Unipolar(s))
+    fn from_dsp(other: f32x16) -> Self {
+        other.to_array().map(|s| Unipolar(s))
     }
 
     fn validate(&self) {
@@ -125,6 +122,45 @@ impl<const N: u16> DspTypeWrapper for [Unipolar<N>; 16] {
         );
     }
 }
+
+fn phased_offset<Dsp, Return>(
+    period: impl DspLike<SampleOffset, Dsp>,
+    phase: impl DspLike<Unipolar<1>, Dsp>,
+    offset: impl DspLike<SampleOffset, Dsp>,
+) -> Return
+where Dsp: DspType,
+      Return: DspLike<SampleOffset, Dsp>,
+{
+    let period = period.to_dsp();
+    let phase = phase.to_dsp();
+    let offset = offset.to_dsp();
+
+    if !cfg!(feature = "fma") {
+        let phase_offset = period * phase;
+        Return::from_dsp(offset + phase_offset)
+    } else {
+        let offset = period.mul_add(phase, offset);
+        Return::from_dsp(offset)
+    }
+}
+
+#[test]
+fn phased_offset_assertions() {
+    let period = SampleOffset(0.0);
+    let phase = Unipolar(0.0);
+    let offset = SampleOffset(0.0);
+    let r: SampleOffset = phased_offset(period, phase, offset);
+    assert_eq!(r, SampleOffset(0.0));
+    let period = [period; 16];
+    let phase = [phase; 16];
+    let offset = [offset; 16];
+    let r: [SampleOffset; 16] = phased_offset(period, phase, offset);
+    assert_eq!(r, [SampleOffset(0.0); 16]);
+}
+
+
+
+
 
 pub fn line_y_value<D>(
     y_rise: D,
