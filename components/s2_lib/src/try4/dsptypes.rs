@@ -1,6 +1,7 @@
 use std::simd::{f32x16, u32x16, StdFloat, SimdFloat, Simd, SimdPartialOrd};
 use std::simd::{LaneCount, SupportedLaneCount};
-use std::ops::{Div, Mul, Add, Sub};
+use std::ops::{Div, Mul, Add, Sub, Rem};
+use std::marker::PhantomData;
 
 #[derive(Copy, Clone)]
 #[derive(Debug)]
@@ -17,17 +18,26 @@ pub struct Unipolar<const N: u16>(pub f32);
 #[derive(PartialEq, PartialOrd)]
 pub struct Bipolar<const N: u16>(pub f32);
 
-pub trait DspFloat {
+pub trait DspFloat: Copy {
+    fn splat(v: f32) -> Self;
     fn mul_add(self, a: Self, b: Self) -> Self;
 }
 
 impl DspFloat for f32 {
+    fn splat(v: f32) -> Self {
+        v
+    }
+
     fn mul_add(self, a: Self, b: Self) -> Self {
         f32::mul_add(self, a, b)
     }
 }
 
 impl DspFloat for f32x16 {
+    fn splat(v: f32) -> Self {
+        Simd::splat(v)
+    }
+
     fn mul_add(self, a: Self, b: Self) -> Self {
         StdFloat::mul_add(self, a, b)
     }
@@ -38,11 +48,59 @@ pub trait DspType: Sized
     + Sub<Output = Self>
     + Mul<Output = Self>
     + Div<Output = Self>
+    + Rem<Output = Self>
     + DspFloat
 { }
 
 impl DspType for f32 { }
 impl DspType for f32x16 { }
+
+
+
+
+pub fn line_y_value<D>(
+    y_rise: D,
+    x_run: D,
+    x_value: D,
+) -> D
+where D: DspType
+{
+    let slope = y_rise / x_run;
+    let y_value = slope * x_value;
+    y_value
+}
+
+pub fn line_y_value_with_y_offset<D>(
+    y_rise: D,
+    x_run: D,
+    x_value: D,
+    y_offset: D,
+) -> D
+where D: DspType
+{
+    if !cfg!(feature = "fma") {
+        let y_value = line_y_value(y_rise, x_run, x_value);
+        y_value + y_offset
+    } else {
+        let slope = y_rise / x_run;
+        slope.mul_add(x_value, y_offset)
+    }
+}
+
+fn assertions() {
+    let y_rise = 0.0;
+    let x_run = 0.0;
+    let x_value = 0.0;
+    line_y_value(y_rise, x_run, x_value);
+
+    let y_rise = f32x16::splat(y_rise);
+    let x_run = f32x16::splat(x_run);
+    let x_value = f32x16::splat(x_value);
+    line_y_value(y_rise, x_run, x_value);
+}
+
+
+
 
 pub trait DspLike<T, D>
 where Self: Sized + Copy + Clone,
@@ -166,47 +224,37 @@ fn phased_offset_assertions() {
     assert_eq!(r, [SampleOffset(0.0); 16]);
 }
 
-
-
-
-
-pub fn line_y_value<D>(
-    y_rise: D,
-    x_run: D,
-    x_value: D,
-) -> D
-where D: DspType
+pub struct SquareOscillator<Dsp, Like>
+where Dsp: DspType,
+      Like: DspLike<SampleOffset, Dsp>,
 {
-    let slope = y_rise / x_run;
-    let y_value = slope * x_value;
-    y_value
+    pub dsp: PhantomData<Dsp>,
+    pub period: Like,
 }
 
-pub fn line_y_value_with_y_offset<D>(
-    y_rise: D,
-    x_run: D,
-    x_value: D,
-    y_offset: D,
-) -> D
-where D: DspType
+impl<Dsp, Like> SquareOscillator<Dsp, Like>
+where Dsp: DspType,
+      Like: DspLike<SampleOffset, Dsp>,
 {
-    if !cfg!(feature = "fma") {
-        let y_value = line_y_value(y_rise, x_run, x_value);
-        y_value + y_offset
-    } else {
-        let slope = y_rise / x_run;
-        slope.mul_add(x_value, y_offset)
+    pub fn sample<Return>(&self, offset: Like) -> Return
+        where Return: DspLike<Bipolar<1>, Dsp>
+    {
+        let period = self.period.to_dsp();
+        let offset = offset.to_dsp();
+        let offset = offset % period;
+
+        let two = Dsp::splat(2.0);
+        let half_period = period / two;
+        todo!()
+        
+        /*let period = self.period.0;
+        let offset = offset.0;
+        let offset = offset % period;
+
+        let half_period = period / 2.0;
+        let sample = if offset < half_period { 1.0 } else { -1.0 };
+
+        Bipolar(sample)*/
     }
 }
 
-fn assertions() {
-    let y_rise = 0.0;
-    let x_run = 0.0;
-    let x_value = 0.0;
-    line_y_value(y_rise, x_run, x_value);
-
-    let y_rise = f32x16::splat(y_rise);
-    let x_run = f32x16::splat(x_run);
-    let x_value = f32x16::splat(x_value);
-    line_y_value(y_rise, x_run, x_value);
-}
