@@ -49,7 +49,15 @@ where Self: Sized + Copy + Clone,
       D: DspType,
 {
     fn to_dsp(self) -> D;
-    fn from_dsp(other: D) -> Self;
+
+    fn from_dsp(other: D) -> Self {
+        let s = Self::from_dsp_unchecked(other);
+        s.debug_validate();
+        s
+    }
+
+    fn from_dsp_unchecked(other: D) -> Self;
+
     fn validate(&self);
 
     fn debug_validate(&self) {
@@ -64,7 +72,7 @@ impl DspLike<SampleOffset, f32> for SampleOffset {
         self.0
     }
 
-    fn from_dsp(other: f32) -> Self {
+    fn from_dsp_unchecked(other: f32) -> Self {
         Self(other)
     }
 
@@ -78,7 +86,7 @@ impl DspLike<SampleOffset, f32x16> for [SampleOffset; 16] {
         f32x16::from_array(self.map(|s| s.0))
     }
 
-    fn from_dsp(other: f32x16) -> Self {
+    fn from_dsp_unchecked(other: f32x16) -> Self {
         other.to_array().map(|s| SampleOffset(s))
     }
 
@@ -96,7 +104,7 @@ impl<const N: u16> DspLike<Unipolar<N>, f32> for Unipolar<N> {
         self.0
     }
 
-    fn from_dsp(other: f32) -> Self {
+    fn from_dsp_unchecked(other: f32) -> Self {
         Self(other)
     }
 
@@ -110,7 +118,7 @@ impl<const N: u16> DspLike<Unipolar<N>, f32x16> for [Unipolar<N>; 16] {
         f32x16::from_array(self.map(|s| s.0))
     }
 
-    fn from_dsp(other: f32x16) -> Self {
+    fn from_dsp_unchecked(other: f32x16) -> Self {
         other.to_array().map(|s| Unipolar(s))
     }
 
