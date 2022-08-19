@@ -10,12 +10,12 @@ pub struct SampleOffset(pub f32);
 #[derive(Copy, Clone)]
 #[derive(Debug)]
 #[derive(PartialEq, PartialOrd)]
-pub struct Bipolar<const N: u16>(pub f32);
+pub struct Unipolar<const N: u16>(pub f32);
 
 #[derive(Copy, Clone)]
 #[derive(Debug)]
 #[derive(PartialEq, PartialOrd)]
-pub struct Unipolar<const N: u16>(pub f32);
+pub struct Bipolar<const N: u16>(pub f32);
 
 pub trait DspFloat {
     fn mul_add(self, a: Self, b: Self) -> Self;
@@ -91,7 +91,7 @@ impl DspLike<SampleOffset, f32x16> for [SampleOffset; 16] {
     }
 }
 
-impl DspLike<Unipolar<1>, f32> for Unipolar<1> {
+impl<const N: u16> DspLike<Unipolar<N>, f32> for Unipolar<N> {
     fn to_dsp(self) -> f32 {
         self.0
     }
@@ -101,11 +101,11 @@ impl DspLike<Unipolar<1>, f32> for Unipolar<1> {
     }
 
     fn validate(&self) {
-        assert!(self.0 >= -1.0 && self.0 <= 1.0);
+        assert!(self.0 >= -(N as f32) && self.0 <= (N as f32));
     }
 }
 
-impl DspLike<Unipolar<1>, f32x16> for [Unipolar<1>; 16] {
+impl<const N: u16> DspLike<Unipolar<N>, f32x16> for [Unipolar<N>; 16] {
     fn to_dsp(self) -> f32x16 {
         f32x16::from_array(self.map(|s| s.0))
     }
@@ -116,8 +116,8 @@ impl DspLike<Unipolar<1>, f32x16> for [Unipolar<1>; 16] {
 
     fn validate(&self) {
         assert!(
-            (self.to_dsp().simd_ge(f32x16::splat(-1.0))
-             & self.to_dsp().simd_le(f32x16::splat(1.0))
+            (self.to_dsp().simd_ge(f32x16::splat(-(N as f32)))
+             & self.to_dsp().simd_le(f32x16::splat(N as f32))
             ).all()
         );
     }
