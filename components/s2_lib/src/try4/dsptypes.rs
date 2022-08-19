@@ -36,8 +36,8 @@ impl DspFloat for f32x16 {
 pub trait DspType: Sized
     + Add<Output = Self>
     + Sub<Output = Self>
-    + Div<Output = Self>
     + Mul<Output = Self>
+    + Div<Output = Self>
     + DspFloat
 { }
 
