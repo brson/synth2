@@ -3,6 +3,9 @@ use std::simd::{LaneCount, SupportedLaneCount};
 use std::ops::{Div, Mul, Add, Sub, Rem};
 use std::marker::PhantomData;
 
+#[allow(non_camel_case_types)]
+pub type f32x1 = Simd<f32, 1>;
+
 #[derive(Copy, Clone)]
 #[derive(Debug)]
 #[derive(PartialEq, PartialOrd)]
@@ -20,26 +23,17 @@ pub struct Bipolar<const N: u16>(pub f32);
 
 pub trait DspFloat: Copy {
     fn splat(v: f32) -> Self;
-    fn mul_add(self, a: Self, b: Self) -> Self;
 }
 
-impl DspFloat for f32 {
+impl DspFloat for f32x1 {
     fn splat(v: f32) -> Self {
-        v
-    }
-
-    fn mul_add(self, a: Self, b: Self) -> Self {
-        f32::mul_add(self, a, b)
+        Simd::splat(v)
     }
 }
 
 impl DspFloat for f32x16 {
     fn splat(v: f32) -> Self {
         Simd::splat(v)
-    }
-
-    fn mul_add(self, a: Self, b: Self) -> Self {
-        StdFloat::mul_add(self, a, b)
     }
 }
 
@@ -49,10 +43,11 @@ pub trait DspType: Sized
     + Mul<Output = Self>
     + Div<Output = Self>
     + Rem<Output = Self>
+    + StdFloat
     + DspFloat
 { }
 
-impl DspType for f32 { }
+impl DspType for f32x1 { }
 impl DspType for f32x16 { }
 
 
@@ -87,15 +82,16 @@ where D: DspType
     }
 }
 
+#[test]
 fn assertions() {
-    let y_rise = 0.0;
-    let x_run = 0.0;
-    let x_value = 0.0;
+    let y_rise = f32x1::splat(0.0);
+    let x_run = f32x1::splat(0.0);
+    let x_value = f32x1::splat(0.0);
     line_y_value(y_rise, x_run, x_value);
 
-    let y_rise = f32x16::splat(y_rise);
-    let x_run = f32x16::splat(x_run);
-    let x_value = f32x16::splat(x_value);
+    let y_rise = f32x16::splat(0.0);
+    let x_run = f32x16::splat(0.0);
+    let x_value = f32x16::splat(0.0);
     line_y_value(y_rise, x_run, x_value);
 }
 
@@ -125,13 +121,13 @@ where Self: Sized + Copy + Clone,
     }
 }
 
-impl DspLike<SampleOffset, f32> for SampleOffset {
-    fn to_dsp(self) -> f32 {
-        self.0
+impl DspLike<SampleOffset, f32x1> for SampleOffset {
+    fn to_dsp(self) -> f32x1 {
+        f32x1::splat(self.0)
     }
 
-    fn from_dsp_unchecked(other: f32) -> Self {
-        Self(other)
+    fn from_dsp_unchecked(other: f32x1) -> Self {
+        Self(other.to_array()[0])
     }
 
     fn validate(&self) {
@@ -157,13 +153,13 @@ impl DspLike<SampleOffset, f32x16> for [SampleOffset; 16] {
     }
 }
 
-impl<const N: u16> DspLike<Unipolar<N>, f32> for Unipolar<N> {
-    fn to_dsp(self) -> f32 {
-        self.0
+impl<const N: u16> DspLike<Unipolar<N>, f32x1> for Unipolar<N> {
+    fn to_dsp(self) -> f32x1 {
+        f32x1::splat(self.0)
     }
 
-    fn from_dsp_unchecked(other: f32) -> Self {
-        Self(other)
+    fn from_dsp_unchecked(other: f32x1) -> Self {
+        Self(other.to_array()[0])
     }
 
     fn validate(&self) {
