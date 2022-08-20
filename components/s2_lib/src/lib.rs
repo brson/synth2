@@ -6,4 +6,3 @@
 
 mod old;
 pub mod try3;
-pub mod try4;
