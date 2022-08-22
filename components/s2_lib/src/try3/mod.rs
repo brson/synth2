@@ -7,6 +7,7 @@ mod render_plan;
 
 mod envelopes;
 mod filters;
+mod dsp_filters;
 mod math;
 mod oscillators;
 mod hashnoise;
