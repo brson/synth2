@@ -177,7 +177,60 @@ impl<'this> SecondOrderHighPassFilter<'this> {
     }
 }
 
+#[derive(Default)]
+#[derive(Copy, Clone)]
+pub struct SecondOrderBandPassFilterState {
+    x1: f32,
+    x2: f32,
+    y1: f32,
+    y2: f32,
+}
+
+pub struct SecondOrderBandPassFilter<'this> {
+    pub state: &'this mut SecondOrderBandPassFilterState,
+    pub sample_rate: SampleRateKhz,
+    pub center_freq: Hz,
+    pub quality_factor: Unipolar<2>,
+}
+
+impl<'this> SecondOrderBandPassFilter<'this> {
+    pub fn process(&mut self, input: f32) -> f32 {
+        let sample_rate = self.sample_rate.0 as f32;
+        let center_freq = self.center_freq.0;
+        let quality_factor = scale_quality_factor(self.quality_factor);
+
+        let theta_center = 2.0 * PI * center_freq / sample_rate;
+        let beta = (1.0 / 2.0)
+            * ((1.0 - (theta_center / (2.0 * quality_factor)).tan())
+               / (1.0 + (theta_center / (2.0 * quality_factor)).tan()));
+        let gamma = (1.0 / 2.0 + beta) * theta_center.cos();
+        let alpha = (1.0 / 2.0 - beta) / 2.0;
+
+        let x1 = self.state.x1;
+        let x2 = self.state.x2;
+        let y1 = self.state.y1;
+        let y2 = self.state.y2;
+
+        let x = input;
+        let y = 2.0
+            * (alpha
+                * (x - x2)
+                + gamma * y1 - beta * y2);
+
+        self.state.x2 = x1;
+        self.state.x1 = x;
+        self.state.y2 = y1;
+        self.state.y1 = y;
+
+        y
+    }
+}
+
 fn scale_damping_factor(d: Unipolar<2>) -> f32 {
     // this needs to be centered around sqrt(2)
+    todo!()
+}
+
+fn scale_quality_factor(q: Unipolar<2>) -> f32 {
     todo!()
 }
