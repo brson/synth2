@@ -92,7 +92,7 @@ pub struct SecondOrderLowPassFilter<'this> {
     pub state: &'this mut SecondOrderLowPassFilterState,
     pub sample_rate: SampleRateKhz,
     pub cutoff_freq: Hz,
-    /// Lower is narrower, more resonant.
+    /// Lower is narrower, more resonant. sqrt(2) is neutral. 0.2 is minimum.
     pub damping_factor: Unipolar<10>,
 }
 
@@ -142,7 +142,7 @@ pub struct SecondOrderHighPassFilter<'this> {
     pub state: &'this mut SecondOrderHighPassFilterState,
     pub sample_rate: SampleRateKhz,
     pub cutoff_freq: Hz,
-    /// Lower is narrower, more resonant.
+    /// Lower is narrower, more resonant. sqrt(2) is neutral. 0.2 is minimum.
     pub damping_factor: Unipolar<10>,
 }
 
@@ -192,7 +192,7 @@ pub struct SecondOrderBandPassFilter<'this> {
     pub state: &'this mut SecondOrderBandPassFilterState,
     pub sample_rate: SampleRateKhz,
     pub center_freq: Hz,
-    /// Higher is narrower.
+    /// Higher is narrower. 3 is neutral. 0.2 is minimum.
     pub quality_factor: Unipolar<10>,
 }
 
