@@ -92,14 +92,15 @@ pub struct SecondOrderLowPassFilter<'this> {
     pub state: &'this mut SecondOrderLowPassFilterState,
     pub sample_rate: SampleRateKhz,
     pub cutoff_freq: Hz,
-    pub damping_factor: Unipolar<2>,
+    /// Lower is narrower, more resonant.
+    pub damping_factor: Unipolar<10>,
 }
 
 impl<'this> SecondOrderLowPassFilter<'this> {
     pub fn process(&mut self, input: f32) -> f32 {
         let sample_rate = self.sample_rate.0 as f32;
         let cutoff_freq = self.cutoff_freq.0;
-        let damping_factor = scale_damping_factor(self.damping_factor);
+        let damping_factor = self.damping_factor.0;
 
         let theta_cutoff = 2.0 * PI * cutoff_freq / sample_rate;
         let beta = (1.0 / 2.0)
@@ -141,14 +142,15 @@ pub struct SecondOrderHighPassFilter<'this> {
     pub state: &'this mut SecondOrderHighPassFilterState,
     pub sample_rate: SampleRateKhz,
     pub cutoff_freq: Hz,
-    pub damping_factor: Unipolar<2>,
+    /// Lower is narrower, more resonant.
+    pub damping_factor: Unipolar<10>,
 }
 
 impl<'this> SecondOrderHighPassFilter<'this> {
     pub fn process(&mut self, input: f32) -> f32 {
         let sample_rate = self.sample_rate.0 as f32;
         let cutoff_freq = self.cutoff_freq.0;
-        let damping_factor = scale_damping_factor(self.damping_factor);
+        let damping_factor = self.damping_factor.0;
 
         let theta_cutoff = 2.0 * PI * cutoff_freq / sample_rate;
         let beta = (1.0 / 2.0)
@@ -190,14 +192,15 @@ pub struct SecondOrderBandPassFilter<'this> {
     pub state: &'this mut SecondOrderBandPassFilterState,
     pub sample_rate: SampleRateKhz,
     pub center_freq: Hz,
-    pub quality_factor: Unipolar<2>,
+    /// Higher is narrower.
+    pub quality_factor: Unipolar<10>,
 }
 
 impl<'this> SecondOrderBandPassFilter<'this> {
     pub fn process(&mut self, input: f32) -> f32 {
         let sample_rate = self.sample_rate.0 as f32;
         let center_freq = self.center_freq.0;
-        let quality_factor = scale_quality_factor(self.quality_factor);
+        let quality_factor = self.quality_factor.0;
 
         let theta_center = 2.0 * PI * center_freq / sample_rate;
         let beta = (1.0 / 2.0)
@@ -224,13 +227,4 @@ impl<'this> SecondOrderBandPassFilter<'this> {
 
         y
     }
-}
-
-fn scale_damping_factor(d: Unipolar<2>) -> f32 {
-    // this needs to be centered around sqrt(2)
-    todo!()
-}
-
-fn scale_quality_factor(q: Unipolar<2>) -> f32 {
-    todo!()
 }
