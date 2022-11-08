@@ -33,6 +33,7 @@ https://www.reddit.com/r/DSP/comments/wl7dn9/single_pole_iir_more_efficient_than
   - https://www.wavewalkerdsp.com/2022/08/10/single-pole-iir-filter-substitute-for-moving-average-filter/
 https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf
 https://www.maximintegrated.com/en/design/technical-documents/tutorials/7/733.html
+https://github.com/ValdemarOrn/CloudSeed
 
 # ideas
 
