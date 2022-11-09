@@ -34,6 +34,7 @@ https://www.reddit.com/r/DSP/comments/wl7dn9/single_pole_iir_more_efficient_than
 https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf
 https://www.maximintegrated.com/en/design/technical-documents/tutorials/7/733.html
 https://github.com/ValdemarOrn/CloudSeed
+https://www.researchgate.net/profile/Juhan-Nam/publication/224557976_Alias-Suppressed_Oscillators_Based_on_Differentiated_Polynomial_Waveforms/links/573f274d08ae9ace84133dc9/Alias-Suppressed-Oscillators-Based-on-Differentiated-Polynomial-Waveforms.pdf
 
 # ideas
 
