@@ -1,5 +1,28 @@
+# synth one features
+
+- two oscillators
+- sine, tri, saw, square, pulse
+- pulse width
+- noise oscillator with volume
+- lp filter with resonance and keytracking
+- amp adsr envelope
+- filter adsr envelope
+- one lfo
+- visualizations
+  - osc
+  - lfo
+- mono or poly voices
+- unison
+- mod wheel modulation
+- velocity modulation
+- fixed pitch wheel
+- no fx
+
+
 # sources
 
+https://www.tone2.com/plugin-formats.html
+https://cleveraudio.org/1-feature-overview/_midi/#concurrent-event-queues-and-ambiguity
 https://www.musicdsp.org/
 https://www.dspguide.com/
 https://juce.com/
