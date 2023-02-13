@@ -1,4 +1,3 @@
-#![feature(let_else)]
 #![feature(array_chunks)]
 #![allow(unused)]
 
