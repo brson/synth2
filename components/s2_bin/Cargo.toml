@@ -14,5 +14,5 @@ log = "0.4.17"
 tungstenite = "0.17.3"
 charts = "0.3.0"
 clap = { version = "3.2.23", features = ["derive"] }
-midir = "0.8.0"
+midir = "0.9.1"
 cpal = "0.13.5"
