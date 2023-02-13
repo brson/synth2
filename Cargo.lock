@@ -2473,9 +2473,9 @@ checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "sleef"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32f4d0e293169e2d79e4f8dc3dbfb6bd8381deba5877146e99298973d5912b31"
+checksum = "1c286dcaf13029ef0226b58b4819eb6c306ef71f9ca63540a6e69b26c4cafbf7"
 dependencies = [
  "doubled",
 ]
