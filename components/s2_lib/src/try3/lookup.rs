@@ -69,11 +69,8 @@ pub fn table_lookup_exclusive_x16(
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
 
-    // fixme: rust-lang/rust#100474
-    //let sample1 = f32x16::gather_or_default(table, table_idx1);
-    //let sample2 = f32x16::gather_or_default(table, table_idx2);
-    let sample1 = gather_or_default_hack_x16(table, table_idx1);
-    let sample2 = gather_or_default_hack_x16(table, table_idx2);
+    let sample1 = f32x16::gather_or_default(table, table_idx1);
+    let sample2 = f32x16::gather_or_default(table, table_idx2);
 
     {
         let y_rise = sample2 - sample1;
@@ -85,20 +82,6 @@ pub fn table_lookup_exclusive_x16(
 
         sample.to_array()
     }
-}
-
-// fixme: rust-lang/rust#100474
-fn gather_or_default_hack_x16(table: &[f32], table_idx: Simd<usize, 16>) -> f32x16 {
-    let table_idx = table_idx.to_array();
-
-    let mut res = [0.0; 16];
-
-    for i in 0..16 {
-        let v = table.get(table_idx[i]).copied().unwrap_or_default();
-        res[i] = v;
-    }
-
-    f32x16::from_array(res)
 }
 
 /// Linear-interpolated table lookup in range `[0, range]`.
@@ -173,11 +156,8 @@ pub fn table_lookup_inclusive_x16(
     let table_idx2 = table_idx2.cast::<usize>();
     let table_value_low = table_value_low.cast::<f32>();
 
-    // fixme: rust-lang/rust#100474
-    //let sample1 = f32x16::gather_or_default(table, table_idx1);
-    //let sample2 = f32x16::gather_or_default(table, table_idx2);
-    let sample1 = gather_or_default_hack_x16(table, table_idx1);
-    let sample2 = gather_or_default_hack_x16(table, table_idx2);
+    let sample1 = f32x16::gather_or_default(table, table_idx1);
+    let sample2 = f32x16::gather_or_default(table, table_idx2);
 
     {
         let y_rise = sample2 - sample1;
