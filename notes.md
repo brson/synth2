@@ -21,6 +21,7 @@
 
 # sources
 
+https://github.com/chaosprint/glicol
 https://www.tone2.com/plugin-formats.html
 https://cleveraudio.org/1-feature-overview/_midi/#concurrent-event-queues-and-ambiguity
 https://www.musicdsp.org/
