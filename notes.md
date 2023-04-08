@@ -21,6 +21,7 @@
 
 # sources
 
+https://crates.io/crates/fundsp/0.13.0
 https://github.com/chaosprint/glicol
 https://www.tone2.com/plugin-formats.html
 https://cleveraudio.org/1-feature-overview/_midi/#concurrent-event-queues-and-ambiguity
