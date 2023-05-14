@@ -21,6 +21,7 @@
 
 # sources
 
+https://faust.grame.fr/
 https://crates.io/crates/fundsp/0.13.0
 https://github.com/chaosprint/glicol
 https://www.tone2.com/plugin-formats.html
