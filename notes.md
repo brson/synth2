@@ -21,6 +21,8 @@
 
 # sources
 
+https://www2.math.upenn.edu/~wilf/gfology2.pdf
+http://www.musimathics.com/
 https://faust.grame.fr/
 https://crates.io/crates/fundsp/0.13.0
 https://github.com/chaosprint/glicol
@@ -53,6 +55,8 @@ https://dsp.stackexchange.com/questions/971/how-to-create-a-sine-wave-generator-
 https://www.reddit.com/r/DSP/comments/vkpw0z/butterworthchebyshev_filters_resources/
 https://github.com/MikeCurrington/mkfilter
 https://ccrma.stanford.edu/~jos/sasp/sasp.html
+https://ccrma.stanford.edu/~jos/mdft/
+https://ccrma.stanford.edu/~jos/filters/
 https://dspguru.com/dsp/books/
 https://github.com/airwindows/airwindows
 https://www.reddit.com/r/DSP/comments/wl7dn9/single_pole_iir_more_efficient_than_moving/
