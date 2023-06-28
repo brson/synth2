@@ -21,6 +21,8 @@
 
 # sources
 
+https://github.com/microsoft/midi
+http://www.willpirkle.com/
 https://www2.math.upenn.edu/~wilf/gfology2.pdf
 http://www.musimathics.com/
 https://faust.grame.fr/
