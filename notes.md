@@ -18,6 +18,12 @@
 - fixed pitch wheel
 - no fx
 
+# mit licensed sources
+
+https://github.com/libsndfile/libsamplerate/releases
+https://github.com/google/music-synthesizer-for-android
+airwindows
+
 
 # sources
 
