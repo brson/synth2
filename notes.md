@@ -27,9 +27,12 @@ airwindows
 
 # sources
 
+https://downloads.musikhack.com/Papers/Sampling%2C+Aliasing%2C+Oversampling.pdf
+https://www2.math.upenn.edu/~wilf/gfology2.pdf
+https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf
+
 https://github.com/microsoft/midi
 http://www.willpirkle.com/
-https://www2.math.upenn.edu/~wilf/gfology2.pdf
 http://www.musimathics.com/
 https://faust.grame.fr/
 https://crates.io/crates/fundsp/0.13.0
@@ -69,7 +72,6 @@ https://dspguru.com/dsp/books/
 https://github.com/airwindows/airwindows
 https://www.reddit.com/r/DSP/comments/wl7dn9/single_pole_iir_more_efficient_than_moving/
   - https://www.wavewalkerdsp.com/2022/08/10/single-pole-iir-filter-substitute-for-moving-average-filter/
-https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf
 https://www.maximintegrated.com/en/design/technical-documents/tutorials/7/733.html
 https://github.com/ValdemarOrn/CloudSeed
 https://www.researchgate.net/profile/Juhan-Nam/publication/224557976_Alias-Suppressed_Oscillators_Based_on_Differentiated_Polynomial_Waveforms/links/573f274d08ae9ace84133dc9/Alias-Suppressed-Oscillators-Based-on-Differentiated-Polynomial-Waveforms.pdf
