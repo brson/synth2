@@ -27,6 +27,7 @@ airwindows
 
 # sources
 
+https://github.com/aaronsgiles/ymfm - yamaha sound cores from mame
 https://downloads.musikhack.com/Papers/Sampling%2C+Aliasing%2C+Oversampling.pdf
 https://www2.math.upenn.edu/~wilf/gfology2.pdf
 https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf
