@@ -27,6 +27,7 @@ airwindows
 
 # sources
 
+https://github.com/libAudioFlux/audioFlux - streaming architecture example
 https://github.com/aaronsgiles/ymfm - yamaha sound cores from mame
 https://downloads.musikhack.com/Papers/Sampling%2C+Aliasing%2C+Oversampling.pdf
 https://www2.math.upenn.edu/~wilf/gfology2.pdf
