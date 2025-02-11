@@ -360,7 +360,8 @@ pub fn sample_voice_x16(
     let sample_rate = render_plan.lpf.sample_rate;
     let lpf_freqs = render_plan.lpf.freqs;
 
-    let samples = samples.zip(lpf_freqs).map(|(sample, lpf_freq)| {
+    let samples = std::array::from_fn(|i| (samples[i], lpf_freqs[i]));
+    let samples = samples.map(|(sample, lpf_freq)| {
         let mut lpf = LowPassFilter {
             state: &mut state.lpf,
             sample_rate: sample_rate,

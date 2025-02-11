@@ -5,7 +5,7 @@
 //   just remove the offset parameter entirely.
 
 pub mod basic {
-    use std::simd::{f32x16, u32x16, SimdPartialOrd, StdFloat};
+    use std::simd::prelude::*;
     use super::super::math::*;
     use super::super::units::*;
     use super::super::lookup;

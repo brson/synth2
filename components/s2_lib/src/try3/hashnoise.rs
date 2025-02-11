@@ -1,4 +1,4 @@
-use std::simd::{f32x16, u32x16, SimdPartialOrd, StdFloat};
+use std::simd::prelude::*;
 use super::math::*;
 use super::units::*;
 use super::lookup;

@@ -1,4 +1,5 @@
-use std::simd::{f32x16, u32x16, StdFloat, SimdFloat};
+use std::simd::prelude::*;
+use std::simd::StdFloat;
 use super::units::{Unipolar, Bipolar};
 
 pub fn line_y_value(y_rise: f32, x_run: f32, x_value: f32) -> f32 {
@@ -48,9 +49,11 @@ pub const fn indexes_u32<const N: usize>() -> [u32; N] {
     indexes
 }
 
-pub fn zip3<A, B, C, const N: usize>(a: [A; N], b: [B; N], c: [C; N]) -> [(A, B, C); N] {
-    let a_b = a.zip(b);
-    let a_b_c = a_b.zip(c);
+pub fn zip3<A, B, C, const N: usize>(a: [A; N], b: [B; N], c: [C; N]) -> [(A, B, C); N]
+    where A: Copy, B: Copy, C: Copy,
+{
+    let a_b: [(A, B); N] = std::array::from_fn(|i| (a[i], b[i]));
+    let a_b_c = std::array::from_fn(|i| (a_b[i], c[i]));
     let a_b_c = a_b_c.map(|((a, b), c)| (a, b, c));
     a_b_c
 }

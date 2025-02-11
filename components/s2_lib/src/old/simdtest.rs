@@ -1,6 +1,4 @@
-use std::simd::{f32x4, mask32x4, u32x4, u8x4};
-use std::simd::{f32x16, mask32x16, u32x16, u8x16};
-use std::simd::{Mask, SimdFloat, SimdPartialEq, SimdPartialOrd};
+use std::simd::prelude::*;
 
 pub const OSC_KIND_SQUARE: u8 = 1;
 pub const OSC_KIND_SAW: u8 = 2;

@@ -1,4 +1,4 @@
-use std::simd::{f32x16, u32x16, Simd, StdFloat, SimdFloat, SimdPartialOrd};
+use std::simd::prelude::*;
 use super::units::{Unipolar, Bipolar};
 use super::math;
 
