@@ -121,7 +121,7 @@ impl NoiseOscillator {
         hasher.write_u32(offset);
         let rand_u64 = hasher.finish();
         let mut rng = rand_pcg::Pcg64Mcg::new(rand_u64.into());
-        let rand_f64: f64 = rng.gen_range(-1.0..=1.0);
+        let rand_f64: f64 = rng.random_range(-1.0..=1.0);
         One64::assert_from(rand_f64)
     }
 }

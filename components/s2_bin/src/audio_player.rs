@@ -1,6 +1,6 @@
 use anyhow::Result;
 use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
-use cpal::{SampleFormat, Sample, ChannelCount};
+use cpal::{SampleFormat, Sample, FromSample, ChannelCount};
 use std::sync::mpsc;
 
 pub struct Player {
@@ -78,6 +78,7 @@ pub fn start_player() -> Result<Option<Player>> {
                         fill_buffer(buffer, &mut state)
                     },
                     handle_error,
+                    None,
                 )?
             }
             SampleFormat::U16 => {
@@ -87,6 +88,7 @@ pub fn start_player() -> Result<Option<Player>> {
                         fill_buffer(buffer, &mut state)
                     },
                     handle_error,
+                    None,
                 )?
             }
             SampleFormat::F32 => {
@@ -96,8 +98,10 @@ pub fn start_player() -> Result<Option<Player>> {
                         fill_buffer(buffer, &mut state)
                     },
                     handle_error,
+                    None,
                 )?
             }
+            _ => todo!(),
         };
 
         stream.play()?;
@@ -133,7 +137,8 @@ fn fill_buffer<S>(
     buffer: &mut [S],
     state: &mut State,
 )
-where S: Sample
+where S: Sample,
+      S: FromSample<f32>,
 {
     let output_channels = state.output_channels as usize;
     assert!(buffer.len() % output_channels == 0);
@@ -164,7 +169,7 @@ where S: Sample
         let out_frames = buffer.chunks_mut(output_channels);
         for out_frame in out_frames {
             for sample in out_frame.iter_mut() {
-                *sample = S::from(&0.0);
+                *sample = S::from_sample(0.0);
             }
         }
     };
@@ -197,7 +202,8 @@ fn fill_buffer_from_pending<S>(
     buffer: &mut [S],
     state: &mut State,
 ) -> usize
-where S: Sample
+where S: Sample,
+      S: FromSample<f32>,
 {
     let output_channels = state.output_channels as usize;
     assert!(buffer.len() % output_channels == 0);
@@ -217,7 +223,7 @@ where S: Sample
 
         for (in_frame, out_frame) in frames {
             for sample in out_frame.iter_mut() {
-                *sample = S::from(in_frame);
+                *sample = S::from_sample(*in_frame);
             }
         }
 
