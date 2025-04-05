@@ -1,7 +1,7 @@
 #![feature(array_chunks)]
 #![allow(unused)]
 
-mod plotting;
+//mod plotting;
 //mod threads;
 mod audio_player;
 mod tables;
