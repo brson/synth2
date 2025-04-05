@@ -3,18 +3,6 @@ resolver = "2"
 members = [
   "components/*",
 ]
-exclude = [
-  "components/s2_nih",
-]
 default-members = [
   "components/s2_bin",
 ]
-
-#[patch.'https://github.com/robbert-vdh/nih-plug.git']
-#nih_plug = { path = "../nih-plug" }
-
-#[patch.'https://github.com/robbert-vdh/baseview.git']
-#baseview = { path = "../baseview" }
-
-#[patch.'https://github.com/robbert-vdh/vizia.git']
-#vizia = { path = "../vizia" }
